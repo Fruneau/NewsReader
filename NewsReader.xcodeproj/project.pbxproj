@@ -19,6 +19,8 @@
 		B4E047511B564CD3001C8BFF /* FifoQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047501B564CD3001C8BFF /* FifoQueue.swift */; };
 		B4E047531B565079001C8BFF /* FifoQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047521B565079001C8BFF /* FifoQueueTests.swift */; };
 		B4E047551B5667DA001C8BFF /* Buffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047541B5667DA001C8BFF /* Buffer.swift */; };
+		B4E047571B56E3E4001C8BFF /* NSRunLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */; };
+		B4E047591B56E68E001C8BFF /* NNTPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047581B56E68E001C8BFF /* NNTPTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +59,8 @@
 		B4E047501B564CD3001C8BFF /* FifoQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueue.swift; sourceTree = "<group>"; };
 		B4E047521B565079001C8BFF /* FifoQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueueTests.swift; sourceTree = "<group>"; };
 		B4E047541B5667DA001C8BFF /* Buffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Buffer.swift; sourceTree = "<group>"; };
+		B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSRunLoop.swift; sourceTree = "<group>"; };
+		B4E047581B56E68E001C8BFF /* NNTPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NNTPTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +127,7 @@
 				B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */,
 				B4E047521B565079001C8BFF /* FifoQueueTests.swift */,
 				B442B94E1B5519E60088FA0F /* Info.plist */,
+				B4E047581B56E68E001C8BFF /* NNTPTests.swift */,
 			);
 			path = NewsReaderTests;
 			sourceTree = "<group>";
@@ -142,8 +147,9 @@
 				B442B9651B551B9E0088FA0F /* NSScanner.swift */,
 				B442B96D1B552ADB0088FA0F /* BufferedReader.swift */,
 				B4E047541B5667DA001C8BFF /* Buffer.swift */,
-				B48F05B01B558C6B00FFECE8 /* NNTP.swift */,
+				B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */,
 				B4E047501B564CD3001C8BFF /* FifoQueue.swift */,
+				B48F05B01B558C6B00FFECE8 /* NNTP.swift */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -278,6 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B442B96E1B552ADB0088FA0F /* BufferedReader.swift in Sources */,
+				B4E047571B56E3E4001C8BFF /* NSRunLoop.swift in Sources */,
 				B4E047551B5667DA001C8BFF /* Buffer.swift in Sources */,
 				B48F05B11B558C6B00FFECE8 /* NNTP.swift in Sources */,
 				B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */,
@@ -291,6 +298,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B442B94D1B5519E60088FA0F /* NewsReaderTests.swift in Sources */,
+				B4E047591B56E68E001C8BFF /* NNTPTests.swift in Sources */,
 				B442B9701B553EA00088FA0F /* BufferedReaderTests.swift in Sources */,
 				B4E047531B565079001C8BFF /* FifoQueueTests.swift in Sources */,
 			);

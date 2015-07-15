@@ -173,175 +173,6 @@ public enum NNTPCommand {
     case AuthinfoPass(String)
     case AuthinfoSASL
 
-    /*
-    private struct Description {
-        let command : String?
-        let validCodes : [UInt16]
-        let requiredCapability : NNTPCapability?
-        let isMultiline : Bool
-        let isPipelineable : Bool
-    }
-
-    static private let descriptions : [NNTPCommand: NNTPCommand.Description] = [
-        .Connect: Description(command: nil,
-            validCodes: [ 200, 201, 400, 502 ],
-            requiredCapability: nil,
-            isMultiline: false,
-            isPipelineable: false),
-        .Capabilities: Description(command: "CAPABILITIES",
-            validCodes: [ 101 ],
-            requiredCapability: nil,
-            isMultiline: true,
-            isPipelineable: false),
-        .ModeReader: Description(command: "MODE READER",
-            validCodes: [ 200, 201, 502 ],
-            requiredCapability: nil,
-            isMultiline: false,
-            isPipelineable: false),
-        .Quit: Description(command: "QUIT",
-            validCodes: [ 205 ],
-            requiredCapability: nil,
-            isMultiline: false,
-            isPipelineable: false),
-
-        .Group: Description(command: "GROUP",
-            validCodes: [ 211, 411 ],
-            requiredCapability: .Reader,
-            isMultiline: false,
-            isPipelineable: true),
-        .ListGroup: Description(command: "LISTGROUP",
-            validCodes: [ 211, 411, 412 ],
-            requiredCapability: .Reader,
-            isMultiline: true,
-            isPipelineable: true),
-        .Last: Description(command: "LAST",
-            validCodes: [ 223, 412, 420, 422 ],
-            requiredCapability: .Reader,
-            isMultiline: false,
-            isPipelineable: true),
-        .Next: Description(command: "NEXT",
-            validCodes: [ 223, 412, 420, 421 ],
-            requiredCapability: .Reader,
-            isMultiline: false,
-            isPipelineable: true),
-
-        .Article: Description(command: "ARTICLE",
-            validCodes: [ 220, 412, 420, 423, 430 ],
-            requiredCapability: .Reader,
-            isMultiline: true,
-            isPipelineable: true),
-        .Head: Description(command: "HEAD",
-            validCodes: [ 221, 412, 420, 423, 430 ],
-            requiredCapability: nil,
-            isMultiline: true,
-            isPipelineable: true),
-        .Body: Description(command: "BODY",
-            validCodes: [ 222, 412, 420, 423, 430 ],
-            requiredCapability: .Reader,
-            isMultiline: true,
-            isPipelineable: true),
-        .Stat: Description(command: "STAT",
-            validCodes: [ 223, 412, 420, 423, 430 ],
-            requiredCapability: nil,
-            isMultiline: true,
-            isPipelineable: true),
-
-        .Post: Description(command: "POST",
-            validCodes: [ 340, 440 ],
-            requiredCapability: .Post,
-            isMultiline: false,
-            isPipelineable: false),
-        .Ihave: Description(command: "IHAVE",
-            validCodes: [ 335, 435, 436 ],
-            requiredCapability: .Ihave,
-            isMultiline: false,
-            isPipelineable: false),
-
-        .Date: Description(command: "DATE",
-            validCodes: [ 111 ],
-            requiredCapability: .Reader,
-            isMultiline: false,
-            isPipelineable: true),
-        .Help: Description(command: "HELP",
-            validCodes: [ 100 ],
-            requiredCapability: nil,
-            isMultiline: true,
-            isPipelineable: true),
-        .NewGroups: Description(command: "NEWGROUPS",
-            validCodes: [ 231 ],
-            requiredCapability: .Reader,
-            isMultiline: true,
-            isPipelineable: true),
-        .NewNews: Description(command: "NEWNEWS",
-            validCodes: [ 230 ],
-            requiredCapability: .NewNews,
-            isMultiline: true,
-            isPipelineable: true),
-
-        .ListActive: Description(command: "LIST ACTIVE",
-            validCodes: [ 215 ],
-            requiredCapability: .Reader,
-            isMultiline: true,
-            isPipelineable: true),
-        .ListActiveTimes: Description(command: "LIST ACTIVE.TIMES",
-            validCodes: [ 215 ],
-            requiredCapability: .ListActiveTimes,
-            isMultiline: true,
-            isPipelineable: true),
-        .ListDistribPats: Description(command: "LIST DISTRIB.PATS",
-            validCodes: [ 215 ],
-            requiredCapability: .ListDistribPats,
-            isMultiline: true,
-            isPipelineable: true),
-        .ListNewsgroups: Description(command: "LIST NEWSGROUPS",
-            validCodes: [ 215 ],
-            requiredCapability: .Reader,
-            isMultiline: true,
-            isPipelineable: true),
-
-        .Over: Description(command: "OVER",
-            validCodes: [ 224, 412, 420, 423, 430 ],
-            requiredCapability: .Over,
-            isMultiline: true,
-            isPipelineable: true),
-        .ListOverviewFmt: Description(command: "LIST OVERVIEW.FMT",
-            validCodes: [ 215 ],
-            requiredCapability: .Over,
-            isMultiline: true,
-            isPipelineable: true),
-        .Hdr: Description(command: "HDR",
-            validCodes: [ 225, 412, 420, 423, 430 ],
-            requiredCapability: .Hdr,
-            isMultiline: true,
-            isPipelineable: true),
-        .ListHeaders: Description(command: "LIST HEADERS",
-            validCodes: [ 215 ],
-            requiredCapability: .Hdr,
-            isMultiline: true,
-            isPipelineable: true),
-
-        .AuthinfoUser: Description(command: "AUTHINFO USER",
-            validCodes: [ 281, 381, 481, 482, 502 ],
-            requiredCapability: .AuthinfoUser,
-            isMultiline: false,
-            isPipelineable: false),
-        .AuthinfoPass: Description(command: "AUTHINFO PASS",
-            validCodes: [ 281, 481, 482, 502],
-            requiredCapability: .AuthinfoUser,
-            isMultiline: false,
-            isPipelineable: false),
-        .AuthinfoSASL: Description(command: "AUTHINFO SASL",
-            validCodes: [ 281, 283, 383, 481, 482, 402 ],
-            requiredCapability: .AuthinfoSASL,
-            isMultiline: false,
-            isPipelineable: false)
-    ]
-
-    private var description : Description {
-        return NNTPCommand.descriptions[self]!
-    }
-    */
-
     func pack(buffer: Buffer) {
         switch (self) {
         case .Connect:
@@ -503,6 +334,33 @@ public enum NNTPCommand {
 
         buffer.appendString("\r\n")
     }
+
+    var isMultiline : Bool {
+        switch (self) {
+        case .Connect, .ModeReader, .Quit, .Group(_), .Last, .Next, .Post, .PostBody(_), .Ihave(_),
+        .Date, .AuthinfoUser(_), .AuthinfoPass(_), .AuthinfoSASL:
+            return false
+        default:
+            return true
+        }
+    }
+}
+
+private class NNTPReply {
+    let command : NNTPCommand
+
+    var code : UInt16?
+    var message: String?
+
+    var payload : [String]?
+
+    init(command: NNTPCommand) {
+        self.command = command
+
+        if self.command.isMultiline {
+            self.payload = []
+        }
+    }
 }
 
 public class NNTP {
@@ -510,19 +368,62 @@ public class NNTP {
     private let ostream : NSOutputStream
     private let reader : BufferedReader
     private let pendingCommands = FifoQueue<NNTPCommand>()
-    private let sentCommands = FifoQueue<NNTPCommand>()
+    private let sentCommands = FifoQueue<NNTPReply>()
     private let outBuffer = Buffer(capacity: 2 << 20)
 
     private var login : String?
     private var password : String?
 
-    init?(host: String, port: Int, ssl: Bool) {
+    private class Delegate : NSObject, NSStreamDelegate {
+        weak var nntp : NNTP?
+
+        init(nntp: NNTP) {
+            self.nntp = nntp
+            super.init()
+        }
+
+        @objc func stream(stream: NSStream, handleEvent eventCode: NSStreamEvent) {
+            switch (eventCode) {
+            case NSStreamEvent.None:
+                break
+
+            case NSStreamEvent.OpenCompleted:
+                print("Opened")
+                break
+
+            case NSStreamEvent.HasBytesAvailable:
+                print("Read")
+                do {
+                    try self.nntp?.read()
+                } catch {
+                }
+
+            case NSStreamEvent.HasSpaceAvailable:
+                print("Can write")
+                self.nntp?.flush()
+
+            case NSStreamEvent.ErrorOccurred:
+                break
+
+            case NSStreamEvent.EndEncountered:
+                break
+
+            default:
+                break
+            }
+        }
+    }
+
+    private var delegate : Delegate?
+
+    public init?(host: String, port: Int, ssl: Bool) {
         var istream : NSInputStream?
         var ostream : NSOutputStream?
 
         NSStream.getStreamsToHostWithName(host, port: port,
             inputStream: &istream, outputStream: &ostream)
 
+        self.delegate = nil
         if let ins = istream, let ous = ostream {
             self.istream = ins
             self.ostream = ous
@@ -534,12 +435,15 @@ public class NNTP {
             return nil
         }
 
+        self.delegate = Delegate(nntp: self)
+        self.istream.delegate = self.delegate!
+        self.ostream.delegate = self.delegate!
         if ssl {
             self.istream.setProperty(NSStreamSocketSecurityLevelNegotiatedSSL,
                 forKey: NSStreamSocketSecurityLevelKey)
         }
 
-        self.sentCommands.push(NNTPCommand.Connect)
+        self.sentCommands.push(NNTPReply(command: NNTPCommand.Connect))
     }
 
     public func setCredentials(login: String?, password: String?) {
@@ -559,7 +463,43 @@ public class NNTP {
 
     private func flush() {
         while !self.pendingCommands.isEmpty && self.outBuffer.length < 4096 {
-            self.pendingCommands.pop()!.pack(self.outBuffer)
+            let cmd = self.pendingCommands.pop()!
+
+            cmd.pack(self.outBuffer)
+            self.sentCommands.push(NNTPReply(command: cmd))
+        }
+
+        self.outBuffer.read() {
+            (buffer, length) in
+
+            switch (self.ostream.write(UnsafePointer<UInt8>(buffer), maxLength: length)) {
+            case let e where e >= 0:
+                return e
+
+            default:
+                return 0
+            }
+        }
+    }
+
+    private func read() throws {
+        while let line = try self.reader.readLine() {
+            print("read line: \(line)")
+            if let reply = self.sentCommands.head {
+                if reply.code != nil {
+                    if line == "." {
+                        self.sentCommands.pop()
+                        print(reply.message!)
+                    } else {
+                        reply.payload?.append(line)
+                    }
+                } else {
+                    reply.code = 100
+                    reply.message = line
+                }
+            } else {
+                assert (false)
+            }
         }
     }
 

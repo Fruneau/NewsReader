@@ -18,34 +18,34 @@ private class FifoNode<T> {
 }
 
 public class FifoQueue<T> {
-    private var head : FifoNode<T>?
-    private var tail : FifoNode<T>?
+    private var headNode : FifoNode<T>?
+    private var tailNode : FifoNode<T>?
 
     public init() {
     }
 
     public var isEmpty : Bool {
-        return self.head == nil
+        return self.headNode == nil
     }
 
     public func push(object: T) {
         let node = FifoNode(object: object)
 
-        if self.head == nil {
-            self.head = node
-            self.tail = node
+        if self.headNode == nil {
+            self.headNode = node
+            self.tailNode = node
         } else {
-            self.tail!.next = node
-            self.tail = node
+            self.tailNode!.next = node
+            self.tailNode = node
         }
     }
 
     public func pop() -> T? {
-        if let node = self.head {
-            self.head = node.next
+        if let node = self.headNode {
+            self.headNode = node.next
 
-            if self.head == nil {
-                self.tail = nil
+            if self.headNode == nil {
+                self.tailNode = nil
             }
             return node.object
         }
@@ -53,7 +53,15 @@ public class FifoQueue<T> {
     }
 
     public func clear() {
-        self.head = nil
-        self.tail = nil
+        self.headNode = nil
+        self.tailNode = nil
+    }
+
+    public var head : T? {
+        return self.headNode?.object
+    }
+
+    public var tail : T? {
+        return self.tailNode?.object
     }
 }

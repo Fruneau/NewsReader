@@ -38,8 +38,11 @@ public class BufferedReader {
         var remain = minSize
 
         while remain > 0 {
+            if !self.stream.hasBytesAvailable {
+                throw Error.NotEnoughBytes
+            }
             try self.buffer.append(remain) {
-                (buffer: UnsafeMutablePointer<Void>, length: Int) throws -> Int in
+                (buffer, length) throws in
 
                 switch (self.stream.read(UnsafeMutablePointer<UInt8>(buffer), maxLength: length)) {
                 case 0:
@@ -68,20 +71,22 @@ public class BufferedReader {
             var hasReply = false
 
             self.buffer.read() {
-                (buffer: UnsafePointer<Void>, maxLength: Int) -> Int in
+                (buffer, maxLength) in
 
-                let end = memchr(buffer, 0x0a, maxLength)
+                let end = memchr(buffer, 0x0d, maxLength)
 
                 if end != nil {
                     let len = end - buffer
 
-                    res = NSString(bytes: buffer, length: len, encoding: NSUTF8StringEncoding) as String?
-                    hasReply = true
-                    return len + 1
-                }
-
-                if self.stream.streamStatus == NSStreamStatus.AtEnd {
-                    if maxLength > 0 {
+                    if len + 1 < maxLength {
+                        res = NSString(bytes: buffer, length: len, encoding: NSUTF8StringEncoding) as String?
+                        hasReply = true
+                        return len + 2
+                    }
+                } else if self.stream.streamStatus == NSStreamStatus.AtEnd {
+                    if end != nil {
+                        res = NSString(bytes: buffer, length: maxLength - 1, encoding: NSUTF8StringEncoding) as String?
+                    } else if maxLength > 0 {
                         res = NSString(bytes: buffer, length: maxLength, encoding: NSUTF8StringEncoding) as String?
                     }
                     hasReply = true
