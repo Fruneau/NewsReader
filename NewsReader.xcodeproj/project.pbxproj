@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 47;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,6 +12,13 @@
 		B442B9421B5519E60088FA0F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B442B9401B5519E60088FA0F /* MainMenu.xib */; };
 		B442B94D1B5519E60088FA0F /* NewsReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B94C1B5519E60088FA0F /* NewsReaderTests.swift */; };
 		B442B9581B5519E60088FA0F /* NewsReaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B9571B5519E60088FA0F /* NewsReaderUITests.swift */; };
+		B442B9661B551B9E0088FA0F /* NSScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B9651B551B9E0088FA0F /* NSScanner.swift */; };
+		B442B96E1B552ADB0088FA0F /* BufferedReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B96D1B552ADB0088FA0F /* BufferedReader.swift */; };
+		B442B9701B553EA00088FA0F /* BufferedReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */; };
+		B48F05B11B558C6B00FFECE8 /* NNTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B48F05B01B558C6B00FFECE8 /* NNTP.swift */; };
+		B4E047511B564CD3001C8BFF /* FifoQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047501B564CD3001C8BFF /* FifoQueue.swift */; };
+		B4E047531B565079001C8BFF /* FifoQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047521B565079001C8BFF /* FifoQueueTests.swift */; };
+		B4E047551B5667DA001C8BFF /* Buffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047541B5667DA001C8BFF /* Buffer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +50,13 @@
 		B442B9531B5519E60088FA0F /* NewsReaderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NewsReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B442B9571B5519E60088FA0F /* NewsReaderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsReaderUITests.swift; sourceTree = "<group>"; };
 		B442B9591B5519E60088FA0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B442B9651B551B9E0088FA0F /* NSScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSScanner.swift; sourceTree = "<group>"; };
+		B442B96D1B552ADB0088FA0F /* BufferedReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BufferedReader.swift; sourceTree = "<group>"; };
+		B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BufferedReaderTests.swift; sourceTree = "<group>"; };
+		B48F05B01B558C6B00FFECE8 /* NNTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NNTP.swift; sourceTree = "<group>"; };
+		B4E047501B564CD3001C8BFF /* FifoQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueue.swift; sourceTree = "<group>"; };
+		B4E047521B565079001C8BFF /* FifoQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueueTests.swift; sourceTree = "<group>"; };
+		B4E047541B5667DA001C8BFF /* Buffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Buffer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				B442B93C1B5519E60088FA0F /* AppDelegate.swift */,
+				B442B9711B5541D00088FA0F /* Tools */,
 				B442B93E1B5519E60088FA0F /* Assets.xcassets */,
 				B442B9401B5519E60088FA0F /* MainMenu.xib */,
 				B442B9431B5519E60088FA0F /* Info.plist */,
@@ -105,6 +120,8 @@
 			isa = PBXGroup;
 			children = (
 				B442B94C1B5519E60088FA0F /* NewsReaderTests.swift */,
+				B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */,
+				B4E047521B565079001C8BFF /* FifoQueueTests.swift */,
 				B442B94E1B5519E60088FA0F /* Info.plist */,
 			);
 			path = NewsReaderTests;
@@ -117,6 +134,18 @@
 				B442B9591B5519E60088FA0F /* Info.plist */,
 			);
 			path = NewsReaderUITests;
+			sourceTree = "<group>";
+		};
+		B442B9711B5541D00088FA0F /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+				B442B9651B551B9E0088FA0F /* NSScanner.swift */,
+				B442B96D1B552ADB0088FA0F /* BufferedReader.swift */,
+				B4E047541B5667DA001C8BFF /* Buffer.swift */,
+				B48F05B01B558C6B00FFECE8 /* NNTP.swift */,
+				B4E047501B564CD3001C8BFF /* FifoQueue.swift */,
+			);
+			name = Tools;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -198,7 +227,7 @@
 				};
 			};
 			buildConfigurationList = B442B9341B5519E60088FA0F /* Build configuration list for PBXProject "NewsReader" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 6.3";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -248,7 +277,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B442B96E1B552ADB0088FA0F /* BufferedReader.swift in Sources */,
+				B4E047551B5667DA001C8BFF /* Buffer.swift in Sources */,
+				B48F05B11B558C6B00FFECE8 /* NNTP.swift in Sources */,
 				B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */,
+				B4E047511B564CD3001C8BFF /* FifoQueue.swift in Sources */,
+				B442B9661B551B9E0088FA0F /* NSScanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +291,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B442B94D1B5519E60088FA0F /* NewsReaderTests.swift in Sources */,
+				B442B9701B553EA00088FA0F /* BufferedReaderTests.swift in Sources */,
+				B4E047531B565079001C8BFF /* FifoQueueTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -470,6 +506,7 @@
 				B442B95E1B5519E60088FA0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B442B95F1B5519E60088FA0F /* Build configuration list for PBXNativeTarget "NewsReaderTests" */ = {
 			isa = XCConfigurationList;
@@ -478,6 +515,7 @@
 				B442B9611B5519E60088FA0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B442B9621B5519E60088FA0F /* Build configuration list for PBXNativeTarget "NewsReaderUITests" */ = {
 			isa = XCConfigurationList;
@@ -486,6 +524,7 @@
 				B442B9641B5519E60088FA0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
