@@ -335,6 +335,21 @@ public enum NNTPCommand {
         buffer.appendString("\r\n")
     }
 
+    var description : String {
+        let buffer = Buffer(capacity: 1024)
+        var out : NSString?
+
+        self.pack(buffer)
+        buffer.read() {
+            (buffer, length) in
+
+            out = NSString(bytes: buffer, length: length - 2, encoding: NSUTF8StringEncoding)
+            return length
+        }
+
+        return out! as String
+    }
+
     var isMultiline : Bool {
         switch (self) {
         case .Connect, .ModeReader, .Quit, .Group(_), .Last, .Next, .Post, .PostBody(_), .Ihave(_),
@@ -363,6 +378,13 @@ private class NNTPReply {
     }
 }
 
+public enum NNTPEvent {
+    case Connected
+    case Disconnected
+    case Authenticated
+    case Ready
+}
+
 public class NNTP {
     private let istream : NSInputStream
     private let ostream : NSOutputStream
@@ -374,7 +396,23 @@ public class NNTP {
     private var login : String?
     private var password : String?
 
-    private class Delegate : NSObject, NSStreamDelegate {
+    /* {{{ Connnection delegate */
+
+    public class Delegate {
+        public init() {
+        }
+
+        public func nntp(nntp: NNTP, handleEvent event: NNTPEvent) {
+            preconditionFailure("this method must be overridden")
+        }
+    }
+
+    public weak var delegate : Delegate?
+
+    /* }}} */
+    /* {{{ Stream delegate */
+
+    private class StreamDelegate : NSObject, NSStreamDelegate {
         weak var nntp : NNTP?
 
         init(nntp: NNTP) {
@@ -388,25 +426,26 @@ public class NNTP {
                 break
 
             case NSStreamEvent.OpenCompleted:
-                print("Opened")
                 break
 
             case NSStreamEvent.HasBytesAvailable:
-                print("Read")
                 do {
                     try self.nntp?.read()
                 } catch {
                 }
 
             case NSStreamEvent.HasSpaceAvailable:
-                print("Can write")
                 self.nntp?.flush()
 
             case NSStreamEvent.ErrorOccurred:
-                break
+                self.nntp?.delegate?.nntp(self.nntp!, handleEvent: .Disconnected)
 
             case NSStreamEvent.EndEncountered:
-                break
+                if self.nntp?.ostream == stream {
+                    print("out end \(stream.streamStatus.rawValue)")
+                } else {
+                    print("in end \(stream.streamStatus.rawValue)")
+                }
 
             default:
                 break
@@ -414,7 +453,9 @@ public class NNTP {
         }
     }
 
-    private var delegate : Delegate?
+    private var streamDelegate : StreamDelegate?
+
+    /* }}} */
 
     public init?(host: String, port: Int, ssl: Bool) {
         var istream : NSInputStream?
@@ -423,7 +464,6 @@ public class NNTP {
         NSStream.getStreamsToHostWithName(host, port: port,
             inputStream: &istream, outputStream: &ostream)
 
-        self.delegate = nil
         if let ins = istream, let ous = ostream {
             self.istream = ins
             self.ostream = ous
@@ -435,9 +475,9 @@ public class NNTP {
             return nil
         }
 
-        self.delegate = Delegate(nntp: self)
-        self.istream.delegate = self.delegate!
-        self.ostream.delegate = self.delegate!
+        self.streamDelegate = StreamDelegate(nntp: self)
+        self.istream.delegate = self.streamDelegate!
+        self.ostream.delegate = self.streamDelegate!
         if ssl {
             self.istream.setProperty(NSStreamSocketSecurityLevelNegotiatedSSL,
                 forKey: NSStreamSocketSecurityLevelKey)
@@ -461,41 +501,57 @@ public class NNTP {
         self.ostream.scheduleInRunLoop(runLoop, forMode: mode)
     }
 
-    private func flush() {
-        while !self.pendingCommands.isEmpty && self.outBuffer.length < 4096 {
-            let cmd = self.pendingCommands.pop()!
+    private func commandProcessed(reply: NNTPReply) {
+        print("command \(reply.command) terminated")
+        print(reply.message!)
 
-            cmd.pack(self.outBuffer)
-            self.sentCommands.push(NNTPReply(command: cmd))
-        }
+        switch (reply.command) {
+        case .Connect:
+            self.delegate?.nntp(self, handleEvent: .Connected)
+            self.sendCommand(.ModeReader)
 
-        self.outBuffer.read() {
-            (buffer, length) in
-
-            switch (self.ostream.write(UnsafePointer<UInt8>(buffer), maxLength: length)) {
-            case let e where e >= 0:
-                return e
-
-            default:
-                return 0
+        case .ModeReader:
+            if let login = self.login {
+                self.sendCommand(.AuthinfoUser(login))
+            } else {
+                self.delegate?.nntp(self, handleEvent: .Ready)
             }
+
+        case .AuthinfoUser(_):
+            if let password = self.password {
+                self.sendCommand(.AuthinfoPass(password))
+            } else {
+                self.delegate?.nntp(self, handleEvent: .Authenticated)
+                self.delegate?.nntp(self, handleEvent: .Ready)
+            }
+
+        case .AuthinfoPass(_):
+            self.delegate?.nntp(self, handleEvent: .Authenticated)
+            self.delegate?.nntp(self, handleEvent: .Ready)
+
+        default:
+            break
         }
     }
 
     private func read() throws {
         while let line = try self.reader.readLine() {
-            print("read line: \(line)")
             if let reply = self.sentCommands.head {
                 if reply.code != nil {
                     if line == "." {
                         self.sentCommands.pop()
-                        print(reply.message!)
+                        commandProcessed(reply)
                     } else {
                         reply.payload?.append(line)
                     }
                 } else {
                     reply.code = 100
                     reply.message = line
+
+                    if !reply.command.isMultiline {
+                        self.sentCommands.pop()
+                        self.commandProcessed(reply)
+                    }
                 }
             } else {
                 assert (false)
@@ -503,6 +559,44 @@ public class NNTP {
         }
     }
 
+    private func flush() {
+        if !self.ostream.hasSpaceAvailable {
+            print("no space available")
+            return
+        }
+
+        while !self.pendingCommands.isEmpty && self.outBuffer.length < 4096 {
+            let cmd = self.pendingCommands.pop()!
+
+            cmd.pack(self.outBuffer)
+            print("cmd packed in out buf \(cmd.description)")
+            self.sentCommands.push(NNTPReply(command: cmd))
+        }
+
+        self.outBuffer.read() {
+            (buffer, length) in
+
+            if length == 0 {
+                return  0
+            }
+
+            print("writing on buffer")
+            switch (self.ostream.write(UnsafePointer<UInt8>(buffer), maxLength: length)) {
+            case let e where e > 0:
+                print("sent \(NSString(bytes: buffer, length: e, encoding: NSUTF8StringEncoding)!) \(e)")
+                return e
+
+            case let e where e < 0:
+                print("cannot send message \(e) (\(length))")
+                return 0
+
+            default:
+                print("no space on buffer")
+                return 0
+            }
+        }
+    }
+    
     public func sendCommand(command: NNTPCommand) {
         self.pendingCommands.push(command)
         self.flush()

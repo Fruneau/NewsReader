@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B42372711B59951C0046B987 /* NNTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42372701B59951C0046B987 /* NNTP.swift */; };
 		B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B93C1B5519E60088FA0F /* AppDelegate.swift */; };
 		B442B93F1B5519E60088FA0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B442B93E1B5519E60088FA0F /* Assets.xcassets */; };
 		B442B9421B5519E60088FA0F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B442B9401B5519E60088FA0F /* MainMenu.xib */; };
@@ -15,7 +16,6 @@
 		B442B9661B551B9E0088FA0F /* NSScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B9651B551B9E0088FA0F /* NSScanner.swift */; };
 		B442B96E1B552ADB0088FA0F /* BufferedReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B96D1B552ADB0088FA0F /* BufferedReader.swift */; };
 		B442B9701B553EA00088FA0F /* BufferedReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */; };
-		B48F05B11B558C6B00FFECE8 /* NNTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B48F05B01B558C6B00FFECE8 /* NNTP.swift */; };
 		B4E047511B564CD3001C8BFF /* FifoQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047501B564CD3001C8BFF /* FifoQueue.swift */; };
 		B4E047531B565079001C8BFF /* FifoQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047521B565079001C8BFF /* FifoQueueTests.swift */; };
 		B4E047551B5667DA001C8BFF /* Buffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047541B5667DA001C8BFF /* Buffer.swift */; };
@@ -41,6 +41,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B42372701B59951C0046B987 /* NNTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NNTP.swift; sourceTree = "<group>"; };
 		B442B9391B5519E60088FA0F /* NewsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NewsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B442B93C1B5519E60088FA0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B442B93E1B5519E60088FA0F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -55,7 +56,6 @@
 		B442B9651B551B9E0088FA0F /* NSScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSScanner.swift; sourceTree = "<group>"; };
 		B442B96D1B552ADB0088FA0F /* BufferedReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BufferedReader.swift; sourceTree = "<group>"; };
 		B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BufferedReaderTests.swift; sourceTree = "<group>"; };
-		B48F05B01B558C6B00FFECE8 /* NNTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NNTP.swift; sourceTree = "<group>"; };
 		B4E047501B564CD3001C8BFF /* FifoQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueue.swift; sourceTree = "<group>"; };
 		B4E047521B565079001C8BFF /* FifoQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueueTests.swift; sourceTree = "<group>"; };
 		B4E047541B5667DA001C8BFF /* Buffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Buffer.swift; sourceTree = "<group>"; };
@@ -149,7 +149,7 @@
 				B4E047541B5667DA001C8BFF /* Buffer.swift */,
 				B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */,
 				B4E047501B564CD3001C8BFF /* FifoQueue.swift */,
-				B48F05B01B558C6B00FFECE8 /* NNTP.swift */,
+				B42372701B59951C0046B987 /* NNTP.swift */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -285,8 +285,8 @@
 			files = (
 				B442B96E1B552ADB0088FA0F /* BufferedReader.swift in Sources */,
 				B4E047571B56E3E4001C8BFF /* NSRunLoop.swift in Sources */,
+				B42372711B59951C0046B987 /* NNTP.swift in Sources */,
 				B4E047551B5667DA001C8BFF /* Buffer.swift in Sources */,
-				B48F05B11B558C6B00FFECE8 /* NNTP.swift in Sources */,
 				B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */,
 				B4E047511B564CD3001C8BFF /* FifoQueue.swift in Sources */,
 				B442B9661B551B9E0088FA0F /* NSScanner.swift in Sources */,

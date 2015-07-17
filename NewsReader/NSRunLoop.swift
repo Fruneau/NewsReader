@@ -13,7 +13,6 @@ public extension NSRunLoop {
         var cond = condition()
 
         while !cond && date.compare(NSDate()) == .OrderedDescending {
-            print("run \(date)")
             self.runMode(NSDefaultRunLoopMode, beforeDate: date)
 
             cond = condition()
