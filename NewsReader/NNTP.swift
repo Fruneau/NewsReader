@@ -425,6 +425,13 @@ public enum NNTPEvent {
     case ServerProtocolError
 }
 
+public enum NNTPStatus {
+    case Disconnected
+    case Connecting
+    case Connected
+    case Ready
+}
+
 public class NNTP {
     private let istream : NSInputStream
     private let ostream : NSOutputStream
@@ -478,9 +485,11 @@ public class NNTP {
                 self.nntp?.flush()
 
             case NSStreamEvent.ErrorOccurred:
+                self.nntp?.status = .Disconnected
                 self.nntp?.delegate?.nntp(self.nntp!, handleEvent: .Disconnected)
 
             case NSStreamEvent.EndEncountered:
+                self.nntp?.status = .Disconnected
                 if self.nntp?.ostream == stream {
                     print("out end \(stream.streamStatus.rawValue)")
                 } else {
@@ -526,6 +535,32 @@ public class NNTP {
         self.sentCommands.push(NNTPReply(command: NNTPCommand.Connect))
     }
 
+    public convenience init?(url: NSURL) {
+        var ssl = false
+        var port = 465
+
+        switch (url.scheme) {
+        case "news", "nntp":
+            break
+        case "nntps":
+            port = 563
+            ssl = true
+        default:
+            return nil
+        }
+
+        if url.host == nil {
+            return nil
+        }
+
+        if let urlPort = url.port {
+            port = urlPort.integerValue
+        }
+
+        self.init(host: url.host!, port: port, ssl: ssl)
+        self.setCredentials(url.user, password: url.password)
+    }
+
     public func setCredentials(login: String?, password: String?) {
         self.login = login
         self.password = password
@@ -549,6 +584,7 @@ public class NNTP {
     private func commandProcessed(reply: NNTPReply) {
         switch (reply.command) {
         case .Connect:
+            self.status = .Connected
             self.delegate?.nntp(self, handleEvent: .Connected)
             self.sendCommand(.ModeReader)
 
@@ -564,11 +600,13 @@ public class NNTP {
                 self.sendCommand(.AuthinfoPass(password))
             } else {
                 self.delegate?.nntp(self, handleEvent: .Authenticated)
+                self.status = .Ready
                 self.delegate?.nntp(self, handleEvent: .Ready)
             }
 
         case .AuthinfoPass(_):
             self.delegate?.nntp(self, handleEvent: .Authenticated)
+            self.status = .Ready
             self.delegate?.nntp(self, handleEvent: .Ready)
 
         default:
@@ -681,5 +719,10 @@ public class NNTP {
     public func sendCommand(command: NNTPCommand) {
         self.pendingCommands.push(command)
         self.flush()
+    }
+
+    private var status : NNTPStatus = .Disconnected
+    public var nntpStatus : NNTPStatus {
+        return status
     }
 }

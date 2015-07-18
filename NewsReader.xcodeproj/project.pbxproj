@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B42372711B59951C0046B987 /* NNTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42372701B59951C0046B987 /* NNTP.swift */; };
+		B42372801B5A6A600046B987 /* NSData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B423727F1B5A6A600046B987 /* NSData.swift */; };
 		B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B93C1B5519E60088FA0F /* AppDelegate.swift */; };
 		B442B93F1B5519E60088FA0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B442B93E1B5519E60088FA0F /* Assets.xcassets */; };
 		B442B9421B5519E60088FA0F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B442B9401B5519E60088FA0F /* MainMenu.xib */; };
@@ -42,6 +43,7 @@
 
 /* Begin PBXFileReference section */
 		B42372701B59951C0046B987 /* NNTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NNTP.swift; sourceTree = "<group>"; };
+		B423727F1B5A6A600046B987 /* NSData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSData.swift; sourceTree = "<group>"; };
 		B442B9391B5519E60088FA0F /* NewsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NewsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B442B93C1B5519E60088FA0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B442B93E1B5519E60088FA0F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */,
 				B4E047501B564CD3001C8BFF /* FifoQueue.swift */,
 				B42372701B59951C0046B987 /* NNTP.swift */,
+				B423727F1B5A6A600046B987 /* NSData.swift */,
 			);
 			name = Tools;
 			sourceTree = "<group>";
@@ -285,6 +288,7 @@
 			files = (
 				B442B96E1B552ADB0088FA0F /* BufferedReader.swift in Sources */,
 				B4E047571B56E3E4001C8BFF /* NSRunLoop.swift in Sources */,
+				B42372801B5A6A600046B987 /* NSData.swift in Sources */,
 				B42372711B59951C0046B987 /* NNTP.swift in Sources */,
 				B4E047551B5667DA001C8BFF /* Buffer.swift in Sources */,
 				B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */,
