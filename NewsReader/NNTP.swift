@@ -173,7 +173,7 @@ public enum NNTPCommand {
     case AuthinfoPass(String)
     case AuthinfoSASL
 
-    func pack(buffer: Buffer) {
+    private func pack(buffer: Buffer, forDisplay: Bool) {
         switch (self) {
         case .Connect:
             return
@@ -247,7 +247,11 @@ public enum NNTPCommand {
 
         case .PostBody(let body):
             buffer.appendString(body)
-            buffer.appendString("\r\n.\r\n")
+            if forDisplay {
+                buffer.appendString("\r\n.")
+            } else {
+                buffer.appendString("\r\n.\r\n")
+            }
 
         case .Ihave(let msgid):
             buffer.appendString("IHAVE \(msgid)")
@@ -325,32 +329,42 @@ public enum NNTPCommand {
             buffer.appendString("AUTHINFO USER \(login)")
 
         case .AuthinfoPass(let password):
-            buffer.appendString("AUTHINFO PASS \(password)")
+            if forDisplay {
+                buffer.appendString("AUTHINFO PASS ****")
+            } else {
+                buffer.appendString("AUTHINFO PASS \(password)")
+            }
 
         case .AuthinfoSASL:
             assert (false)
             return
         }
 
-        buffer.appendString("\r\n")
+        if !forDisplay {
+            buffer.appendString("\r\n")
+        }
     }
 
-    var description : String {
+    private func pack(buffer: Buffer) {
+        return pack(buffer, forDisplay: false)
+    }
+
+    public var description : String {
         let buffer = Buffer(capacity: 1024)
         var out : NSString?
 
-        self.pack(buffer)
+        self.pack(buffer, forDisplay: true)
         buffer.read() {
             (buffer, length) in
 
-            out = NSString(bytes: buffer, length: length - 2, encoding: NSUTF8StringEncoding)
+            out = NSString(bytes: buffer, length: length, encoding: NSUTF8StringEncoding)
             return length
         }
 
         return out! as String
     }
 
-    var isMultiline : Bool {
+    private var isMultiline : Bool {
         switch (self) {
         case .Connect, .ModeReader, .Quit, .Group(_), .Last, .Next, .Post, .PostBody(_), .Ihave(_),
         .Date, .AuthinfoUser(_), .AuthinfoPass(_), .AuthinfoSASL:
@@ -361,12 +375,35 @@ public enum NNTPCommand {
     }
 }
 
+private struct NNTPResponse {
+    private enum Status : Character {
+        case Information = "1"
+        case Completed = "2"
+        case Continue = "3"
+        case Failure = "4"
+        case ProtocolError = "5"
+    }
+
+    private enum Context : Character {
+        case Status = "0"
+        case NewsgroupSelection = "1"
+        case ArticleSelection = "2"
+        case Distribution = "3"
+        case Posting = "4"
+        case Authentication = "8"
+        case Extension = "9"
+    }
+
+    private let status : Status
+    private let context : Context
+    private let code : Character
+    private let message : String
+}
+
 private class NNTPReply {
     let command : NNTPCommand
 
-    var code : UInt16?
-    var message: String?
-
+    var response : NNTPResponse?
     var payload : [String]?
 
     init(command: NNTPCommand) {
@@ -383,6 +420,9 @@ public enum NNTPEvent {
     case Disconnected
     case Authenticated
     case Ready
+
+    case ClientProtocolError
+    case ServerProtocolError
 }
 
 public class NNTP {
@@ -496,15 +536,17 @@ public class NNTP {
         self.ostream.open()
     }
 
+    public func close() {
+        self.istream.close()
+        self.ostream.close()
+    }
+
     public func scheduleInRunLoop(runLoop: NSRunLoop, forMode mode: String) {
         self.istream.scheduleInRunLoop(runLoop, forMode: mode)
         self.ostream.scheduleInRunLoop(runLoop, forMode: mode)
     }
 
     private func commandProcessed(reply: NNTPReply) {
-        print("command \(reply.command) terminated")
-        print(reply.message!)
-
         switch (reply.command) {
         case .Connect:
             self.delegate?.nntp(self, handleEvent: .Connected)
@@ -534,34 +576,78 @@ public class NNTP {
         }
     }
 
+    private func parseResponse(line: String) -> NNTPResponse? {
+        let chars = line.characters
+        var status : NNTPResponse.Status?
+        var context : NNTPResponse.Context?
+        var pos = 0
+
+        if chars.count < 5 {
+            return nil
+        }
+
+        for char in chars {
+            switch (pos) {
+            case 0:
+                status = NNTPResponse.Status(rawValue: char)
+                if status == nil {
+                    return nil
+                }
+            case 1:
+                context = NNTPResponse.Context(rawValue: char)
+                if context == nil {
+                    return nil
+                }
+            case 2:
+                if char < "0" || char > "9" {
+                    return nil
+                }
+                return NNTPResponse(status: status!, context: context!, code: char,
+                    message: (line as NSString).substringFromIndex(4))
+
+            default:
+                return nil
+            }
+            pos++
+        }
+
+        return nil
+    }
+
     private func read() throws {
         while let line = try self.reader.readLine() {
             if let reply = self.sentCommands.head {
-                if reply.code != nil {
+                if reply.response == nil {
+                    reply.response = self.parseResponse(line)
+
+                    if let response = reply.response {
+                        if response.status != .Completed || !reply.command.isMultiline {
+                            self.sentCommands.pop()
+                            self.commandProcessed(reply)
+                        }
+                    } else {
+                        self.delegate?.nntp(self, handleEvent: .ServerProtocolError)
+                        self.close()
+                        return
+                    }
+                } else {
                     if line == "." {
                         self.sentCommands.pop()
                         commandProcessed(reply)
                     } else {
                         reply.payload?.append(line)
                     }
-                } else {
-                    reply.code = 100
-                    reply.message = line
-
-                    if !reply.command.isMultiline {
-                        self.sentCommands.pop()
-                        self.commandProcessed(reply)
-                    }
                 }
             } else {
-                assert (false)
+                self.delegate?.nntp(self, handleEvent: .ServerProtocolError)
+                self.close()
+                return
             }
         }
     }
 
     private func flush() {
         if !self.ostream.hasSpaceAvailable {
-            print("no space available")
             return
         }
 
@@ -569,7 +655,6 @@ public class NNTP {
             let cmd = self.pendingCommands.pop()!
 
             cmd.pack(self.outBuffer)
-            print("cmd packed in out buf \(cmd.description)")
             self.sentCommands.push(NNTPReply(command: cmd))
         }
 
@@ -580,18 +665,14 @@ public class NNTP {
                 return  0
             }
 
-            print("writing on buffer")
             switch (self.ostream.write(UnsafePointer<UInt8>(buffer), maxLength: length)) {
             case let e where e > 0:
-                print("sent \(NSString(bytes: buffer, length: e, encoding: NSUTF8StringEncoding)!) \(e)")
                 return e
 
             case let e where e < 0:
-                print("cannot send message \(e) (\(length))")
                 return 0
 
             default:
-                print("no space on buffer")
                 return 0
             }
         }
