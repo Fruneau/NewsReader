@@ -375,44 +375,29 @@ public enum NNTPCommand {
     }
 }
 
-private struct NNTPResponse {
-    private enum Status : Character {
-        case Information = "1"
-        case Completed = "2"
-        case Continue = "3"
-        case Failure = "4"
-        case ProtocolError = "5"
-    }
-
-    private enum Context : Character {
-        case Status = "0"
-        case NewsgroupSelection = "1"
-        case ArticleSelection = "2"
-        case Distribution = "3"
-        case Posting = "4"
-        case Authentication = "8"
-        case Extension = "9"
-    }
-
-    private let status : Status
-    private let context : Context
-    private let code : Character
-    private let message : String
+public enum NNTPResponseStatus : Character {
+    case Information = "1"
+    case Completed = "2"
+    case Continue = "3"
+    case Failure = "4"
+    case ProtocolError = "5"
 }
 
-private class NNTPReply {
-    let command : NNTPCommand
+public enum NNTPResponseContext : Character {
+    case Status = "0"
+    case NewsgroupSelection = "1"
+    case ArticleSelection = "2"
+    case Distribution = "3"
+    case Posting = "4"
+    case Authentication = "8"
+    case Extension = "9"
+}
 
-    var response : NNTPResponse?
-    var payload : [String]?
-
-    init(command: NNTPCommand) {
-        self.command = command
-
-        if self.command.isMultiline {
-            self.payload = []
-        }
-    }
+public struct NNTPResponse {
+    public let status : NNTPResponseStatus
+    public let context : NNTPResponseContext
+    public let code : Character
+    public let message : String
 }
 
 public enum NNTPEvent {
@@ -432,13 +417,101 @@ public enum NNTPStatus {
     case Ready
 }
 
+public enum NNTPError : ErrorType {
+    case NotConnected
+    case ClientProtocolError(NNTPResponseContext, Character, String)
+    case UnsupportedError(NNTPResponseContext, Character, String)
+    case ServerProtocolError
+    case NoSuchNewsgroup /* Error 411 */
+    case NoNewsgroupSelected /* Error 412 */
+    case CurrentArticleNumberIsInvalid /* Error 420 */
+    case NoNextArticleInGroup /* Error 421 */
+    case NoPreviousArticleInGroup /* Error 422 */
+    case NoArticleWithThatNumber /* Error 423 */
+    case NoArticleWithThatMsgId /* Error 430 */
+    case ArticleNotWanted /* Error 435 */
+    case TransferTemporaryFailure /* Error 436 */
+    case TransferPermanentFailure /* Error 437 */
+    case PostingNotPermitted /* Error 440 */
+    case PostingFailed /* Error 441 */
+
+    private init?(response: NNTPResponse) {
+        switch ((response.status, response.context, response.code, response.message)) {
+        case (.ProtocolError, let context, let code, let message):
+            self = .ClientProtocolError(context, code, message)
+
+        case (.Failure, .NewsgroupSelection, "1", _):
+            self = .NoSuchNewsgroup
+
+        case (.Failure, .NewsgroupSelection, "2", _):
+            self = .NoNewsgroupSelected
+
+        case (.Failure, .ArticleSelection, "0", _):
+            self = .CurrentArticleNumberIsInvalid
+
+        case (.Failure, .ArticleSelection, "1", _):
+            self = .NoNextArticleInGroup
+
+        case (.Failure, .ArticleSelection, "2", _):
+            self = .NoPreviousArticleInGroup
+
+        case (.Failure, .ArticleSelection, "3", _):
+            self = .NoArticleWithThatNumber
+
+        case (.Failure, .Distribution, "0", _):
+            self = .NoArticleWithThatMsgId
+
+        case (.Failure, .Distribution, "5", _):
+            self = .ArticleNotWanted
+
+        case (.Failure, .Distribution, "6", _):
+            self = .TransferTemporaryFailure
+
+        case (.Failure, .Distribution, "7", _):
+            self = .TransferPermanentFailure
+
+        case (.Failure, .Posting, "0", _):
+            self = .PostingNotPermitted
+
+        case (.Failure, .Posting, "1", _):
+            self = .PostingFailed
+
+        case (.Failure, let context, let code, let message):
+            self = .UnsupportedError(context, code, message)
+
+        default:
+            return nil
+        }
+    }
+}
+
 public class NNTP {
+    public class Reply {
+        public let command : NNTPCommand
+        private let onSuccess : (NNTP.Reply) -> Void
+        private let onError : (ErrorType) -> Void
+
+        public var response : NNTPResponse?
+        public var payload : [String]?
+
+        private init(command: NNTPCommand, onSuccess: (NNTP.Reply) -> Void, onError: (ErrorType) -> Void) {
+            self.command = command
+            self.onSuccess = onSuccess
+            self.onError = onError
+
+            if self.command.isMultiline {
+                self.payload = []
+            }
+        }
+    }
+
     private let istream : NSInputStream
     private let ostream : NSOutputStream
     private let reader : BufferedReader
-    private let pendingCommands = FifoQueue<NNTPCommand>()
-    private let sentCommands = FifoQueue<NNTPReply>()
+    private let pendingCommands = FifoQueue<NNTP.Reply>()
+    private let sentCommands = FifoQueue<NNTP.Reply>()
     private let outBuffer = Buffer(capacity: 2 << 20)
+    private var onConnected : Promise<NNTP.Reply>
 
     private var login : String?
     private var password : String?
@@ -490,11 +563,6 @@ public class NNTP {
 
             case NSStreamEvent.EndEncountered:
                 self.nntp?.status = .Disconnected
-                if self.nntp?.ostream == stream {
-                    print("out end \(stream.streamStatus.rawValue)")
-                } else {
-                    print("in end \(stream.streamStatus.rawValue)")
-                }
 
             default:
                 break
@@ -513,6 +581,7 @@ public class NNTP {
         NSStream.getStreamsToHostWithName(host, port: port,
             inputStream: &istream, outputStream: &ostream)
 
+        self.onConnected = Promise(failed: NNTPError.NotConnected)
         if let ins = istream, let ous = ostream {
             self.istream = ins
             self.ostream = ous
@@ -532,7 +601,12 @@ public class NNTP {
                 forKey: NSStreamSocketSecurityLevelKey)
         }
 
-        self.sentCommands.push(NNTPReply(command: NNTPCommand.Connect))
+        self.onConnected = Promise<NNTP.Reply>() {
+            (onSuccess, onError) in
+
+            self.sentCommands.push(NNTP.Reply(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError))
+        }
+        self.onConnected = self.sendCommand(NNTPCommand.ModeReader)
     }
 
     public convenience init?(url: NSURL) {
@@ -564,6 +638,14 @@ public class NNTP {
     public func setCredentials(login: String?, password: String?) {
         self.login = login
         self.password = password
+
+        if let lg = login {
+            self.onConnected = self.sendCommand(NNTPCommand.AuthinfoUser(lg))
+
+            if let pwd = password {
+                self.onConnected = self.sendCommand(NNTPCommand.AuthinfoPass(pwd))
+            }
+        }
     }
 
     public func open() {
@@ -586,50 +668,19 @@ public class NNTP {
         self.ostream.removeFromRunLoop(runLoop, forMode: mode)
     }
 
-    private func commandProcessed(reply: NNTPReply) {
-        switch (reply.command) {
-        case .Connect:
-            self.status = .Connected
-            self.delegate?.nntp(self, handleEvent: .Connected)
-            self.sendCommand(.ModeReader)
-
-        case .ModeReader:
-            if let login = self.login {
-                self.sendCommand(.AuthinfoUser(login))
-            } else {
-                self.delegate?.nntp(self, handleEvent: .Ready)
-            }
-
-        case .AuthinfoUser(_):
-            if let password = self.password {
-                self.sendCommand(.AuthinfoPass(password))
-            } else {
-                self.delegate?.nntp(self, handleEvent: .Authenticated)
-                self.status = .Ready
-                self.delegate?.nntp(self, handleEvent: .Ready)
-            }
-
-        case .AuthinfoPass(_):
-            self.delegate?.nntp(self, handleEvent: .Authenticated)
-            self.status = .Ready
-            self.delegate?.nntp(self, handleEvent: .Ready)
-
-        case .NewNews(_, _):
-            print(reply.command.description)
-            print(reply.response!.message)
-            for line in reply.payload! {
-                print("> \(line)")
-            }
-
-        default:
-            break
+    private func commandProcessed(reply: NNTP.Reply) {
+        if let error = NNTPError(response: reply.response!) {
+            reply.onError(error)
+            return
         }
+
+        reply.onSuccess(reply)
     }
 
     private func parseResponse(line: String) -> NNTPResponse? {
         let chars = line.characters
-        var status : NNTPResponse.Status?
-        var context : NNTPResponse.Context?
+        var status : NNTPResponseStatus?
+        var context : NNTPResponseContext?
         var pos = 0
 
         if chars.count < 5 {
@@ -639,12 +690,12 @@ public class NNTP {
         for char in chars {
             switch (pos) {
             case 0:
-                status = NNTPResponse.Status(rawValue: char)
+                status = NNTPResponseStatus(rawValue: char)
                 if status == nil {
                     return nil
                 }
             case 1:
-                context = NNTPResponse.Context(rawValue: char)
+                context = NNTPResponseContext(rawValue: char)
                 if context == nil {
                     return nil
                 }
@@ -704,8 +755,8 @@ public class NNTP {
         while !self.pendingCommands.isEmpty && self.outBuffer.length < 4096 {
             let cmd = self.pendingCommands.pop()!
 
-            cmd.pack(self.outBuffer)
-            self.sentCommands.push(NNTPReply(command: cmd))
+            cmd.command.pack(self.outBuffer)
+            self.sentCommands.push(cmd)
         }
 
         self.outBuffer.read() {
@@ -729,25 +780,31 @@ public class NNTP {
     }
 
     private var currentGroup : String?
-    public func sendCommand(command: NNTPCommand) {
-        switch (command) {
-        case .Group(let group):
-            if group == currentGroup {
-                return
+    public func sendCommand(command: NNTPCommand) -> Promise<NNTP.Reply> {
+        return self.onConnected.thenChain({
+            (_) in
+
+            switch (command) {
+            case .Group(let group):
+                self.currentGroup = group
+
+            case .ListGroup(let group, _) where group != nil:
+                if group != self.currentGroup {
+                    self.currentGroup = group
+                }
+
+            default:
+                break
             }
-            currentGroup = group
 
-        case .ListGroup(let group, _) where group != nil:
-            if group != currentGroup {
-                currentGroup = group
+            let promise = Promise<NNTP.Reply>() {
+                (onSuccess, onError) in
+
+                self.pendingCommands.push(NNTP.Reply(command: command, onSuccess: onSuccess, onError: onError))
             }
-
-        default:
-            break
-        }
-
-        self.pendingCommands.push(command)
-        self.flush()
+            self.flush()
+            return promise
+        })
     }
 
     private var status : NNTPStatus = .Disconnected
@@ -755,7 +812,11 @@ public class NNTP {
         return status
     }
 
-    public func listArticles(group: String, since: NSDate) {
-        self.sendCommand(.NewNews(Wildmat(pattern: group), since))
+    public var hasPendingCommands : Bool {
+        return !self.sentCommands.isEmpty || !self.pendingCommands.isEmpty
+    }
+
+    public func listArticles(group: String, since: NSDate) -> Promise<NNTP.Reply> {
+        return self.sendCommand(.NewNews(Wildmat(pattern: group), since))
     }
 }

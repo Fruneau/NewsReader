@@ -9,53 +9,54 @@
 import XCTest
 import NewsReader
 
-class Delegate : NNTP.Delegate {
-    override init() {
-        super.init()
-    }
-
-    override func nntp(nntp: NNTP, handleEvent event: NNTPEvent) {
-        switch (event) {
-        case .Ready:
-            let date = NSDate(timeIntervalSinceNow: -18 * 86400)
-
-            nntp.listArticles("corp.software.general", since: date)
-
-        default:
-            break
-        }
-        print(event)
-    }
-}
-
 class NNTPTests : XCTestCase {
-    func testConnect() {
+    let runLoop = NSRunLoop.currentRunLoop()
+    var nntp : NNTP?
+
+    override func setUp() {
+        super.setUp()
+
+        self.nntp = nil
         if var rcContent = NSData(contentsOfFile: "~/.newsreaderrc".stringByStandardizingPath)?.utf8String {
             if let idx = rcContent.characters.indexOf("\n") {
                 rcContent = rcContent.substringToIndex(idx)
             }
 
             if let url = NSURL(string: rcContent) {
-                let nntp = NNTP(url: url)
-                let runLoop = NSRunLoop.currentRunLoop()
-                let delegate = Delegate()
+                self.nntp = NNTP(url: url)
 
-                XCTAssertNotNil(nntp)
-                nntp!.delegate = delegate
-
-                nntp!.scheduleInRunLoop(runLoop, forMode: NSDefaultRunLoopMode)
-                nntp!.open()
-
-                runLoop.runUntilTimeout(10, orCondition: { false })
-
-                nntp!.close()
-                nntp!.removeFromRunLoop(runLoop, forMode: NSDefaultRunLoopMode)
+                XCTAssertNotNil(self.nntp, "unsupported news server url")
+                self.nntp?.scheduleInRunLoop(self.runLoop, forMode: NSDefaultRunLoopMode)
+                self.nntp?.open()
             } else {
                 XCTAssert(false, "invalid URL provided in ~/.newsreaderrc file")
             }
-
         } else {
             XCTAssert(false, "cannot read ~/.newsreaderrc file")
         }
+    }
+
+    override func tearDown() {
+        self.nntp?.close()
+        self.nntp?.removeFromRunLoop(self.runLoop, forMode: NSDefaultRunLoopMode)
+        self.nntp = nil
+
+        super.tearDown()
+    }
+
+    func testConnect() {
+        let nntp = self.nntp!
+        let date = NSDate(timeIntervalSinceNow: -18 * 86400)
+
+        nntp.listArticles("corp.software.general", since: date).then({
+            (reply) in
+
+            print("Got reply")
+            for line in reply.payload! {
+                print(line)
+            }
+        })
+
+        self.runLoop.runUntilTimeout(10, orCondition: { !nntp.hasPendingCommands })
     }
 }
