@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum NNTPCapability {
+public enum NNTPCapability : Hashable {
     /* RFC 3977: NNTP Version 2 */
     case ModeReader
     case Reader
@@ -42,6 +42,169 @@ public enum NNTPCapability {
     /* Special capabilities */
     case Version(Int)
     case Implementation(String)
+
+    public var hashValue : Int {
+        switch (self) {
+        case .ModeReader:
+            return 0
+        case .Reader:
+            return 1
+        case .Ihave:
+            return 2
+        case .Post:
+            return 3
+        case .NewNews:
+            return 4
+        case .Hdr:
+            return 5
+        case .Over:
+            return 6
+        case .ListActiveTimes:
+            return 7
+        case .ListDistribPats:
+            return 8
+        case .StartTls:
+            return 9
+        case .AuthinfoUser:
+            return 10
+        case .AuthinfoSASL:
+            return 11
+        case .SaslPlain:
+            return 12
+        case .SaslLogin:
+            return 13
+        case .SaslCramMd5:
+            return 14
+        case .SaslNtml:
+            return 15
+        case .SaslDigestMd5:
+            return 16
+        case .Streaming:
+            return 17
+        case .Version(_):
+            return 18
+        case .Implementation(_):
+            return 19
+        }
+    }
+}
+
+public func ==(lhs: NNTPCapability, rhs: NNTPCapability) -> Bool {
+    return lhs.hashValue == rhs.hashValue
+}
+
+
+public enum NNTPResponseStatus : Character {
+    case Information = "1"
+    case Completed = "2"
+    case Continue = "3"
+    case Failure = "4"
+    case ProtocolError = "5"
+}
+
+public enum NNTPResponseContext : Character {
+    case Status = "0"
+    case NewsgroupSelection = "1"
+    case ArticleSelection = "2"
+    case Distribution = "3"
+    case Posting = "4"
+    case Authentication = "8"
+    case Extension = "9"
+}
+
+public struct NNTPResponse {
+    public let status : NNTPResponseStatus
+    public let context : NNTPResponseContext
+    public let code : Character
+    public let message : String
+}
+
+public enum NNTPError : ErrorType {
+    case NotConnected
+    case ClientProtocolError(NNTPResponseContext, Character, String)
+    case UnsupportedError(NNTPResponseContext, Character, String)
+    case ServerProtocolError
+    case UnexpectedResponse(NNTPResponseStatus, NNTPResponseContext, Character, String)
+    case MalformedResponse(NNTPResponseStatus, NNTPResponseContext, Character, String)
+
+    case ServiceTemporarilyUnvailable /* Error 400 */
+    case NoSuchNewsgroup /* Error 411 */
+    case NoNewsgroupSelected /* Error 412 */
+    case CurrentArticleNumberIsInvalid /* Error 420 */
+    case NoNextArticleInGroup /* Error 421 */
+    case NoPreviousArticleInGroup /* Error 422 */
+    case NoArticleWithThatNumber /* Error 423 */
+    case NoArticleWithThatMsgId /* Error 430 */
+    case ArticleNotWanted /* Error 435 */
+    case TransferTemporaryFailure /* Error 436 */
+    case TransferPermanentFailure /* Error 437 */
+    case PostingNotPermitted /* Error 440 */
+    case PostingFailed /* Error 441 */
+    case AuthenticationFailed /* Error 481 */
+    case AuthenticationSequenceError /* Error 482 */
+
+    case ServicePermanentlyUnavailable /* Error 502 */
+
+    private init?(response: NNTPResponse) {
+        switch ((response.status, response.context, response.code, response.message)) {
+        case (.Failure, .Status, "0", _):
+            self = .ServiceTemporarilyUnvailable
+
+        case (.Failure, .NewsgroupSelection, "1", _):
+            self = .NoSuchNewsgroup
+
+        case (.Failure, .NewsgroupSelection, "2", _):
+            self = .NoNewsgroupSelected
+
+        case (.Failure, .ArticleSelection, "0", _):
+            self = .CurrentArticleNumberIsInvalid
+
+        case (.Failure, .ArticleSelection, "1", _):
+            self = .NoNextArticleInGroup
+
+        case (.Failure, .ArticleSelection, "2", _):
+            self = .NoPreviousArticleInGroup
+
+        case (.Failure, .ArticleSelection, "3", _):
+            self = .NoArticleWithThatNumber
+
+        case (.Failure, .Distribution, "0", _):
+            self = .NoArticleWithThatMsgId
+
+        case (.Failure, .Distribution, "5", _):
+            self = .ArticleNotWanted
+
+        case (.Failure, .Distribution, "6", _):
+            self = .TransferTemporaryFailure
+
+        case (.Failure, .Distribution, "7", _):
+            self = .TransferPermanentFailure
+
+        case (.Failure, .Posting, "0", _):
+            self = .PostingNotPermitted
+
+        case (.Failure, .Posting, "1", _):
+            self = .PostingFailed
+
+        case (.Failure, .Authentication, "1", _):
+            self = .AuthenticationFailed
+
+        case (.Failure, .Authentication, "2", _):
+            self = .AuthenticationSequenceError
+
+        case (.Failure, let context, let code, let message):
+            self = .UnsupportedError(context, code, message)
+
+        case (.ProtocolError, .Status, "2", _):
+            self = .ServicePermanentlyUnavailable
+
+        case (.ProtocolError, let context, let code, let message):
+            self = .ClientProtocolError(context, code, message)
+            
+        default:
+            return nil
+        }
+    }
 }
 
 public enum ArticleRange {
@@ -118,6 +281,15 @@ private func packDate(date: NSDate, inBuffer buffer: Buffer) {
 
     buffer.appendString(formatter.stringFromDate(date))
     buffer.appendString(" GMT")
+}
+
+public enum NNTPPayload {
+    case Information(String)
+    case Capabilities(Set<NNTPCapability>)
+    case PasswordRequired
+    case AuthenticationAccepted
+    case MessageIds([String])
+    case GroupContent(String, Int, Int, Int, [Int]?)
 }
 
 public enum NNTPCommand {
@@ -373,41 +545,195 @@ public enum NNTPCommand {
             return true
         }
     }
-}
 
-public enum NNTPResponseStatus : Character {
-    case Information = "1"
-    case Completed = "2"
-    case Continue = "3"
-    case Failure = "4"
-    case ProtocolError = "5"
-}
+    private func acceptResponse(response: NNTPResponse) -> Bool {
+        switch ((self, response.status.rawValue, response.context.rawValue, response.code)) {
+        case (.Connect, "2", "0", "0"), (.Connect, "2", "0", "1"),
+            (.Capabilities, "1", "0", "1"),
+            (.ModeReader, "2", "0", "0"), (.ModeReader, "2", "0", "1"),
+            (.Quit, "2", "0", "5"),
+            (.Group, "2", "1", "1"),
+            (.ListGroup, "2", "1", "1"),
+            (.Last, "2", "2", "3"),
+            (.Next, "2", "2", "3"),
+            (.Article, "2", "2", "0"),
+            (.Head, "2", "2", "1"),
+            (.Body, "2", "2", "2"),
+            (.Stat, "2", "2", "3"),
+            (.Post, "3", "4", "0"),
+            (.PostBody, "2", "4", "0"),
+            (.Ihave, "3", "3", "5"), (.Ihave, "2", "3", "5"),
+            (.Date, "1", "1", "1"),
+            (.Help, "1", "0", "0"),
+            (.NewGroups, "2", "3", "1"),
+            (.NewNews, "2", "3", "0"),
+            (.ListActive, "2", "1", "5"),
+            (.ListActiveTimes, "2", "1", "5"),
+            (.ListDistribPats, "2", "1", "5"),
+            (.ListNewsgroups, "2", "1", "5"),
+            (.Over, "2", "2", "4"),
+            (.ListOverviewFmt, "2", "1", "5"),
+            (.Hdr, "2", "2", "5"),
+            (.ListHeaders, "2", "1", "5"),
+            (.AuthinfoUser, "2", "8", "1"), (.AuthinfoUser, "3", "8", "1"),
+            (.AuthinfoPass, "2", "8", "1"):
+            return true
 
-public enum NNTPResponseContext : Character {
-    case Status = "0"
-    case NewsgroupSelection = "1"
-    case ArticleSelection = "2"
-    case Distribution = "3"
-    case Posting = "4"
-    case Authentication = "8"
-    case Extension = "9"
-}
+        default:
+            return false
+        }
+    }
 
-public struct NNTPResponse {
-    public let status : NNTPResponseStatus
-    public let context : NNTPResponseContext
-    public let code : Character
-    public let message : String
-}
+    private func parseCapabilities(payload: [String]) -> Set<NNTPCapability> {
+        var set = Set<NNTPCapability>()
 
-public enum NNTPEvent {
-    case Connected
-    case Disconnected
-    case Authenticated
-    case Ready
+        lines: for line in payload {
+            switch (line) {
+            case "HDR":
+                set.insert(.Hdr)
 
-    case ClientProtocolError
-    case ServerProtocolError
+            case "IHAVE":
+                set.insert(.Ihave)
+
+            case "NEWNEWS":
+                set.insert(.NewNews)
+
+            case "POST":
+                set.insert(.Post)
+
+            case "MODE-READER":
+                set.insert(.ModeReader)
+
+            case "READER":
+                set.insert(.Reader)
+
+            case "OVER":
+                set.insert(.Over)
+
+            case "STREAMING":
+                set.insert(.Streaming)
+
+            default:
+                let cset = NSCharacterSet(charactersInString: " ")
+                let scanner = NSScanner(string: line)
+                var keyword : NSString?
+
+                scanner.charactersToBeSkipped = nil
+                if !scanner.scanUpToCharactersFromSet(cset, intoString: &keyword) {
+                    continue lines
+                }
+                switch (keyword!) {
+                case "LIST":
+                    list_cap: while !scanner.scanCharactersFromSet(cset, intoString: nil) {
+                        var cap : NSString?
+
+                        if !scanner.scanUpToCharactersFromSet(cset, intoString: &cap) {
+                            continue lines
+                        }
+
+                        switch (cap!) {
+                        case "ACTIVE.TIMES":
+                            set.insert(.ListActiveTimes)
+
+                        case "DISTRIB.PATS":
+                            set.insert(.ListDistribPats)
+
+                        default:
+                            continue list_cap
+                        }
+                    }
+                    break
+
+                case "IMPLEMENTATION":
+                    scanner.scanCharactersFromSet(cset, intoString: nil)
+                    set.insert(.Implementation(scanner.remainder))
+                    break
+
+                case "VERSION":
+                    var version : Int32 = 0
+
+                    if !scanner.scanCharactersFromSet(cset, intoString: nil) {
+                        continue lines
+                    }
+                    if !scanner.scanInt(&version) {
+                        continue lines
+                    }
+                    set.insert(.Version(Int(version)))
+
+                default:
+                    break
+                }
+                break
+            }
+        }
+
+        return set
+    }
+
+    private func parseResponse(response: NNTPResponse, payload: [String]?) throws -> NNTPPayload {
+        if let error = NNTPError(response: response) {
+            throw error
+        }
+
+        if !self.acceptResponse(response) {
+            throw NNTPError.UnexpectedResponse(response.status, response.context, response.code, response.message)
+        }
+
+        switch ((response.status.rawValue, response.context.rawValue, response.code)) {
+        case ("2", "0", "0"), ("2", "0", "1"), ("2", "0", "5"):
+            return NNTPPayload.Information(response.message)
+
+        case ("1", "0", "1"):
+            return .Capabilities(self.parseCapabilities(payload!))
+
+        case ("2", "8", "1"):
+            return .AuthenticationAccepted
+
+        case ("3", "8", "1"):
+            return .PasswordRequired
+
+        case ("2", "3", "0"):
+            return .MessageIds(payload!)
+
+        case ("2", "1", "1"):
+            let cset = NSCharacterSet(charactersInString: " ")
+            let scanner = NSScanner(string: response.message)
+            var count : Int32 = 0
+            var low : Int32 = 0
+            var high : Int32 = 0
+            var ids : [Int]?
+            var padding : NSString?
+
+            scanner.charactersToBeSkipped = nil
+            if !scanner.scanInt(&count)
+                || !scanner.scanCharactersFromSet(cset, intoString: &padding)
+                || !scanner.scanInt(&low)
+                || !scanner.scanCharactersFromSet(cset, intoString: &padding)
+                || !scanner.scanInt(&high)
+                || !scanner.scanCharactersFromSet(cset, intoString: &padding)
+            {
+                throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+            }
+
+            if let idList = payload {
+                ids = []
+
+                for id in idList {
+                    let numId = Int(id)
+
+                    if numId == nil {
+                        throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+                    }
+                    ids?.append(numId!)
+                }
+            }
+
+            return .GroupContent(scanner.remainder, Int(count), Int(low), Int(high), ids)
+
+        default:
+            throw NNTPError.ServerProtocolError
+        }
+    }
 }
 
 public enum NNTPStatus {
@@ -417,84 +743,16 @@ public enum NNTPStatus {
     case Ready
 }
 
-public enum NNTPError : ErrorType {
-    case NotConnected
-    case ClientProtocolError(NNTPResponseContext, Character, String)
-    case UnsupportedError(NNTPResponseContext, Character, String)
-    case ServerProtocolError
-    case NoSuchNewsgroup /* Error 411 */
-    case NoNewsgroupSelected /* Error 412 */
-    case CurrentArticleNumberIsInvalid /* Error 420 */
-    case NoNextArticleInGroup /* Error 421 */
-    case NoPreviousArticleInGroup /* Error 422 */
-    case NoArticleWithThatNumber /* Error 423 */
-    case NoArticleWithThatMsgId /* Error 430 */
-    case ArticleNotWanted /* Error 435 */
-    case TransferTemporaryFailure /* Error 436 */
-    case TransferPermanentFailure /* Error 437 */
-    case PostingNotPermitted /* Error 440 */
-    case PostingFailed /* Error 441 */
-
-    private init?(response: NNTPResponse) {
-        switch ((response.status, response.context, response.code, response.message)) {
-        case (.ProtocolError, let context, let code, let message):
-            self = .ClientProtocolError(context, code, message)
-
-        case (.Failure, .NewsgroupSelection, "1", _):
-            self = .NoSuchNewsgroup
-
-        case (.Failure, .NewsgroupSelection, "2", _):
-            self = .NoNewsgroupSelected
-
-        case (.Failure, .ArticleSelection, "0", _):
-            self = .CurrentArticleNumberIsInvalid
-
-        case (.Failure, .ArticleSelection, "1", _):
-            self = .NoNextArticleInGroup
-
-        case (.Failure, .ArticleSelection, "2", _):
-            self = .NoPreviousArticleInGroup
-
-        case (.Failure, .ArticleSelection, "3", _):
-            self = .NoArticleWithThatNumber
-
-        case (.Failure, .Distribution, "0", _):
-            self = .NoArticleWithThatMsgId
-
-        case (.Failure, .Distribution, "5", _):
-            self = .ArticleNotWanted
-
-        case (.Failure, .Distribution, "6", _):
-            self = .TransferTemporaryFailure
-
-        case (.Failure, .Distribution, "7", _):
-            self = .TransferPermanentFailure
-
-        case (.Failure, .Posting, "0", _):
-            self = .PostingNotPermitted
-
-        case (.Failure, .Posting, "1", _):
-            self = .PostingFailed
-
-        case (.Failure, let context, let code, let message):
-            self = .UnsupportedError(context, code, message)
-
-        default:
-            return nil
-        }
-    }
-}
-
 public class NNTP {
-    public class Reply {
-        public let command : NNTPCommand
-        private let onSuccess : (NNTP.Reply) -> Void
+    private class Reply {
+        private let command : NNTPCommand
+        private let onSuccess : (NNTPPayload) -> Void
         private let onError : (ErrorType) -> Void
 
-        public var response : NNTPResponse?
-        public var payload : [String]?
+        private var response : NNTPResponse?
+        private var payload : [String]?
 
-        private init(command: NNTPCommand, onSuccess: (NNTP.Reply) -> Void, onError: (ErrorType) -> Void) {
+        private init(command: NNTPCommand, onSuccess: (NNTPPayload) -> Void, onError: (ErrorType) -> Void) {
             self.command = command
             self.onSuccess = onSuccess
             self.onError = onError
@@ -511,25 +769,11 @@ public class NNTP {
     private let pendingCommands = FifoQueue<NNTP.Reply>()
     private let sentCommands = FifoQueue<NNTP.Reply>()
     private let outBuffer = Buffer(capacity: 2 << 20)
-    private var onConnected : Promise<NNTP.Reply>
+    private var onConnected : Promise<NNTPPayload>
 
     private var login : String?
     private var password : String?
 
-    /* {{{ Connnection delegate */
-
-    public class Delegate {
-        public init() {
-        }
-
-        public func nntp(nntp: NNTP, handleEvent event: NNTPEvent) {
-            preconditionFailure("this method must be overridden")
-        }
-    }
-
-    public weak var delegate : Delegate?
-
-    /* }}} */
     /* {{{ Stream delegate */
 
     private class StreamDelegate : NSObject, NSStreamDelegate {
@@ -559,7 +803,6 @@ public class NNTP {
 
             case NSStreamEvent.ErrorOccurred:
                 self.nntp?.status = .Disconnected
-                self.nntp?.delegate?.nntp(self.nntp!, handleEvent: .Disconnected)
 
             case NSStreamEvent.EndEncountered:
                 self.nntp?.status = .Disconnected
@@ -601,7 +844,7 @@ public class NNTP {
                 forKey: NSStreamSocketSecurityLevelKey)
         }
 
-        self.onConnected = Promise<NNTP.Reply>() {
+        self.onConnected = Promise<NNTPPayload>() {
             (onSuccess, onError) in
 
             self.sentCommands.push(NNTP.Reply(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError))
@@ -669,12 +912,15 @@ public class NNTP {
     }
 
     private func commandProcessed(reply: NNTP.Reply) {
-        if let error = NNTPError(response: reply.response!) {
-            reply.onError(error)
+        guard let response = reply.response else {
+            reply.onError(NNTPError.ServerProtocolError)
             return
         }
-
-        reply.onSuccess(reply)
+        do {
+            reply.onSuccess(try reply.command.parseResponse(response, payload: reply.payload))
+        } catch let e {
+            reply.onError(e)
+        }
     }
 
     private func parseResponse(line: String) -> NNTPResponse? {
@@ -727,7 +973,6 @@ public class NNTP {
                             self.commandProcessed(reply)
                         }
                     } else {
-                        self.delegate?.nntp(self, handleEvent: .ServerProtocolError)
                         self.close()
                         return
                     }
@@ -740,7 +985,6 @@ public class NNTP {
                     }
                 }
             } else {
-                self.delegate?.nntp(self, handleEvent: .ServerProtocolError)
                 self.close()
                 return
             }
@@ -780,7 +1024,7 @@ public class NNTP {
     }
 
     private var currentGroup : String?
-    public func sendCommand(command: NNTPCommand) -> Promise<NNTP.Reply> {
+    public func sendCommand(command: NNTPCommand) -> Promise<NNTPPayload> {
         return self.onConnected.thenChain({
             (_) in
 
@@ -797,7 +1041,7 @@ public class NNTP {
                 break
             }
 
-            let promise = Promise<NNTP.Reply>() {
+            let promise = Promise<NNTPPayload>() {
                 (onSuccess, onError) in
 
                 self.pendingCommands.push(NNTP.Reply(command: command, onSuccess: onSuccess, onError: onError))
@@ -816,7 +1060,7 @@ public class NNTP {
         return !self.sentCommands.isEmpty || !self.pendingCommands.isEmpty
     }
 
-    public func listArticles(group: String, since: NSDate) -> Promise<NNTP.Reply> {
+    public func listArticles(group: String, since: NSDate) -> Promise<NNTPPayload> {
         return self.sendCommand(.NewNews(Wildmat(pattern: group), since))
     }
 }

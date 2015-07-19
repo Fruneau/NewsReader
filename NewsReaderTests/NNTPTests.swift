@@ -48,13 +48,33 @@ class NNTPTests : XCTestCase {
         let nntp = self.nntp!
         let date = NSDate(timeIntervalSinceNow: -18 * 86400)
 
-        nntp.listArticles("corp.software.general", since: date).then({
-            (reply) in
+        nntp.sendCommand(.Group("corp.software.general")).then({
+            (payload) in
 
-            print("Got reply")
-            for line in reply.payload! {
-                print(line)
+            switch (payload) {
+            case .GroupContent(_, let count, let low, let high, _):
+                print("group has \(count), numbers between \(low) and \(high)")
+
+            default:
+                throw NNTPError.ServerProtocolError
             }
+        })
+        nntp.listArticles("corp.software.general", since: date).then({
+            (payload) in
+
+            switch (payload) {
+            case .MessageIds(let msgids):
+                for msg in msgids {
+                    print("got msgid \(msg)")
+                }
+
+            default:
+                throw NNTPError.ServerProtocolError
+            }
+        }).otherwise({
+            (error) in
+
+            print("got error \(error)")
         })
 
         self.runLoop.runUntilTimeout(10, orCondition: { !nntp.hasPendingCommands })
