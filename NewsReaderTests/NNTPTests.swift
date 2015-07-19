@@ -15,6 +15,15 @@ class Delegate : NNTP.Delegate {
     }
 
     override func nntp(nntp: NNTP, handleEvent event: NNTPEvent) {
+        switch (event) {
+        case .Ready:
+            let date = NSDate(timeIntervalSinceNow: -18 * 86400)
+
+            nntp.listArticles("corp.software.general", since: date)
+
+        default:
+            break
+        }
         print(event)
     }
 }
@@ -37,8 +46,10 @@ class NNTPTests : XCTestCase {
                 nntp!.scheduleInRunLoop(runLoop, forMode: NSDefaultRunLoopMode)
                 nntp!.open()
 
-                runLoop.runUntilTimeout(10, orCondition: { nntp!.nntpStatus != .Ready })
+                runLoop.runUntilTimeout(10, orCondition: { false })
 
+                nntp!.close()
+                nntp!.removeFromRunLoop(runLoop, forMode: NSDefaultRunLoopMode)
             } else {
                 XCTAssert(false, "invalid URL provided in ~/.newsreaderrc file")
             }

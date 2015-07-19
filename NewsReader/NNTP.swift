@@ -113,7 +113,7 @@ private let formatter = NSDateFormatter()
 
 private func packDate(date: NSDate, inBuffer buffer: Buffer) {
     let formatter = NSDateFormatter()
-    formatter.dateFormat = "yyyyMMDD HHmmss"
+    formatter.dateFormat = "yyyyMMdd HHmmss"
     formatter.timeZone = NSTimeZone(abbreviation: "GMT")!
 
     buffer.appendString(formatter.stringFromDate(date))
@@ -581,6 +581,11 @@ public class NNTP {
         self.ostream.scheduleInRunLoop(runLoop, forMode: mode)
     }
 
+    public func removeFromRunLoop(runLoop: NSRunLoop, forMode mode: String) {
+        self.istream.removeFromRunLoop(runLoop, forMode: mode)
+        self.ostream.removeFromRunLoop(runLoop, forMode: mode)
+    }
+
     private func commandProcessed(reply: NNTPReply) {
         switch (reply.command) {
         case .Connect:
@@ -608,6 +613,13 @@ public class NNTP {
             self.delegate?.nntp(self, handleEvent: .Authenticated)
             self.status = .Ready
             self.delegate?.nntp(self, handleEvent: .Ready)
+
+        case .NewNews(_, _):
+            print(reply.command.description)
+            print(reply.response!.message)
+            for line in reply.payload! {
+                print("> \(line)")
+            }
 
         default:
             break
@@ -715,8 +727,25 @@ public class NNTP {
             }
         }
     }
-    
+
+    private var currentGroup : String?
     public func sendCommand(command: NNTPCommand) {
+        switch (command) {
+        case .Group(let group):
+            if group == currentGroup {
+                return
+            }
+            currentGroup = group
+
+        case .ListGroup(let group, _) where group != nil:
+            if group != currentGroup {
+                currentGroup = group
+            }
+
+        default:
+            break
+        }
+
         self.pendingCommands.push(command)
         self.flush()
     }
@@ -724,5 +753,9 @@ public class NNTP {
     private var status : NNTPStatus = .Disconnected
     public var nntpStatus : NNTPStatus {
         return status
+    }
+
+    public func listArticles(group: String, since: NSDate) {
+        self.sendCommand(.NewNews(Wildmat(pattern: group), since))
     }
 }
