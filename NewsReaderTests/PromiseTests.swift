@@ -64,4 +64,38 @@ class PromiseTests : XCTestCase {
         preparePromise({ (s) in out.append(s) }).1(Error.Fail)
         XCTAssertEqual(out, [ "1.1.2", "1.1.2.1", "2", "2.1", "2.1.2" ])
     }
+
+    func testChain() {
+        var out : [String] = []
+        var onSuccess : ((Void) -> Void)?
+        let promise = Promise<Void>() {
+            (s, _) in
+            onSuccess = s
+        }
+
+        promise.then({
+            out.append("1")
+        }).thenChain({
+            out.append("2")
+            return Promise<Void>(action: {
+                (s, _) in
+
+                onSuccess = s
+            })
+        }).then({
+            out.append("3")
+        })
+
+        XCTAssert(onSuccess != nil)
+        XCTAssertEqual(out, [])
+        if let cb = onSuccess {
+            onSuccess = nil
+            cb()
+        }
+        XCTAssertEqual(out, ["1", "2"])
+
+        XCTAssert(onSuccess != nil)
+        onSuccess?()
+        XCTAssertEqual(out, ["1", "2", "3"])
+    }
 }

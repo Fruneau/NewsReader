@@ -65,6 +65,22 @@ public class Promise<T> {
         }
     }
 
+    public convenience init(success: T) {
+        self.init(action: {
+            (onSuccess, onError) in
+
+            onSuccess(success)
+        })
+    }
+
+    public convenience init(failed failure: ErrorType) {
+        self.init(action: {
+            (onSuccess, onError) in
+
+            onError(failure)
+        })
+    }
+
     private func onSuccess(res: T) {
         switch (self.state) {
         case .Running:
