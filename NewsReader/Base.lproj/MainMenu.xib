@@ -16,8 +16,9 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="NewsReader" customModuleProvider="target">
             <connections>
                 <outlet property="articleView" destination="uhx-Dw-DrR" id="Udr-SL-wNf"/>
-                <outlet property="groupArrayControler" destination="Arf-hm-Gl3" id="hJ5-W2-xRs"/>
+                <outlet property="groupArrayController" destination="Arf-hm-Gl3" id="8ZC-Qf-mYe"/>
                 <outlet property="groupView" destination="9oa-IE-lvM" id="Ub8-GZ-IlX"/>
+                <outlet property="threadArrayController" destination="WYp-GU-VTD" id="1D5-3g-vwl"/>
                 <outlet property="threadView" destination="65F-xb-gPj" id="4V2-O0-hfu"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
             </connections>
@@ -684,19 +685,20 @@
                     <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Frw-fW-aKE">
                         <rect key="frame" x="0.0" y="0.0" width="1261" height="504"/>
                         <subviews>
-                            <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="paj-O6-U8C">
+                            <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="paj-O6-U8C">
                                 <rect key="frame" x="0.0" y="0.0" width="200" height="504"/>
                                 <clipView key="contentView" id="vbl-XJ-aqo">
                                     <rect key="frame" x="1" y="1" width="198" height="502"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <collectionView id="9oa-IE-lvM">
+                                        <collectionView selectable="YES" id="9oa-IE-lvM">
                                             <rect key="frame" x="0.0" y="0.0" width="198" height="502"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <animations/>
                                             <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <connections>
                                                 <binding destination="Arf-hm-Gl3" name="content" keyPath="arrangedObjects" id="YaT-wz-Xys"/>
+                                                <binding destination="Arf-hm-Gl3" name="selectionIndexes" keyPath="selectionIndexes" previousBinding="YaT-wz-Xys" id="iCn-dB-DMk"/>
                                                 <outlet property="itemPrototype" destination="g7e-DY-X34" id="Sdm-qn-oFo"/>
                                             </connections>
                                         </collectionView>
@@ -708,7 +710,7 @@
                                 </constraints>
                                 <animations/>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="jTf-OB-jY9">
-                                    <rect key="frame" x="1" y="144" width="233" height="15"/>
+                                    <rect key="frame" x="-100" y="-100" width="233" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <animations/>
                                 </scroller>
@@ -724,12 +726,14 @@
                                     <rect key="frame" x="1" y="1" width="198" height="502"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <collectionView id="65F-xb-gPj">
+                                        <collectionView selectable="YES" id="65F-xb-gPj">
                                             <rect key="frame" x="0.0" y="0.0" width="198" height="502"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <animations/>
                                             <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <connections>
+                                                <binding destination="WYp-GU-VTD" name="content" keyPath="arrangedObjects" id="1a7-B2-VQh"/>
+                                                <binding destination="WYp-GU-VTD" name="selectionIndexes" keyPath="selectionIndexes" previousBinding="1a7-B2-VQh" id="WkM-eq-bDc"/>
                                                 <outlet property="itemPrototype" destination="fCD-bO-1dq" id="yeT-HP-TSc"/>
                                             </connections>
                                         </collectionView>
@@ -816,22 +820,35 @@
             </view>
             <point key="canvasLocation" x="-2066.5" y="146"/>
         </window>
-        <collectionViewItem id="fCD-bO-1dq" userLabel="Thread View Item">
-            <connections>
-                <outlet property="view" destination="bCw-MF-nit" id="iWg-U3-Qnd"/>
-            </connections>
-        </collectionViewItem>
-        <view id="bCw-MF-nit" userLabel="Thread View">
-            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+        <view id="bCw-MF-nit" userLabel="Thread View" customClass="SelectableView" customModule="NewsReader" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="223" height="38"/>
             <autoresizingMask key="autoresizingMask"/>
+            <subviews>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="01a-kR-SqC">
+                    <rect key="frame" x="11" y="11" width="214" height="17"/>
+                    <animations/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="8C7-HR-uF6">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        <connections>
+                            <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.msgid" id="dty-vX-DtE"/>
+                        </connections>
+                    </textFieldCell>
+                    <connections>
+                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.msgid" id="zgb-8l-yYL"/>
+                    </connections>
+                </textField>
+            </subviews>
             <animations/>
+            <point key="canvasLocation" x="-332.5" y="135"/>
         </view>
-        <collectionViewItem id="g7e-DY-X34" userLabel="Group View Item">
+        <collectionViewItem id="g7e-DY-X34" userLabel="Group View Item" customClass="SelectableCollectionViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
                 <outlet property="view" destination="msB-aE-IwZ" id="VrM-lC-3hU"/>
             </connections>
         </collectionViewItem>
-        <view misplaced="YES" id="msB-aE-IwZ" userLabel="Group View">
+        <view misplaced="YES" id="msB-aE-IwZ" userLabel="Group View" customClass="SelectableView" customModule="NewsReader" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="423" height="63"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
@@ -842,9 +859,6 @@
                         <font key="font" metaFont="systemBold"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        <connections>
-                            <binding destination="g7e-DY-X34" name="value" keyPath="representedObject.name" id="G8G-q8-ajh"/>
-                        </connections>
                     </textFieldCell>
                     <connections>
                         <binding destination="g7e-DY-X34" name="value" keyPath="representedObject.name" id="E4S-pW-pwU"/>
@@ -874,7 +888,6 @@
                 <constraint firstAttribute="trailing" secondItem="PEE-tI-MKH" secondAttribute="trailing" constant="8" id="3Nv-bJ-loI"/>
                 <constraint firstItem="CNi-IS-rSb" firstAttribute="leading" secondItem="msB-aE-IwZ" secondAttribute="leading" constant="8" id="6Y7-Hv-Yeu"/>
                 <constraint firstAttribute="bottom" secondItem="PEE-tI-MKH" secondAttribute="bottom" constant="6" id="DL4-5o-fN5"/>
-                <constraint firstItem="PEE-tI-MKH" firstAttribute="leading" secondItem="hzw-84-9cL" secondAttribute="leading" constant="8" id="Npm-ly-0D5"/>
                 <constraint firstAttribute="bottom" secondItem="CNi-IS-rSb" secondAttribute="bottom" id="RvM-ZA-cnp"/>
                 <constraint firstItem="PEE-tI-MKH" firstAttribute="top" secondItem="hzw-84-9cL" secondAttribute="bottom" constant="8" id="h6s-ao-kR8"/>
                 <constraint firstItem="PEE-tI-MKH" firstAttribute="leading" secondItem="msB-aE-IwZ" secondAttribute="leading" constant="8" id="huu-Ux-tSz"/>
@@ -887,13 +900,33 @@
             <animations/>
             <point key="canvasLocation" x="-244.5" y="15.5"/>
         </view>
-        <arrayController objectClassName="Group" editable="NO" id="Arf-hm-Gl3" userLabel="Group Array Controller">
+        <arrayController objectClassName="Group" editable="NO" selectsInsertedObjects="NO" avoidsEmptySelection="NO" id="Arf-hm-Gl3" userLabel="Group Array Controller">
             <declaredKeys>
                 <string>name</string>
                 <string>shortDesc</string>
             </declaredKeys>
             <connections>
-                <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="groups" id="UfH-D3-FDu"/>
+                <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="groups" id="Rlg-Ir-Vhj">
+                    <dictionary key="options">
+                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                    </dictionary>
+                </binding>
+                <binding destination="Voe-Tx-rLC" name="selectionIndexes" keyPath="groupIndexes" id="8fb-Fq-oHJ"/>
+            </connections>
+        </arrayController>
+        <collectionViewItem id="fCD-bO-1dq" userLabel="Thread View Item" customClass="SelectableCollectionViewItem" customModule="NewsReader" customModuleProvider="target">
+            <connections>
+                <outlet property="view" destination="bCw-MF-nit" id="iWg-U3-Qnd"/>
+            </connections>
+        </collectionViewItem>
+        <arrayController objectClassName="Article" editable="NO" selectsInsertedObjects="NO" avoidsEmptySelection="NO" id="WYp-GU-VTD" userLabel="Thread Array Controller">
+            <declaredKeys>
+                <string>msgid</string>
+                <string>num</string>
+            </declaredKeys>
+            <connections>
+                <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="threads" id="HUB-NF-w5P"/>
+                <binding destination="Voe-Tx-rLC" name="selectionIndexes" keyPath="threadIndexes" id="ZPd-Cd-v5V"/>
             </connections>
         </arrayController>
     </objects>
