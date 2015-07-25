@@ -272,14 +272,31 @@ public struct Wildmat {
     }
 }
 
-private let formatter = NSDateFormatter()
+private struct Global {
+    static private func buildDateFormatter() -> NSDateFormatter {
+        let f = NSDateFormatter()
+
+        f.dateFormat = "yyyyMMdd HHmmss"
+        f.timeZone = NSTimeZone(abbreviation: "GMT")!
+        return f
+    }
+
+    static private func buildDateParser() -> NSDateFormatter {
+        let f = NSDateFormatter()
+
+        f.dateFormat = "yyyyMMddHHmmss"
+        f.timeZone = NSTimeZone(abbreviation: "GMT")!
+        return f
+    }
+
+    static private let dateFormatter = Global.buildDateFormatter()
+    static private let dateParser = Global.buildDateParser()
+    static private let spaceCset = NSCharacterSet(charactersInString: " ")
+    static private let whiteCset = NSCharacterSet(charactersInString: " \t")
+}
 
 private func packDate(date: NSDate, inBuffer buffer: Buffer) {
-    let formatter = NSDateFormatter()
-    formatter.dateFormat = "yyyyMMdd HHmmss"
-    formatter.timeZone = NSTimeZone(abbreviation: "GMT")!
-
-    buffer.appendString(formatter.stringFromDate(date))
+    buffer.appendString(Global.dateFormatter.stringFromDate(date))
     buffer.appendString(" GMT")
 }
 
@@ -290,6 +307,12 @@ public enum NNTPPayload {
     case AuthenticationAccepted
     case MessageIds([String])
     case GroupContent(String, Int, Int, Int, [Int]?)
+    case ArticleFound(Int, String)
+    case Article(Int, String, String)
+    case Headers(Int, String, [String])
+    case Body(Int, String, String)
+    case GroupList([(String, String)])
+    case Date(NSDate)
 }
 
 public enum NNTPCommand {
@@ -624,7 +647,7 @@ public enum NNTPCommand {
                 }
                 switch (keyword!) {
                 case "LIST":
-                    list_cap: while !scanner.scanCharactersFromSet(cset, intoString: nil) {
+                    list_cap: while !scanner.skipCharactersFromSet(cset) {
                         var cap : NSString?
 
                         if !scanner.scanUpToCharactersFromSet(cset, intoString: &cap) {
@@ -645,14 +668,14 @@ public enum NNTPCommand {
                     break
 
                 case "IMPLEMENTATION":
-                    scanner.scanCharactersFromSet(cset, intoString: nil)
+                    scanner.skipCharactersFromSet(cset)
                     set.insert(.Implementation(scanner.remainder))
                     break
 
                 case "VERSION":
                     var version : Int32 = 0
 
-                    if !scanner.scanCharactersFromSet(cset, intoString: nil) {
+                    if !scanner.skipCharactersFromSet(cset) {
                         continue lines
                     }
                     if !scanner.scanInt(&version) {
@@ -668,6 +691,20 @@ public enum NNTPCommand {
         }
 
         return set
+    }
+
+    private func parseArticleFound(response: NNTPResponse) throws -> (Int, String) {
+        let scanner = NSScanner(string: response.message)
+        var number : Int32 = 0
+
+        scanner.charactersToBeSkipped = nil
+        if !scanner.scanInt(&number)
+            || !scanner.skipCharactersFromSet(Global.spaceCset)
+        {
+            throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+        }
+
+        return (Int(number), scanner.remainder)
     }
 
     private func parseResponse(response: NNTPResponse, payload: [String]?) throws -> NNTPPayload {
@@ -686,6 +723,13 @@ public enum NNTPCommand {
         case ("1", "0", "1"):
             return .Capabilities(self.parseCapabilities(payload!))
 
+        case ("1", "1", "1"):
+            guard let date = Global.dateParser.dateFromString(response.message) else {
+                throw NNTPError.UnexpectedResponse(response.status, response.context, response.code, response.message)
+            }
+
+            return .Date(date)
+
         case ("2", "8", "1"):
             return .AuthenticationAccepted
 
@@ -696,21 +740,18 @@ public enum NNTPCommand {
             return .MessageIds(payload!)
 
         case ("2", "1", "1"):
-            let cset = NSCharacterSet(charactersInString: " ")
             let scanner = NSScanner(string: response.message)
             var count : Int32 = 0
             var low : Int32 = 0
             var high : Int32 = 0
             var ids : [Int]?
-            var padding : NSString?
 
-            scanner.charactersToBeSkipped = nil
             if !scanner.scanInt(&count)
-                || !scanner.scanCharactersFromSet(cset, intoString: &padding)
+                || !scanner.skipCharactersFromSet(Global.spaceCset)
                 || !scanner.scanInt(&low)
-                || !scanner.scanCharactersFromSet(cset, intoString: &padding)
+                || !scanner.skipCharactersFromSet(Global.spaceCset)
                 || !scanner.scanInt(&high)
-                || !scanner.scanCharactersFromSet(cset, intoString: &padding)
+                || !scanner.skipCharactersFromSet(Global.spaceCset)
             {
                 throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
             }
@@ -729,6 +770,51 @@ public enum NNTPCommand {
             }
 
             return .GroupContent(scanner.remainder, Int(count), Int(low), Int(high), ids)
+
+        case ("2", "2", "0"):
+            let (number, msgid) = try self.parseArticleFound(response)
+
+            return .Article(number, msgid, "\r\n".join(payload!))
+
+        case ("2", "2", "1"):
+            let (number, msgid) = try self.parseArticleFound(response)
+
+            return .Headers(number, msgid, payload!)
+
+        case ("2", "2", "2"):
+            let (number, msgid) = try self.parseArticleFound(response)
+
+            return .Body(number, msgid, "\r\n".join(payload!))
+
+        case ("2", "2", "3"):
+            let (number, msgid) = try self.parseArticleFound(response)
+
+            return .ArticleFound(number, msgid)
+
+        case ("2", "1", "5"):
+            switch (self) {
+            case .ListNewsgroups(_):
+                var res : [(String, String)] = []
+                let cset = NSCharacterSet(charactersInString: " \t")
+
+                for line in payload! {
+                    let scanner = NSScanner(string: line)
+                    var group : NSString?
+
+                    scanner.charactersToBeSkipped = nil
+                    if !scanner.scanUpToCharactersFromSet(cset, intoString: &group)
+                        || !scanner.skipCharactersFromSet(cset)
+                    {
+                        throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+                    }
+
+                    res.append((group! as String), scanner.remainder)
+                }
+                return .GroupList(res)
+
+            default:
+                throw NNTPError.ServerProtocolError
+            }
 
         default:
             throw NNTPError.ServerProtocolError
@@ -1062,5 +1148,13 @@ public class NNTP {
 
     public func listArticles(group: String, since: NSDate) -> Promise<NNTPPayload> {
         return self.sendCommand(.NewNews(Wildmat(pattern: group), since))
+    }
+
+    public func post(message: String) -> Promise<NNTPPayload> {
+        return self.sendCommand(.Post).thenChain() {
+            (payload) in
+
+            return self.sendCommand(.PostBody(message))
+        }
     }
 }

@@ -9,7 +9,13 @@
 import Foundation
 
 extension NSScanner {
-    var remainder : String {
+    public var remainder : String {
         return (self.string as NSString).substringToIndex(self.scanLocation)
+    }
+
+    public func skipCharactersFromSet(set: NSCharacterSet) -> Bool {
+        var padding : NSString?
+
+        return self.scanCharactersFromSet(set, intoString: &padding)
     }
 }
