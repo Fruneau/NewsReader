@@ -144,28 +144,34 @@ public class Promise<T> {
         return self.registerHandler(nil, error: handler)
     }
 
-    public func thenChain<OnSubSuccess>(handler: (T) -> Promise<OnSubSuccess>) -> Promise<OnSubSuccess> {
+    public func thenChain<OnSubSuccess>(handler: (T) throws -> Promise<OnSubSuccess>) -> Promise<OnSubSuccess> {
         return Promise<OnSubSuccess>() {
             (onSubSuccess, onSubError) in
             self.then() {
                 (result) in
 
-                let promise = handler(result)
-                promise.then(onSubSuccess)
-                promise.otherwise(onSubError)
+                do {
+                    let promise = try handler(result)
+                    promise.then(onSubSuccess, otherwise: onSubError)
+                } catch let e {
+                    onSubError(e)
+                }
             }
         }
     }
 
-    public func otherwiseChain<OnSubSuccess>(handler: (ErrorType) -> Promise<OnSubSuccess>) -> Promise<OnSubSuccess> {
+    public func otherwiseChain<OnSubSuccess>(handler: (ErrorType) throws -> Promise<OnSubSuccess>) -> Promise<OnSubSuccess> {
         return Promise<OnSubSuccess>() {
             (onSubSuccess, onSubError) in
             self.otherwise() {
                 (result) in
 
-                let promise = handler(result)
-                promise.then(onSubSuccess)
-                promise.otherwise(onSubError)
+                do {
+                    let promise = try handler(result)
+                    promise.then(onSubSuccess, otherwise: onSubError)
+                } catch let e {
+                    onSubError(e)
+                }
             }
         }
     }
