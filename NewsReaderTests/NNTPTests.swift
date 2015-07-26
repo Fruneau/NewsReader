@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import NewsReader
+import News
 
 class NNTPTests : XCTestCase {
     let runLoop = NSRunLoop.currentRunLoop()

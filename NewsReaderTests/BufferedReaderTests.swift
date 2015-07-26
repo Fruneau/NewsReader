@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import NewsReader
+import Lib
 
 class BufferedReaderTests: XCTestCase {
     private func checkLine(buf: BufferedReader, exp: String?) {

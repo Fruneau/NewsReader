@@ -4,10 +4,20 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Lib.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>NNTP.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>1</integer>
+		</dict>
+		<key>News.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
 		</dict>
 		<key>NewsReader.xcscheme</key>
 		<dict>
@@ -33,6 +43,26 @@
 			<true/>
 		</dict>
 		<key>B442B9521B5519E60088FA0F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B45A81BB1B6502F5005323EC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B45A81C41B6502F5005323EC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B45A81DE1B6503A4005323EC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B45A81E71B6503A4005323EC</key>
 		<dict>
 			<key>primary</key>
 			<true/>

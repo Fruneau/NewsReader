@@ -8,6 +8,8 @@
 
 
 import Cocoa
+import Lib
+import News
 
 enum Error : ErrorType {
     case NoMessage

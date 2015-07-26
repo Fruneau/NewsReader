@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import NewsReader
+import Lib
 
 class FifoQueueTests: XCTestCase {
     private func checkPop(queue: FifoQueue<Int>, exp: Int?) {

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Lib
 
 public enum NNTPCapability : Hashable {
     /* RFC 3977: NNTP Version 2 */

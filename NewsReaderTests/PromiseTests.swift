@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import NewsReader
+import Lib
 
 private enum Error : ErrorType {
     case Fail
