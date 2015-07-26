@@ -33,6 +33,9 @@
 		B45A82061B6504BD005323EC /* NNTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42372701B59951C0046B987 /* NNTP.swift */; };
 		B45A82071B6504C3005323EC /* NNTPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E047581B56E68E001C8BFF /* NNTPTests.swift */; };
 		B45A82081B650517005323EC /* Lib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B45A81BC1B6502F5005323EC /* Lib.framework */; };
+		B45A820A1B6507B2005323EC /* MIME.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A82091B6507B2005323EC /* MIME.swift */; };
+		B45A820C1B652B89005323EC /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820B1B652B89005323EC /* String.swift */; };
+		B45A820E1B652D0C005323EC /* StringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820D1B652D0C005323EC /* StringTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -136,6 +139,9 @@
 		B45A81E31B6503A4005323EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B45A81E81B6503A4005323EC /* NewsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NewsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45A81F11B6503A4005323EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B45A82091B6507B2005323EC /* MIME.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MIME.swift; sourceTree = "<group>"; };
+		B45A820B1B652B89005323EC /* String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = String.swift; path = ../NewsReader/String.swift; sourceTree = "<group>"; };
+		B45A820D1B652D0C005323EC /* StringTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringTests.swift; sourceTree = "<group>"; };
 		B4E047501B564CD3001C8BFF /* FifoQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FifoQueue.swift; path = ../NewsReader/FifoQueue.swift; sourceTree = "<group>"; };
 		B4E047521B565079001C8BFF /* FifoQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FifoQueueTests.swift; path = ../NewsReaderTests/FifoQueueTests.swift; sourceTree = "<group>"; };
 		B4E047541B5667DA001C8BFF /* Buffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Buffer.swift; path = ../NewsReader/Buffer.swift; sourceTree = "<group>"; };
@@ -271,6 +277,7 @@
 				B4E047501B564CD3001C8BFF /* FifoQueue.swift */,
 				B423727F1B5A6A600046B987 /* NSData.swift */,
 				B4FF60731B5AB504006D17DA /* Promise.swift */,
+				B45A820B1B652B89005323EC /* String.swift */,
 				B45A81C01B6502F5005323EC /* Info.plist */,
 			);
 			path = Lib;
@@ -282,6 +289,7 @@
 				B4FF60751B5ADA6B006D17DA /* PromiseTests.swift */,
 				B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */,
 				B4E047521B565079001C8BFF /* FifoQueueTests.swift */,
+				B45A820D1B652D0C005323EC /* StringTests.swift */,
 				B45A81CE1B6502F5005323EC /* Info.plist */,
 			);
 			path = LibTests;
@@ -292,6 +300,7 @@
 			children = (
 				B45A81E11B6503A4005323EC /* News.h */,
 				B42372701B59951C0046B987 /* NNTP.swift */,
+				B45A82091B6507B2005323EC /* MIME.swift */,
 				B45A81E31B6503A4005323EC /* Info.plist */,
 			);
 			path = News;
@@ -606,6 +615,7 @@
 				B45A81FE1B6504AD005323EC /* Buffer.swift in Sources */,
 				B45A81FF1B6504AD005323EC /* NSRunLoop.swift in Sources */,
 				B45A82001B6504AD005323EC /* FifoQueue.swift in Sources */,
+				B45A820C1B652B89005323EC /* String.swift in Sources */,
 				B45A82011B6504AD005323EC /* NSData.swift in Sources */,
 				B45A82021B6504AD005323EC /* Promise.swift in Sources */,
 			);
@@ -617,6 +627,7 @@
 			files = (
 				B45A82031B6504B6005323EC /* PromiseTests.swift in Sources */,
 				B45A82041B6504B6005323EC /* BufferedReaderTests.swift in Sources */,
+				B45A820E1B652D0C005323EC /* StringTests.swift in Sources */,
 				B45A82051B6504B6005323EC /* FifoQueueTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -626,6 +637,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B45A82061B6504BD005323EC /* NNTP.swift in Sources */,
+				B45A820A1B6507B2005323EC /* MIME.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

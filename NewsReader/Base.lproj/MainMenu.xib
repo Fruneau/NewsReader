@@ -817,8 +817,8 @@
                                 </constraints>
                                 <animations/>
                             </customView>
-                            <customView id="K8r-O6-qfg">
-                                <rect key="frame" x="401" y="0.0" width="400" height="504"/>
+                            <customView misplaced="YES" id="K8r-O6-qfg">
+                                <rect key="frame" x="401" y="0.0" width="548" height="504"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bgm-la-nQs">
@@ -868,8 +868,8 @@
                                 </constraints>
                                 <animations/>
                             </customView>
-                            <customView id="PsQ-zJ-uD3">
-                                <rect key="frame" x="802" y="0.0" width="263" height="504"/>
+                            <customView misplaced="YES" id="PsQ-zJ-uD3">
+                                <rect key="frame" x="950" y="0.0" width="115" height="504"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yVE-Cu-jNf">
