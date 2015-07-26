@@ -202,7 +202,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
                     group.fullName = groupName
                     group.shortDesc = shortDesc
                     self.groupTreeController.addObject(group)
-//                    self.groupRoots[0].addGroup(group, shortDesc: shortDesc)
                 }
                 self.groupView.reloadItem(nil, reloadChildren: true)
 
@@ -210,40 +209,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
                 throw NNTPError.ServerProtocolError
             }
         })
-
-        /*
-        self.nntp?.listArticles("corp.software.general", since: date).thenChain({
-            (payload) throws -> Promise<NNTPPayload> in
-
-            switch (payload) {
-            case .MessageIds(let msgids):
-                for msg in msgids {
-                    print("got msgid \(msg)")
-                    return self.nntp!.sendCommand(.Body(.MessageId(msg)))
-                }
-                throw Error.NoMessage
-
-            default:
-                throw NNTPError.ServerProtocolError
-            }
-        }).then({
-            (payload) in
-
-            switch (payload) {
-            case .Article(_, _, let raw):
-                self.articleView.string = raw
-
-            default:
-                throw NNTPError.ServerProtocolError
-            }
-        }).otherwise({
-            (error) in
-            
-            print("got error \(error)")
-        })
-        */
-
-        // Insert code here to initialize your application
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
