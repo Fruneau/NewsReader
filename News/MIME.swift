@@ -134,7 +134,7 @@ private enum MIMEHeader {
             return nil
         }
 
-        let set = split(headerLine.characters) { $0 == "?" }.map(String.init)
+        let set = split(headerLine.characters, maxSplit: 6, allowEmptySlice: true) { $0 == "?" }.map(String.init)
         if set.count != 5 {
             return nil
         }
@@ -208,7 +208,7 @@ private enum MIMEHeader {
                     headers.append(MIMEHeader(name: hdr, content: currentValue!))
                 }
 
-                let vals = split(line.characters, maxSplit: 1, allowEmptySlices: false){ $0 == ":" }.map(String.init)
+                let vals = split(line.characters, maxSplit: 1, allowEmptySlices: true){ $0 == ":" }.map(String.init)
 
                 if vals.count != 2 {
                     throw Error.MalformedHeader(line)

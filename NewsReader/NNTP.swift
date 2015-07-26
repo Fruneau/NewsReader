@@ -127,6 +127,7 @@ public enum NNTPError : ErrorType {
     case ServerProtocolError
     case UnexpectedResponse(NNTPResponseStatus, NNTPResponseContext, Character, String)
     case MalformedResponse(NNTPResponseStatus, NNTPResponseContext, Character, String)
+    case MalformedOverviewLine(String)
 
     case ServiceTemporarilyUnvailable /* Error 400 */
     case NoSuchNewsgroup /* Error 411 */
@@ -301,19 +302,28 @@ private func packDate(date: NSDate, inBuffer buffer: Buffer) {
     buffer.appendString(" GMT")
 }
 
+public struct NNTPOverview {
+    public let num : Int
+    public let headers : MIMEHeaders
+
+    public let bytes : Int
+    public let lines : Int
+}
+
 public enum NNTPPayload {
     case Information(String)
     case Capabilities(Set<NNTPCapability>)
     case PasswordRequired
     case AuthenticationAccepted
     case MessageIds([String])
-    case GroupContent(String, Int, Int, Int, [Int]?)
+    case GroupContent(group: String, count: Int, lowestNumber: Int, highestNumber: Int, numbers: [Int]?)
     case ArticleFound(Int, String)
     case Article(Int, String, MIMEPart)
     case Headers(Int, String, MIMEHeaders)
     case Body(Int, String, String)
     case GroupList([(String, String)])
     case Date(NSDate)
+    case Overview([NNTPOverview])
 }
 
 public enum NNTPCommand {
@@ -747,6 +757,7 @@ public enum NNTPCommand {
             var high : Int32 = 0
             var ids : [Int]?
 
+            scanner.charactersToBeSkipped = nil
             if !scanner.scanInt(&count)
                 || !scanner.skipCharactersFromSet(Global.spaceCset)
                 || !scanner.scanInt(&low)
@@ -770,7 +781,8 @@ public enum NNTPCommand {
                 }
             }
 
-            return .GroupContent(scanner.remainder, Int(count), Int(low), Int(high), ids)
+            return .GroupContent(group: scanner.remainder, count: Int(count),
+                lowestNumber: Int(low), highestNumber: Int(high), numbers: ids)
 
         case ("2", "2", "0"):
             let (number, msgid) = try self.parseArticleFound(response)
@@ -793,6 +805,59 @@ public enum NNTPCommand {
             let (number, msgid) = try self.parseArticleFound(response)
 
             return .ArticleFound(number, msgid)
+
+        case ("2", "2", "4"):
+            var overviews : [NNTPOverview] = []
+            var headers : [String] = []
+
+            for line in payload! {
+                let tokens = split(line.characters, maxSplit: 100, allowEmptySlices: true){ $0 == "\t" }.map(String.init)
+
+                if tokens.count < 8 {
+                    print("count fail \(tokens.count)")
+                    throw NNTPError.MalformedOverviewLine(line)
+                }
+                print("count OK")
+
+                guard let num = Int(tokens[0]) else {
+                    throw NNTPError.MalformedOverviewLine(line)
+                }
+                print("num OK")
+
+                headers.removeAll()
+                if !tokens[1].isEmpty {
+                    headers.append("Subject: " + tokens[1])
+                }
+                if !tokens[2].isEmpty {
+                    headers.append("From: " + tokens[2])
+                }
+                if !tokens[3].isEmpty {
+                    headers.append("Date: " + tokens[3])
+                }
+                if !tokens[4].isEmpty {
+                    headers.append("Message-ID: " + tokens[4])
+                }
+                if !tokens[5].isEmpty {
+                    headers.append("References: " + tokens[5])
+                }
+
+                guard let bytes = Int(tokens[6]) else {
+                    throw NNTPError.MalformedOverviewLine(line)
+                }
+                print("bytes OK")
+                guard let lines = Int(tokens[7]) else {
+                    throw NNTPError.MalformedOverviewLine(line)
+                }
+                print("lines OK")
+
+                if tokens.count > 8 {
+                    headers.extend(tokens[8..<tokens.count])
+                }
+
+                let overview = NNTPOverview(num: num, headers: try MIMEHeaders.parse(headers), bytes: bytes, lines: lines)
+                overviews.append(overview)
+            }
+            return .Overview(overviews)
 
         case ("2", "1", "5"):
             switch (self) {

@@ -66,10 +66,14 @@ class GroupTree : NSObject {
 class Article : NSObject {
     let msgid : String
     let num : Int
+    let from : String
+    let subject : String
 
-    init(msgid: String, num: Int) {
-        self.msgid = msgid
+    init(num: Int, msgid: String, from: String, subject: String) {
         self.num = num
+        self.msgid = msgid
+        self.from = from
+        self.subject = subject
         super.init()
     }
 }
@@ -108,8 +112,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     var groupRoots = [GroupTree(root: "Groups")]
     var groupIndexes : [NSIndexPath] = [] {
         didSet {
-            let date = NSDate(timeIntervalSinceNow: -365 * 86400)
-
             self.threadsPromise?.cancel()
 
             if self.groupIndexes.count == 0 {
@@ -118,26 +120,63 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
             }
 
             let group = self.groupTreeController.selectedObjects[0] as! GroupTree
-            self.threadsPromise = self.nntp?.listArticles(group.name, since: date)
+            self.threadsPromise = self.nntp?.sendCommand(.Group(group.name)).thenChain({
+                (payload) throws in
+
+                print("got reply")
+                guard let nntp = self.nntp else {
+                    throw NNTPError.ServerProtocolError
+                }
+
+                switch payload {
+                case .GroupContent(_, let count, let lowestNumber, let highestNumber, _):
+                    let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
+
+                    print("requesting from \(from)")
+                    return nntp.sendCommand(.Over(ArticleRangeOrId.From(from)))
+
+                default:
+                    throw NNTPError.ServerProtocolError
+                }
+            })
             self.threadsPromise?.then({
                 (payload) throws in
 
-                switch (payload) {
-                case .MessageIds(let msgids):
-                    self.threadArrayController.removeObjects(self.threads)
+                switch(payload) {
+                case .Overview(let messages):
+                    self.threadArrayController.removeObject(self.threads)
 
+                    print("have articles")
                     var articles : [Article] = []
-                    for msg in msgids.reverse() {
-                        articles.append(Article(msgid: msg, num: 0))
+                    for msg in messages.reverse() {
+                        let from = msg.headers["From"]!
+                        let subject = msg.headers["Subject"]!
+                        let msgid = msg.headers["Message-ID"]!
 
-                        if articles.count == 1000 {
-                            break
-                        }
+                        articles.append(Article(num: msg.num, msgid: msgid, from: from, subject: subject))
                     }
                     self.threadArrayController.addObjects(articles)
 
                 default:
                     throw NNTPError.ServerProtocolError
+                }
+            }).otherwise({
+                (var error) in
+
+                switch (error) {
+                case PromiseError.UncaughtError(let e, _):
+                    error = e
+
+                default:
+                    break
+                }
+
+                switch (error) {
+                case NNTPError.MalformedOverviewLine(let l):
+                    print("Error: \(l)")
+
+                default:
+                    print("Other: \(error)")
                 }
             })
         }
@@ -158,8 +197,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
             }
 
             let msgid = self.threads[self.threadIndexes.firstIndex].msgid
-            self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid)))
-            self.articlePormise?.then({
+            self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid))).then({
                 (payload) in
 
                 switch (payload) {
@@ -185,7 +223,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
     /* Article view */
     @IBOutlet var articleView: NSTextView!
-    weak var articlePormise : Promise<NNTPPayload>?
+    weak var articlePormise : Promise<Void>?
 
     /* Model handling */
     var nntp : NNTP?
