@@ -13,14 +13,51 @@ enum Error : ErrorType {
     case NoMessage
 }
 
-class Group : NSObject {
+class GroupTree : NSObject {
     let name : String
-    let shortDesc : String?
+    var fullName : String?
+    var shortDesc : String?
+    let isRoot : Bool
+    var children : [String: GroupTree] = [:]
 
-    init(name : String, shortDesc: String?) {
-        self.name = name
-        self.shortDesc = shortDesc
+    var childrenCount : Int {
+        return self.children.count
+    }
+
+    var isLeaf : Bool {
+        return self.fullName != nil || self.isRoot
+    }
+
+    init(root: String) {
+        self.name = root
+        self.isRoot = true
         super.init()
+    }
+
+    init(node: String) {
+        self.name = node
+        self.isRoot = false
+        super.init()
+    }
+
+    func addGroup(fullName: String, shortDesc: String?) {
+        var node = self
+
+        for tok in split(fullName.characters, isSeparator: { $0 == "." }) {
+            let str = String(tok)
+
+            if let child = node.children[str] {
+                node = child
+            } else {
+                let child = GroupTree(node: str)
+
+                node.children[str] = child
+                node = child
+            }
+        }
+
+        node.fullName = fullName
+        node.shortDesc = shortDesc
     }
 }
 
@@ -59,15 +96,15 @@ class SelectableCollectionViewItem : NSCollectionViewItem {
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
     @IBOutlet weak var window: NSWindow!
 
     /* Groups view */
-    @IBOutlet weak var groupView: NSCollectionView!
-    @IBOutlet weak var groupArrayController: NSArrayController!
-    var groups : [Group] = []
-    var groupIndexes = NSIndexSet() {
+    @IBOutlet weak var groupView: NSOutlineView!
+    @IBOutlet weak var groupTreeController: NSTreeController!
+    var groupRoots = [GroupTree(root: "Groups")]
+    var groupIndexes : [NSIndexPath] = [] {
         didSet {
             let date = NSDate(timeIntervalSinceNow: -365 * 86400)
 
@@ -76,9 +113,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 return
             }
 
-            let group = self.groups[self.groupIndexes.firstIndex].name
-            print("listing \(group)")
-            self.nntp?.listArticles(group, since: date).then({
+            let group = self.groupTreeController.selectedObjects[0] as! GroupTree
+            print("listing \(group.name)")
+            self.nntp?.listArticles(group.name, since: date).then({
                 (payload) throws in
 
                 switch (payload) {
@@ -136,6 +173,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var nntp : NNTP?
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
+        self.groupView.setDelegate(self)
         self.nntp = nil
         guard var rcContent = NSData(contentsOfFile: "~/.newsreaderrc".stringByStandardizingPath)?.utf8String else {
             return
@@ -158,9 +196,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             switch (payload) {
             case .GroupList(let list):
-                for (group, shortDesc) in list {
-                    self.groupArrayController.addObject(Group(name: group, shortDesc: shortDesc))
+                for (groupName, shortDesc) in list {
+                    let group = GroupTree(node: groupName)
+
+                    group.fullName = groupName
+                    group.shortDesc = shortDesc
+                    self.groupTreeController.addObject(group)
+//                    self.groupRoots[0].addGroup(group, shortDesc: shortDesc)
                 }
+                self.groupView.reloadItem(nil, reloadChildren: true)
 
             default:
                 throw NNTPError.ServerProtocolError
@@ -204,5 +248,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
+    }
+
+    func outlineView(outlineView: NSOutlineView, viewForTableColumn tableColumn: NSTableColumn?, item: AnyObject) -> NSView? {
+        let node = item.representedObject as! GroupTree
+
+        return outlineView.makeViewWithIdentifier(node.isRoot ? "HeaderCell" : "DataCell", owner: self)
     }
 }
