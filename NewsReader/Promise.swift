@@ -153,11 +153,11 @@ public class Promise<T> {
 
     private func registerHandler(success: SuccessHandler?, error: ErrorHandler?) -> Promise<Void> {
         var ph : PromiseHandler<T>?
-        let promise = Promise<Void>() {
+        let promise = Promise<Void>(action: {
             (onSuccess, onError) in
 
             ph = PromiseHandler(successHandler: success, errorHandler: error, onSuccess: onSuccess, onError: onError)
-        }
+        }, onCancel: { self.cancel() })
 
         assert (ph != nil)
 
@@ -190,34 +190,50 @@ public class Promise<T> {
     }
 
     public func thenChain<OnSubSuccess>(handler: (T) throws -> Promise<OnSubSuccess>) -> Promise<OnSubSuccess> {
-        return Promise<OnSubSuccess>() {
+        var subPromise : Promise<OnSubSuccess>?
+
+        return Promise<OnSubSuccess>(action: {
             (onSubSuccess, onSubError) in
             self.then() {
                 (result) in
 
                 do {
-                    let promise = try handler(result)
-                    promise.then(onSubSuccess, otherwise: onSubError)
+                    subPromise = try handler(result)
+                    subPromise!.then(onSubSuccess, otherwise: onSubError)
                 } catch let e {
                     onSubError(e)
                 }
             }
-        }
+        }, onCancel: {
+            if let promise = subPromise {
+                promise.cancel()
+            } else {
+                self.cancel()
+            }
+        })
     }
 
     public func otherwiseChain<OnSubSuccess>(handler: (ErrorType) throws -> Promise<OnSubSuccess>) -> Promise<OnSubSuccess> {
-        return Promise<OnSubSuccess>() {
+        var subPromise : Promise<OnSubSuccess>?
+
+        return Promise<OnSubSuccess>(action: {
             (onSubSuccess, onSubError) in
             self.otherwise() {
                 (result) in
 
                 do {
-                    let promise = try handler(result)
-                    promise.then(onSubSuccess, otherwise: onSubError)
+                    subPromise = try handler(result)
+                    subPromise!.then(onSubSuccess, otherwise: onSubError)
                 } catch let e {
                     onSubError(e)
                 }
             }
-        }
+        }, onCancel: {
+            if let promise = subPromise {
+                promise.cancel()
+            } else {
+                self.cancel()
+            }
+        })
     }
 }
