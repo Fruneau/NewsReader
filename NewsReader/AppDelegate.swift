@@ -108,14 +108,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
         didSet {
             let date = NSDate(timeIntervalSinceNow: -365 * 86400)
 
+            self.threadsPromise?.cancel()
+
             if self.groupIndexes.count == 0 {
                 self.threadArrayController.removeObjects(self.threads)
                 return
             }
 
             let group = self.groupTreeController.selectedObjects[0] as! GroupTree
-            print("listing \(group.name)")
-            self.nntp?.listArticles(group.name, since: date).then({
+            self.threadsPromise = self.nntp?.listArticles(group.name, since: date)
+            self.threadsPromise?.then({
                 (payload) throws in
 
                 switch (payload) {
@@ -143,16 +145,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     @IBOutlet weak var threadView: NSCollectionView!
     @IBOutlet weak var threadArrayController: NSArrayController!
     var threads : [Article] = []
+    weak var threadsPromise : Promise<NNTPPayload>?
     var threadIndexes = NSIndexSet() {
         didSet {
+            self.articlePormise?.cancel()
+
             if self.threadIndexes.count == 0 {
                 self.articleView.string = ""
                 return
             }
 
             let msgid = self.threads[self.threadIndexes.firstIndex].msgid
-            print("displaying \(msgid)")
-            self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid))).then({
+            self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid)))
+            self.articlePormise?.then({
                 (payload) in
 
                 switch (payload) {
@@ -168,6 +173,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
     /* Article view */
     @IBOutlet var articleView: NSTextView!
+    weak var articlePormise : Promise<NNTPPayload>?
 
     /* Model handling */
     var nntp : NNTP?
