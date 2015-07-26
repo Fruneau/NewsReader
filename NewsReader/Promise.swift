@@ -11,11 +11,13 @@ import Foundation
 private enum State<T> {
     case Success(T)
     case Error(ErrorType)
+    case Cancelled
     case Running
 }
 
 public enum PromiseError : ErrorType {
-    case UncaughtError(ErrorType)
+    case UncaughtError(ErrorType, Int)
+    case Cancelled
 }
 
 private struct PromiseHandler<T> {
@@ -45,7 +47,13 @@ private struct PromiseHandler<T> {
                 self.onError(e)
             }
         } else {
-            self.onError(PromiseError.UncaughtError(res))
+            switch (res) {
+            case PromiseError.UncaughtError(let sub, let depth):
+                self.onError(PromiseError.UncaughtError(sub, depth + 1))
+
+            default:
+                self.onError(PromiseError.UncaughtError(res, 1))
+            }
         }
     }
 }
@@ -54,15 +62,28 @@ public class Promise<T> {
     public typealias SuccessHandler = (T) throws -> Void
     public typealias ErrorHandler = (ErrorType) throws -> Void
 
+    public typealias Constructor = ((T) -> Void, (ErrorType) -> Void) throws -> Void
+    public typealias Cancellor = (Void) -> Void
+
     private var handlers : [PromiseHandler<T>] = []
     private var state = State<T>.Running
+    private let onCancel : Cancellor?
 
-    public init(action: ((T) -> Void, (ErrorType) -> Void) throws -> Void) {
+    private init(action: Constructor, onOptCancel: Cancellor?) {
+        self.onCancel = onOptCancel
         do {
             try action(self.onSuccess, self.onError)
         } catch let e {
             self.onError(e)
         }
+    }
+
+    public convenience init(action: Constructor) {
+        self.init(action: action, onOptCancel: nil)
+    }
+
+    public convenience init(action: Constructor, onCancel: Cancellor) {
+        self.init(action: action, onOptCancel: onCancel)
     }
 
     public convenience init(success: T) {
@@ -90,6 +111,9 @@ public class Promise<T> {
             }
             self.handlers.removeAll()
 
+        case .Cancelled:
+            break
+
         default:
             assert (false)
         }
@@ -104,8 +128,26 @@ public class Promise<T> {
             }
             self.handlers.removeAll()
 
+        case .Cancelled:
+            break
+
         default:
             assert (false)
+        }
+    }
+
+    public func cancel() {
+        switch (self.state) {
+        case .Running:
+            self.state = .Cancelled
+            self.onCancel?()
+            for handler in self.handlers {
+                handler.fail(PromiseError.Cancelled)
+            }
+            self.handlers.removeAll()
+
+        default:
+            break
         }
     }
 
@@ -125,6 +167,9 @@ public class Promise<T> {
 
         case .Error(let result):
             ph?.fail(result)
+
+        case .Cancelled:
+            ph?.fail(PromiseError.Cancelled)
 
         case .Running:
             self.handlers.append(ph!)
