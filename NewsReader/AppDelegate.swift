@@ -163,11 +163,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
                 (payload) in
 
                 switch (payload) {
-                case .Article(_, _, let raw):
-                    self.articleView.string = raw
+                case .Article(_, _, let msg):
+                    self.articleView.string = msg.body
 
                 default:
                     throw NNTPError.ServerProtocolError
+                }
+            }, otherwise: {
+                (error) in
+
+                switch (error) {
+                case let a where a is News.Error:
+                    print("NewsError \((error as! News.Error).detail)")
+
+                default:
+                    print("error \(error)")
                 }
             })
         }

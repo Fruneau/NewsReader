@@ -85,13 +85,45 @@ public enum Error : ErrorType {
     case UnsupportedHeaderEncoding(encoding: String)
     case UnsupportedHeaderCharset(charset: String)
     case EncodingError(value: String)
+
+    public var detail : String {
+        switch (self) {
+        case .MalformedHeader(let s):
+            return "MalformedHeader(\(s))"
+
+        case .EmptyHeaderLine:
+            return "EmptyHeaderLine"
+
+        case .MalformedHeaderName(let s):
+            return "MalformedHeaderName(\(s))"
+
+        case .MissingHeaderEndMark:
+            return "MissingHeaderEndMark"
+
+        case .UnsupportedHeaderEncoding(let s):
+            return "UnsupportedHeaderEncoding(\(s))"
+
+        case .UnsupportedHeaderCharset(let s):
+            return "UnsupportedHeaderCharset(\(s))"
+
+        case .EncodingError(let s):
+            return "EncodingError(\(s))"
+        }
+    }
 }
 
-private enum Header {
+private enum MIMEHeader {
     case Generic(name: String, content: String)
 
     private init(name: String, content: String) {
         self = .Generic(name: name, content: content)
+    }
+
+    private var name : String {
+        switch (self) {
+        case .Generic(name: let name, content: _):
+            return name
+        }
     }
 
     static func decodeRFC2047(headerLine: String) throws -> String? {
@@ -139,12 +171,10 @@ private enum Header {
         default:
             throw Error.UnsupportedHeaderEncoding(encoding: set[2])
         }
-
-
     }
 
     static func appendToHeaderLine(current: String?, headerLine: String) throws -> String {
-        if let decoded = try Header.decodeRFC2047(headerLine) {
+        if let decoded = try MIMEHeader.decodeRFC2047(headerLine) {
             if let prev = current {
                 return prev + decoded
             } else {
@@ -157,9 +187,9 @@ private enum Header {
         }
     }
 
-    static func parseHeaders<S : SequenceType where S.Generator.Element == String>(data: S) throws -> [Header] {
+    static func parseHeaders<S : SequenceType where S.Generator.Element == String>(data: S) throws -> [MIMEHeader] {
         let cset = NSCharacterSet.whitespaceCharacterSet()
-        var headers : [Header] = []
+        var headers : [MIMEHeader] = []
         var currentHeader : String?
         var currentValue : String?
 
@@ -172,16 +202,16 @@ private enum Header {
                 }
 
                 line = line.stringByTrimmingCharactersInSet(cset)
-                currentValue = try Header.appendToHeaderLine(hdr, headerLine: line)
+                currentValue = try MIMEHeader.appendToHeaderLine(hdr, headerLine: line)
             } else {
                 if let hdr = currentHeader {
-                    headers.append(Header(name: hdr, content: currentValue!))
+                    headers.append(MIMEHeader(name: hdr, content: currentValue!))
                 }
 
-                let vals = split(line.characters, maxSplit: 2, allowEmptySlices: false){ $0 == ":" }.map(String.init)
+                let vals = split(line.characters, maxSplit: 1, allowEmptySlices: false){ $0 == ":" }.map(String.init)
 
                 if vals.count != 2 {
-                    throw Error.MalformedHeaderName(vals[0])
+                    throw Error.MalformedHeader(line)
                 }
 
                 if vals[0].stringByTrimmingCharactersInSet(cset) != vals[0] {
@@ -189,25 +219,67 @@ private enum Header {
                 }
 
                 line = vals[1].stringByTrimmingCharactersInSet(cset)
-                currentValue = try Header.appendToHeaderLine(nil, headerLine: line)
+                currentValue = try MIMEHeader.appendToHeaderLine(nil, headerLine: line)
                 currentHeader = vals[0]
             }
         }
 
         if let hdr = currentHeader {
-            headers.append(Header(name: hdr, content: currentValue!))
+            headers.append(MIMEHeader(name: hdr, content: currentValue!))
         }
 
         return headers
     }
 
-    static func parseHeadersAndGetBody(data: [String]) throws -> ([Header], ArraySlice<String>) {
+    static func parseHeadersAndGetBody(data: [String]) throws -> ([MIMEHeader], ArraySlice<String>) {
         guard let idx = data.indexOf("") else {
             throw Error.MissingHeaderEndMark
         }
 
         let sub = data[data.startIndex..<idx]
-        let headers = try Header.parseHeaders(sub)
+        let headers = try MIMEHeader.parseHeaders(sub)
         return (headers, data[idx..<data.endIndex])
+    }
+}
+
+public class MIMEHeaders {
+    private var headers : [String: MIMEHeader] = [:]
+
+    private init(headers: [MIMEHeader]) {
+        for header in headers {
+            self.headers[header.name] = header
+        }
+    }
+
+    public subscript(name: String) -> String? {
+        guard let hdr = self.headers[name] else {
+            return nil
+        }
+        switch hdr {
+        case .Generic(_, let val):
+            return val
+        }
+    }
+
+    static public func parse(data: [String]) throws -> MIMEHeaders {
+        let headers = try MIMEHeader.parseHeaders(data)
+
+        return MIMEHeaders(headers: headers)
+    }
+}
+
+public class MIMEPart {
+    public let headers : MIMEHeaders
+    public let body : String
+
+    private init(headers: [MIMEHeader], body: ArraySlice<String>) {
+        self.headers = MIMEHeaders(headers: headers)
+        self.body = "\r\n".join(body)
+    }
+
+    static public func parse(data: [String]) throws -> MIMEPart {
+        let (headers, body) = try MIMEHeader.parseHeadersAndGetBody(data)
+
+        return MIMEPart(headers: headers, body: body)
     }
 }

@@ -309,8 +309,8 @@ public enum NNTPPayload {
     case MessageIds([String])
     case GroupContent(String, Int, Int, Int, [Int]?)
     case ArticleFound(Int, String)
-    case Article(Int, String, String)
-    case Headers(Int, String, [String])
+    case Article(Int, String, MIMEPart)
+    case Headers(Int, String, MIMEHeaders)
     case Body(Int, String, String)
     case GroupList([(String, String)])
     case Date(NSDate)
@@ -774,13 +774,15 @@ public enum NNTPCommand {
 
         case ("2", "2", "0"):
             let (number, msgid) = try self.parseArticleFound(response)
+            let msg = try MIMEPart.parse(payload!)
 
-            return .Article(number, msgid, "\r\n".join(payload!))
+            return .Article(number, msgid, msg)
 
         case ("2", "2", "1"):
             let (number, msgid) = try self.parseArticleFound(response)
+            let headers = try MIMEHeaders.parse(payload!)
 
-            return .Headers(number, msgid, payload!)
+            return .Headers(number, msgid, headers)
 
         case ("2", "2", "2"):
             let (number, msgid) = try self.parseArticleFound(response)
