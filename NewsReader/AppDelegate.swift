@@ -64,8 +64,11 @@ class GroupTree : NSObject {
 }
 
 class Article : NSObject {
+    private weak var nntp : NNTP?
+
     let num : Int
     let headers : MIMEHeaders
+    dynamic var body : String?
 
     lazy var msgid : String? = {
         guard let hdr = self.headers["message-id"]?.first else {
@@ -123,7 +126,8 @@ class Article : NSObject {
         }
     }()
 
-    init(num: Int, headers: MIMEHeaders) {
+    init(nntp : NNTP?, num: Int, headers: MIMEHeaders) {
+        self.nntp = nntp
         self.num = num
         self.headers = headers
         super.init()
@@ -233,7 +237,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
                     print("have articles")
                     var articles : [Article] = []
                     for msg in messages.reverse() {
-                        articles.append(Article(num: msg.num, headers: msg.headers))
+                        articles.append(Article(nntp: self.nntp, num: msg.num,
+                            headers: msg.headers))
                     }
                     self.threadArrayController.addObjects(articles)
 
@@ -276,28 +281,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
                 return
             }
 
-            let msgid = self.threads[self.threadIndexes.firstIndex].msgid
-            self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid!))).then({
-                (payload) in
+            let article = self.threads[self.threadIndexes.firstIndex]
+            if article.body == nil {
+                self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(article.msgid!))).then({
+                    (payload) in
 
-                switch (payload) {
-                case .Article(_, _, let msg):
-                    self.articleView.string = msg.body
+                    switch (payload) {
+                    case .Article(_, _, let msg):
+                        article.body = msg.body
 
-                default:
-                    throw NNTPError.ServerProtocolError
-                }
-            }, otherwise: {
-                (error) in
+                    default:
+                        throw NNTPError.ServerProtocolError
+                    }
+                }, otherwise: {
+                    (error) in
 
-                switch (error) {
-                case let a where a is News.Error:
-                    print("NewsError \((error as! News.Error).detail)")
+                    switch (error) {
+                    case let a where a is News.Error:
+                        print("NewsError \((error as! News.Error).detail)")
 
-                default:
-                    print("error \(error)")
-                }
-            })
+                    default:
+                        print("error \(error)")
+                    }
+                })
+            }
+
         }
     }
 
@@ -310,8 +318,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.threadView.minItemSize = NSMakeSize(200, 37)
-        self.threadView.maxItemSize = NSMakeSize(600, 37)
+        self.threadView.minItemSize = NSMakeSize(0, 37)
+        self.threadView.maxItemSize = NSMakeSize(0, 37)
     }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {

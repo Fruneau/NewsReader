@@ -811,15 +811,12 @@ public enum NNTPCommand {
                 let tokens = split(line.characters, maxSplit: 100, allowEmptySlices: true){ $0 == "\t" }.map(String.init)
 
                 if tokens.count < 8 {
-                    print("count fail \(tokens.count)")
                     throw NNTPError.MalformedOverviewLine(line)
                 }
-                print("count OK")
 
                 guard let num = Int(tokens[0]) else {
                     throw NNTPError.MalformedOverviewLine(line)
                 }
-                print("num OK")
 
                 headers.removeAll()
                 if !tokens[1].isEmpty {
@@ -841,11 +838,9 @@ public enum NNTPCommand {
                 guard let bytes = Int(tokens[6]) else {
                     throw NNTPError.MalformedOverviewLine(line)
                 }
-                print("bytes OK")
                 guard let lines = Int(tokens[7]) else {
                     throw NNTPError.MalformedOverviewLine(line)
                 }
-                print("lines OK")
 
                 if tokens.count > 8 {
                     headers.extend(tokens[8..<tokens.count])

@@ -167,7 +167,7 @@ public enum MIMEHeader {
 
         f.locale = NSLocale(localeIdentifier: "en_US_POSIX")
         f.timeZone = NSTimeZone(abbreviation: "GMT")
-        f.dateFormat = "EEE, dd MMM yyyy HH:mm:ss"
+        f.dateFormat = "E, dd MMM yyyy HH:mm:ss"
         return f
     }()
 
@@ -176,7 +176,7 @@ public enum MIMEHeader {
 
         f.locale = NSLocale(localeIdentifier: "en_US_POSIX")
         f.timeZone = NSTimeZone(abbreviation: "GMT")
-        f.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z (v)"
+        f.dateFormat = "E, dd MMM yyyy HH:mm:ss Z (v)"
         return f
     }()
 
@@ -186,17 +186,12 @@ public enum MIMEHeader {
 
     static private func parseDate(content : String) -> NSDate? {
         if let date = MIMEHeader.dateParser.dateFromString(content) {
-            print("OK1 date \(content)")
             return date
         } else if let date = MIMEHeader.dateAltParser.dateFromString(content) {
-            print("OK2 date \(content)")
             return date
         } else if let match = MIMEHeader.dateDetector.firstMatchInString(content, options: NSMatchingOptions(rawValue: 0), range: NSMakeRange(0, content.characters.count)) {
-            print("Detected match: \(match.date) from \(content)")
             return match.date
         }
-
-        print("malformed date \(content)")
 
         return nil
     }
@@ -284,7 +279,6 @@ public enum MIMEHeader {
             let encoding = (headerLine as NSString).substringWithRange(match.rangeAtIndex(2))
             let chunk = (headerLine as NSString).substringWithRange(match.rangeAtIndex(3))
 
-            print("found one chunk with enc \(encoding) and charset \(charset)")
             headerLine = (headerLine as NSString).stringByReplacingCharactersInRange(match.range, withString: try MIMEHeader.decodeRFC2047Chunk(chunk, withEncoding: encoding, andCharset: charset))
         }
 
