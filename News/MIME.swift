@@ -112,79 +112,129 @@ public enum Error : ErrorType {
     }
 }
 
-private enum MIMEHeader {
-    case Generic(name: String, content: String)
+public struct MIMEAddress {
+    public let address : String
+    public let email : String
+    public let name : String?
 
-    private init(name: String, content: String) {
-        self = .Generic(name: name, content: content)
+    static private let nameEmailRe = try!
+        NSRegularExpression(pattern: "\"?([^<>\"]+)\"? +<(.+@.+)>",
+            options: NSRegularExpressionOptions(rawValue: 0))
+    static private let emailNameRe = try!
+        NSRegularExpression(pattern: "([^ ]+@[^ ]+) \\((.*)\\)",
+            options: NSRegularExpressionOptions(rawValue: 0))
+    static private let emailRe = try!
+        NSRegularExpression(pattern: "<?([^< ]+@[^> ]+)>?",
+            options: NSRegularExpressionOptions(rawValue: 0))
+
+    private static func parse(address: String) -> MIMEAddress {
+        let range = NSMakeRange(0, address.characters.count)
+        let options = NSMatchingOptions.Anchored
+
+        if let match = nameEmailRe.firstMatchInString(address, options: options, range: range) {
+            return MIMEAddress(address: address,
+                email: (address as NSString).substringWithRange(match.rangeAtIndex(2)),
+                name: (address as NSString).substringWithRange(match.rangeAtIndex(1)))
+        }
+
+        if let match = emailNameRe.firstMatchInString(address, options: options, range: range) {
+            return MIMEAddress(address: address,
+                email: (address as NSString).substringWithRange(match.rangeAtIndex(1)),
+                name: (address as NSString).substringWithRange(match.rangeAtIndex(2)))
+        }
+
+        if let match = emailRe.firstMatchInString(address, options: options, range: range) {
+            return MIMEAddress(address: address,
+                email: (address as NSString).substringWithRange(match.rangeAtIndex(1)),
+                name: nil)
+        }
+
+        return MIMEAddress(address: address, email: address, name: nil)
+    }
+}
+
+public enum MIMEHeader {
+    case Generic(name: String, content: String)
+    case Address(name: String, address: MIMEAddress)
+
+    private init(name: String, content: String) throws {
+        let lower = name.lowercaseString
+
+        switch (lower) {
+        case "from", "cc", "to":
+            self = .Address(name: lower, address: MIMEAddress.parse(content))
+
+        default:
+            self = .Generic(name: lower, content: content)
+        }
     }
 
     private var name : String {
         switch (self) {
         case .Generic(name: let name, content: _):
             return name
+
+        case .Address(name: let name, address: _):
+            return name
         }
     }
 
-    static func decodeRFC2047(headerLine: String) throws -> String? {
-        if  headerLine.characters.count <= 5
-            ||  !headerLine.startsWith("=?")
-            ||  !headerLine.endsWith("?=")
-        {
-            return nil
-        }
+    static private var rfc2047Re = try!
+        NSRegularExpression(pattern: "=\\?([^?]*)\\?([bq])\\?([^?]*)\\?=", options: NSRegularExpressionOptions.CaseInsensitive)
 
-        let set = split(headerLine.characters, maxSplit: 6, allowEmptySlice: true) { $0 == "?" }.map(String.init)
-        if set.count != 5 {
-            return nil
-        }
+    static private func decodeRFC2047Chunk(chunk: String,
+        withEncoding encoding: String,
+        andCharset charset: String) throws -> String
+    {
 
-        let cfCharset = CFStringConvertIANACharSetNameToEncoding(set[1])
+        let cfCharset = CFStringConvertIANACharSetNameToEncoding(charset)
         if cfCharset == kCFStringEncodingInvalidId {
-            throw Error.UnsupportedHeaderCharset(charset: set[1])
+            throw Error.UnsupportedHeaderCharset(charset: charset)
         }
 
         let charset = CFStringConvertEncodingToNSStringEncoding(cfCharset)
-        let content = set[3]
 
-        switch (set[2]) {
+        switch (encoding) {
         case "b", "B":
-            guard let data = NSData(base64EncodedString: content, options: NSDataBase64DecodingOptions(rawValue: 0)) else {
-                throw Error.EncodingError(value: content)
+            guard let data = NSData(base64EncodedString: chunk, options: NSDataBase64DecodingOptions(rawValue: 0)) else {
+                throw Error.EncodingError(value: chunk)
             }
             guard let decoded = NSString(data: data, encoding: charset) else {
-                throw Error.EncodingError(value: content)
+                throw Error.EncodingError(value: chunk)
             }
 
             return decoded as String
 
         case "q", "Q":
-            guard let data = NSData(quotedPrintableString: content) else {
-                throw Error.EncodingError(value: content)
+            guard let data = NSData(quotedPrintableString: chunk) else {
+                throw Error.EncodingError(value: chunk)
             }
             guard let decoded = NSString(data: data, encoding: charset) else {
-                throw Error.EncodingError(value: content)
+                throw Error.EncodingError(value: chunk)
             }
 
             return decoded as String
 
         default:
-            throw Error.UnsupportedHeaderEncoding(encoding: set[2])
+            throw Error.UnsupportedHeaderEncoding(encoding: encoding)
         }
     }
 
-    static func appendToHeaderLine(current: String?, headerLine: String) throws -> String {
-        if let decoded = try MIMEHeader.decodeRFC2047(headerLine) {
-            if let prev = current {
-                return prev + decoded
-            } else {
-                return decoded
-            }
-        } else if let prev = current {
-            return prev + " " + headerLine
-        } else {
-            return headerLine
+    static private func decodeRFC2047(var headerLine: String) throws -> String {
+        var matches = rfc2047Re.matchesInString(headerLine, options: NSMatchingOptions(rawValue: 0), range: NSMakeRange(0, headerLine.characters.count))
+
+        matches.sortInPlace { $0.range.location > $1.range.location }
+
+        for match in matches {
+            let charset = (headerLine as NSString).substringWithRange(match.rangeAtIndex(1))
+            let encoding = (headerLine as NSString).substringWithRange(match.rangeAtIndex(2))
+            let chunk = (headerLine as NSString).substringWithRange(match.rangeAtIndex(3))
+
+            print("found one chunk with enc \(encoding) and charset \(charset)")
+            headerLine = (headerLine as NSString).stringByReplacingCharactersInRange(match.range, withString: try MIMEHeader.decodeRFC2047Chunk(chunk, withEncoding: encoding, andCharset: charset))
         }
+
+        return headerLine
     }
 
     static func parseHeaders<S : SequenceType where S.Generator.Element == String>(data: S) throws -> [MIMEHeader] {
@@ -196,16 +246,14 @@ private enum MIMEHeader {
         for var line in data {
             if line.isEmpty {
                 throw Error.EmptyHeaderLine
-            } else if line.characters.first! == " " {
-                guard let hdr = currentValue else {
-                    throw Error.MalformedHeader(line)
-                }
-
+            } else if cset.characterIsMember(line.utf16.first!) {
                 line = line.stringByTrimmingCharactersInSet(cset)
-                currentValue = try MIMEHeader.appendToHeaderLine(hdr, headerLine: line)
+                currentValue?.append(Character(" "))
+                currentValue?.extend(line)
             } else {
                 if let hdr = currentHeader {
-                    headers.append(MIMEHeader(name: hdr, content: currentValue!))
+                    let val = try MIMEHeader.decodeRFC2047(currentValue!)
+                    headers.append(try MIMEHeader(name: hdr, content: val))
                 }
 
                 let vals = split(line.characters, maxSplit: 1, allowEmptySlices: true){ $0 == ":" }.map(String.init)
@@ -219,13 +267,14 @@ private enum MIMEHeader {
                 }
 
                 line = vals[1].stringByTrimmingCharactersInSet(cset)
-                currentValue = try MIMEHeader.appendToHeaderLine(nil, headerLine: line)
+                currentValue = line
                 currentHeader = vals[0]
             }
         }
 
         if let hdr = currentHeader {
-            headers.append(MIMEHeader(name: hdr, content: currentValue!))
+            let val = try MIMEHeader.decodeRFC2047(currentValue!)
+            headers.append(try MIMEHeader(name: hdr, content: val))
         }
 
         return headers
@@ -243,22 +292,47 @@ private enum MIMEHeader {
 }
 
 public class MIMEHeaders {
-    private var headers : [String: MIMEHeader] = [:]
+    private let headers : [String: MIMEHeader]
+    public let from : MIMEAddress?
+    public let to : MIMEAddress?
+    public let subject : String?
 
-    private init(headers: [MIMEHeader]) {
-        for header in headers {
-            self.headers[header.name] = header
-        }
+    private init(headers: [String: MIMEHeader], from: MIMEAddress?, to: MIMEAddress?,
+        subject: String?) {
+        self.from = from
+        self.to = to
+        self.subject = subject
+        self.headers = headers
     }
 
-    public subscript(name: String) -> String? {
-        guard let hdr = self.headers[name] else {
-            return nil
+    private convenience init(headers: [MIMEHeader]) {
+        var map : [String: MIMEHeader] = [:]
+        var from : MIMEAddress?
+        var to : MIMEAddress?
+        var subject : String?
+
+        for hdr in headers {
+            map[hdr.name] = hdr
+
+            switch hdr {
+            case .Address(name: let n, address: let a) where n == "from":
+                from = a
+
+            case .Address(name: let n, address: let a) where n == "to":
+                to = a
+
+            case .Generic(name: let n, content: let v) where n == "subject":
+                subject = v
+
+            default:
+                break
+            }
         }
-        switch hdr {
-        case .Generic(_, let val):
-            return val
-        }
+        self.init(headers: map, from: from, to: to, subject: subject)
+    }
+
+    public subscript(name: String) -> MIMEHeader? {
+        return self.headers[name.lowercaseString]
     }
 
     static public func parse(data: [String]) throws -> MIMEHeaders {

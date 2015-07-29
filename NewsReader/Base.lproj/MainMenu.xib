@@ -688,14 +688,14 @@
                                 <rect key="frame" x="0.0" y="0.0" width="400" height="504"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
-                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="W8X-Lb-R2L">
+                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="W8X-Lb-R2L">
                                         <rect key="frame" x="0.0" y="0.0" width="400" height="504"/>
                                         <clipView key="contentView" drawsBackground="NO" id="ubl-Xv-JR5">
                                             <rect key="frame" x="1" y="1" width="398" height="502"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="dUc-yG-wLJ" id="4OP-Rn-hna">
-                                                    <rect key="frame" x="0.0" y="0.0" width="398" height="502"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="398" height="0.0"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
                                                     <size key="intercellSpacing" width="3" height="0.0"/>
@@ -719,8 +719,8 @@
                                                                     <rect key="frame" x="1" y="0.0" width="395" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
-                                                                        <textField verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FrE-7q-b2w">
-                                                                            <rect key="frame" x="0.0" y="1" width="145" height="14"/>
+                                                                        <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FrE-7q-b2w">
+                                                                            <rect key="frame" x="0.0" y="1" width="394" height="14"/>
                                                                             <animations/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="HEADER CELL" id="ZPB-1Q-0Sj">
                                                                                 <font key="font" metaFont="smallSystemBold"/>
@@ -827,7 +827,7 @@
                                             <rect key="frame" x="1" y="1" width="398" height="502"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <collectionView selectable="YES" id="65F-xb-gPj">
+                                                <collectionView selectable="YES" maxNumberOfColumns="1" id="65F-xb-gPj">
                                                     <rect key="frame" x="0.0" y="0.0" width="398" height="502"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <animations/>
@@ -935,14 +935,14 @@
             <point key="canvasLocation" x="-2436.5" y="26"/>
         </window>
         <view id="bCw-MF-nit" userLabel="Thread View" customClass="SelectableView" customModule="NewsReader" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="223" height="38"/>
+            <rect key="frame" x="0.0" y="0.0" width="223" height="37"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="01a-kR-SqC">
-                    <rect key="frame" x="11" y="11" width="214" height="17"/>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="01a-kR-SqC">
+                    <rect key="frame" x="11" y="21" width="214" height="16"/>
                     <animations/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="8C7-HR-uF6">
-                        <font key="font" metaFont="system"/>
+                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="8C7-HR-uF6">
+                        <font key="font" metaFont="systemBold" size="12"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         <connections>
@@ -950,18 +950,42 @@
                         </connections>
                     </textFieldCell>
                     <connections>
-                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.msgid" id="zgb-8l-yYL"/>
+                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.from" id="94h-SE-la7"/>
+                    </connections>
+                </textField>
+                <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="Bht-WZ-SQz">
+                    <rect key="frame" x="13" y="-2" width="210" height="5"/>
+                    <animations/>
+                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    <font key="titleFont" metaFont="system"/>
+                </box>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gHG-PF-T1T">
+                    <rect key="frame" x="11" y="5" width="214" height="16"/>
+                    <animations/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Subject" id="nog-7b-4WC">
+                        <font key="font" metaFont="cellTitle"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                    <connections>
+                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.subject" id="hTv-Xt-gEq"/>
                     </connections>
                 </textField>
             </subviews>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="01a-kR-SqC" secondAttribute="trailing" constant="3" id="8h5-2b-ioN"/>
-                <constraint firstItem="01a-kR-SqC" firstAttribute="leading" secondItem="bCw-MF-nit" secondAttribute="leading" constant="3" id="Zfe-if-AQf"/>
-                <constraint firstItem="01a-kR-SqC" firstAttribute="top" secondItem="bCw-MF-nit" secondAttribute="top" constant="10" id="cYe-bg-aSV"/>
-                <constraint firstAttribute="bottom" secondItem="01a-kR-SqC" secondAttribute="bottom" constant="11" id="xX8-Wr-hb5"/>
+                <constraint firstItem="01a-kR-SqC" firstAttribute="leading" secondItem="bCw-MF-nit" secondAttribute="leading" constant="13" id="1rD-AE-eDs"/>
+                <constraint firstItem="gHG-PF-T1T" firstAttribute="top" secondItem="01a-kR-SqC" secondAttribute="bottom" id="9rc-UI-zoA"/>
+                <constraint firstAttribute="trailing" secondItem="Bht-WZ-SQz" secondAttribute="trailing" id="Em4-jy-It7"/>
+                <constraint firstItem="Bht-WZ-SQz" firstAttribute="leading" secondItem="bCw-MF-nit" secondAttribute="leading" constant="13" id="Gbj-RT-MLL"/>
+                <constraint firstAttribute="bottom" secondItem="Bht-WZ-SQz" secondAttribute="bottom" id="IpJ-wJ-b46"/>
+                <constraint firstItem="gHG-PF-T1T" firstAttribute="leading" secondItem="bCw-MF-nit" secondAttribute="leading" constant="13" id="bAq-Lb-pq4"/>
+                <constraint firstAttribute="trailing" secondItem="01a-kR-SqC" secondAttribute="trailing" id="f4t-Af-x6i"/>
+                <constraint firstItem="01a-kR-SqC" firstAttribute="top" secondItem="bCw-MF-nit" secondAttribute="top" id="fZJ-vm-pJt"/>
+                <constraint firstAttribute="trailing" secondItem="gHG-PF-T1T" secondAttribute="trailing" id="iJ1-22-dMN"/>
             </constraints>
             <animations/>
-            <point key="canvasLocation" x="-332.5" y="135"/>
+            <point key="canvasLocation" x="-332.5" y="135.5"/>
         </view>
         <collectionViewItem id="fCD-bO-1dq" userLabel="Thread View Item" customClass="SelectableCollectionViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
@@ -972,6 +996,8 @@
             <declaredKeys>
                 <string>msgid</string>
                 <string>num</string>
+                <string>from</string>
+                <string>to</string>
             </declaredKeys>
             <connections>
                 <binding destination="Voe-Tx-rLC" name="selectionIndexes" keyPath="threadIndexes" id="ZPd-Cd-v5V"/>

@@ -64,16 +64,52 @@ class GroupTree : NSObject {
 }
 
 class Article : NSObject {
-    let msgid : String
     let num : Int
-    let from : String
-    let subject : String
+    let headers : MIMEHeaders
 
-    init(num: Int, msgid: String, from: String, subject: String) {
+    var msgid : String? {
+        guard let hdr = self.headers["Message-ID"] else {
+            return nil
+        }
+
+        switch (hdr) {
+        case .Generic(name: _, content: let val):
+            return val
+
+        default:
+            return nil
+        }
+    }
+
+    var from : String? {
+        guard let addr = self.headers.from else {
+            return nil
+        }
+
+        guard let name = addr.name else {
+            return addr.email
+        }
+        return name
+    }
+
+    var to : String? {
+        guard let addr = self.headers.to else {
+            return nil
+        }
+
+        guard let name = addr.name else {
+            return addr.email
+        }
+        return name
+    }
+
+    var subject : String? {
+        return self.headers.subject
+    }
+
+    init(num: Int, headers: MIMEHeaders) {
         self.num = num
-        self.msgid = msgid
-        self.from = from
-        self.subject = subject
+        self.headers = headers
         super.init()
     }
 }
@@ -149,11 +185,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
                     print("have articles")
                     var articles : [Article] = []
                     for msg in messages.reverse() {
-                        let from = msg.headers["From"]!
-                        let subject = msg.headers["Subject"]!
-                        let msgid = msg.headers["Message-ID"]!
-
-                        articles.append(Article(num: msg.num, msgid: msgid, from: from, subject: subject))
+                        articles.append(Article(num: msg.num, headers: msg.headers))
                     }
                     self.threadArrayController.addObjects(articles)
 
@@ -197,7 +229,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
             }
 
             let msgid = self.threads[self.threadIndexes.firstIndex].msgid
-            self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid))).then({
+            self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid!))).then({
                 (payload) in
 
                 switch (payload) {
