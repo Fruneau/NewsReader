@@ -80,6 +80,7 @@ public enum Error : ErrorType {
     case MalformedHeader(String)
     case EmptyHeaderLine
     case MalformedHeaderName(String)
+    case MalformedDate(String)
 
     case MissingHeaderEndMark
     case UnsupportedHeaderEncoding(encoding: String)
@@ -108,6 +109,9 @@ public enum Error : ErrorType {
 
         case .EncodingError(let s):
             return "EncodingError(\(s))"
+
+        case .MalformedDate(let s):
+            return "MaformedDate(\(s))"
         }
     }
 }
@@ -156,6 +160,46 @@ public struct MIMEAddress {
 public enum MIMEHeader {
     case Generic(name: String, content: String)
     case Address(name: String, address: MIMEAddress)
+    case Date(NSDate)
+
+    private static let dateParser : NSDateFormatter = {
+        let f = NSDateFormatter()
+
+        f.locale = NSLocale(localeIdentifier: "en_US_POSIX")
+        f.timeZone = NSTimeZone(abbreviation: "GMT")
+        f.dateFormat = "EEE, dd MMM yyyy HH:mm:ss"
+        return f
+    }()
+
+    private static let dateAltParser : NSDateFormatter = {
+        let f = NSDateFormatter()
+
+        f.locale = NSLocale(localeIdentifier: "en_US_POSIX")
+        f.timeZone = NSTimeZone(abbreviation: "GMT")
+        f.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z (v)"
+        return f
+    }()
+
+    private static let dateDetector : NSDataDetector = {
+        return try! NSDataDetector(types: NSTextCheckingType.Date.rawValue)
+    }()
+
+    static private func parseDate(content : String) -> NSDate? {
+        if let date = MIMEHeader.dateParser.dateFromString(content) {
+            print("OK1 date \(content)")
+            return date
+        } else if let date = MIMEHeader.dateAltParser.dateFromString(content) {
+            print("OK2 date \(content)")
+            return date
+        } else if let match = MIMEHeader.dateDetector.firstMatchInString(content, options: NSMatchingOptions(rawValue: 0), range: NSMakeRange(0, content.characters.count)) {
+            print("Detected match: \(match.date) from \(content)")
+            return match.date
+        }
+
+        print("malformed date \(content)")
+
+        return nil
+    }
 
     private init(name: String, content: String) throws {
         let lower = name.lowercaseString
@@ -163,6 +207,13 @@ public enum MIMEHeader {
         switch (lower) {
         case "from", "cc", "to":
             self = .Address(name: lower, address: MIMEAddress.parse(content))
+
+        case "date":
+            guard let date = MIMEHeader.parseDate(content) else {
+                throw Error.MalformedDate(content)
+            }
+
+            self = .Date(date)
 
         default:
             self = .Generic(name: lower, content: content)
@@ -176,6 +227,9 @@ public enum MIMEHeader {
 
         case .Address(name: let name, address: _):
             return name
+
+        case .Date(_):
+            return "date"
         }
     }
 
@@ -292,46 +346,25 @@ public enum MIMEHeader {
 }
 
 public class MIMEHeaders {
-    private let headers : [String: MIMEHeader]
-    public let from : MIMEAddress?
-    public let to : MIMEAddress?
-    public let subject : String?
+    private let headers : [String: [MIMEHeader]]
 
-    private init(headers: [String: MIMEHeader], from: MIMEAddress?, to: MIMEAddress?,
-        subject: String?) {
-        self.from = from
-        self.to = to
-        self.subject = subject
-        self.headers = headers
-    }
-
-    private convenience init(headers: [MIMEHeader]) {
-        var map : [String: MIMEHeader] = [:]
-        var from : MIMEAddress?
-        var to : MIMEAddress?
-        var subject : String?
+    private init(headers: [MIMEHeader]) {
+        var map : [String: [MIMEHeader]] = [:]
 
         for hdr in headers {
-            map[hdr.name] = hdr
+            let name = hdr.name.lowercaseString
 
-            switch hdr {
-            case .Address(name: let n, address: let a) where n == "from":
-                from = a
-
-            case .Address(name: let n, address: let a) where n == "to":
-                to = a
-
-            case .Generic(name: let n, content: let v) where n == "subject":
-                subject = v
-
-            default:
-                break
+            if map[name] == nil {
+                map[name] = [hdr]
+            } else {
+                map[name]?.append(hdr)
             }
         }
-        self.init(headers: map, from: from, to: to, subject: subject)
+
+        self.headers = map
     }
 
-    public subscript(name: String) -> MIMEHeader? {
+    public subscript(name: String) -> [MIMEHeader]? {
         return self.headers[name.lowercaseString]
     }
 

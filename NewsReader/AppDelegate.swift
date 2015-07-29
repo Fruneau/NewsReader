@@ -67,8 +67,8 @@ class Article : NSObject {
     let num : Int
     let headers : MIMEHeaders
 
-    var msgid : String? {
-        guard let hdr = self.headers["Message-ID"] else {
+    lazy var msgid : String? = {
+        guard let hdr = self.headers["message-id"]?.first else {
             return nil
         }
 
@@ -79,33 +79,49 @@ class Article : NSObject {
         default:
             return nil
         }
-    }
+    }()
 
-    var from : String? {
-        guard let addr = self.headers.from else {
+    lazy var from : String? = {
+        guard let from = self.headers["from"]?.first else {
             return nil
         }
 
-        guard let name = addr.name else {
-            return addr.email
-        }
-        return name
-    }
+        switch (from) {
+        case .Address(name: _, address: let a):
+            return a.name == nil ? a.email : a.name
 
-    var to : String? {
-        guard let addr = self.headers.to else {
+        default:
+            return nil
+        }
+    }()
+
+    lazy var subject : String? = {
+        guard let subject = self.headers["subject"]?.first else {
             return nil
         }
 
-        guard let name = addr.name else {
-            return addr.email
-        }
-        return name
-    }
+        switch (subject) {
+        case .Generic(name: _, content: let c):
+            return c
 
-    var subject : String? {
-        return self.headers.subject
-    }
+        default:
+            return nil
+        }
+    }()
+
+    lazy var date : NSDate? = {
+        guard let date = self.headers["date"]?.first else {
+            return nil
+        }
+
+        switch date {
+        case .Date(let d):
+            return d
+
+        default:
+            return nil
+        }
+    }()
 
     init(num: Int, headers: MIMEHeaders) {
         self.num = num
@@ -133,6 +149,38 @@ class SelectableCollectionViewItem : NSCollectionViewItem {
     override var selected : Bool {
         didSet {
             (self.view as? SelectableView)?.selected = selected
+        }
+    }
+}
+
+class ShortDateFormatter : NSFormatter {
+    private static let todayFormatter : NSDateFormatter = {
+        let f = NSDateFormatter();
+
+        f.doesRelativeDateFormatting = true
+        f.dateStyle = .NoStyle
+        f.timeStyle = .ShortStyle
+        return f
+    }();
+
+    private static let oldFormatter : NSDateFormatter = {
+        let f = NSDateFormatter()
+
+        f.doesRelativeDateFormatting = true
+        f.dateStyle = .ShortStyle
+        f.timeStyle = .NoStyle
+        return f
+    }()
+
+    override func stringForObjectValue(obj: AnyObject) -> String? {
+        guard let date = obj as? NSDate else {
+            return nil
+        }
+
+        if date.compare(NSDate(timeIntervalSinceNow: -44200)) == .OrderedAscending {
+            return ShortDateFormatter.oldFormatter.stringForObjectValue(obj)
+        } else {
+            return ShortDateFormatter.todayFormatter.stringForObjectValue(obj)
         }
     }
 }
@@ -180,7 +228,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
                 switch(payload) {
                 case .Overview(let messages):
-                    self.threadArrayController.removeObject(self.threads)
+                    self.threadArrayController.removeObjects(self.threads)
 
                     print("have articles")
                     var articles : [Article] = []
@@ -259,6 +307,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
     /* Model handling */
     var nntp : NNTP?
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.threadView.minItemSize = NSMakeSize(200, 37)
+        self.threadView.maxItemSize = NSMakeSize(600, 37)
+    }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         self.groupView.setDelegate(self)

@@ -275,26 +275,23 @@ public struct Wildmat {
 }
 
 private struct Global {
-    static private func buildDateFormatter() -> NSDateFormatter {
+    static private let dateFormatter : NSDateFormatter = {
         let f = NSDateFormatter()
 
         f.dateFormat = "yyyyMMdd HHmmss"
         f.timeZone = NSTimeZone(abbreviation: "GMT")!
         return f
-    }
+    }()
 
-    static private func buildDateParser() -> NSDateFormatter {
+    static private let dateParser : NSDateFormatter = {
         let f = NSDateFormatter()
 
         f.dateFormat = "yyyyMMddHHmmss"
         f.timeZone = NSTimeZone(abbreviation: "GMT")!
         return f
-    }
+    }()
 
-    static private let dateFormatter = Global.buildDateFormatter()
-    static private let dateParser = Global.buildDateParser()
     static private let spaceCset = NSCharacterSet(charactersInString: " ")
-    static private let whiteCset = NSCharacterSet(charactersInString: " \t")
 }
 
 private func packDate(date: NSDate, inBuffer buffer: Buffer) {
