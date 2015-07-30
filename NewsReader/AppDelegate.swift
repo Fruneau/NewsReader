@@ -174,6 +174,10 @@ class Article : NSObject {
         return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
     }()
 
+    var contactPicture : NSData? {
+        return self.contact?.imageData()
+    }
+
     init(nntp : NNTP?, num: Int, headers: MIMEHeaders) {
         self.nntp = nntp
         self.num = num
@@ -186,6 +190,17 @@ class BackgroundView : NSView {
     override func drawRect(dirtyRect: NSRect) {
         NSColor.whiteColor().set()
         NSRectFill(dirtyRect)
+    }
+}
+
+class UserBadgeView : NSImageView {
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.wantsLayer = true
+
+        self.layer!.borderWidth = 0
+        self.layer!.cornerRadius = 59.0 / 2
+        self.layer!.masksToBounds = true
     }
 }
 
