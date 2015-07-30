@@ -683,8 +683,8 @@
                     <splitView arrangesAllSubviews="NO" dividerStyle="thin" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Ys-jn-8Cv">
                         <rect key="frame" x="0.0" y="0.0" width="1065" height="595"/>
                         <subviews>
-                            <customView misplaced="YES" id="cdI-zd-Z7O">
-                                <rect key="frame" x="0.0" y="0.0" width="400" height="595"/>
+                            <customView id="cdI-zd-Z7O">
+                                <rect key="frame" x="0.0" y="0.0" width="310" height="595"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="W8X-Lb-R2L">
@@ -816,8 +816,8 @@
                                 </constraints>
                                 <animations/>
                             </customView>
-                            <customView misplaced="YES" id="K8r-O6-qfg">
-                                <rect key="frame" x="401" y="0.0" width="251" height="595"/>
+                            <customView id="K8r-O6-qfg">
+                                <rect key="frame" x="311" y="0.0" width="200" height="595"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bgm-la-nQs">
@@ -867,8 +867,8 @@
                                 </constraints>
                                 <animations/>
                             </customView>
-                            <customView misplaced="YES" id="PsQ-zJ-uD3">
-                                <rect key="frame" x="653" y="0.0" width="412" height="595"/>
+                            <customView id="PsQ-zJ-uD3">
+                                <rect key="frame" x="512" y="0.0" width="553" height="595"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="DAY-0P-lxX" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
@@ -893,22 +893,25 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Lhs-tR-7OB">
-                                                                <rect key="frame" x="0.0" y="37" width="23" height="17"/>
+                                                                <rect key="frame" x="0.0" y="37" width="88" height="17"/>
                                                                 <animations/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="To:" id="oN1-mr-DHe">
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Newsgroups: " id="oN1-mr-DHe">
                                                                     <font key="font" metaFont="system"/>
                                                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4EP-80-Whp">
-                                                                <rect key="frame" x="29" y="37" width="37" height="17"/>
+                                                                <rect key="frame" x="88" y="37" width="37" height="17"/>
                                                                 <animations/>
                                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="FnT-6q-h6f">
                                                                     <font key="font" metaFont="system"/>
                                                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="WYp-GU-VTD" name="value" keyPath="selection.to" id="DqR-h8-NjR"/>
+                                                                </connections>
                                                             </textField>
                                                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kbs-MJ-EAk">
                                                                 <rect key="frame" x="0.0" y="16" width="51" height="17"/>
@@ -951,10 +954,10 @@
                                                                 <animations/>
                                                                 <imageCell key="cell" refusesFirstResponder="YES" focusRingType="none" alignment="left" imageScaling="proportionallyDown" image="NSUserGuest" id="YTC-Wd-lkx"/>
                                                                 <connections>
-                                                                    <binding destination="WYp-GU-VTD" name="data" keyPath="selection.contactPicture" id="yRX-VW-Jkj">
+                                                                    <binding destination="WYp-GU-VTD" name="value" keyPath="selection.contactPicture" id="AZb-1s-Rs3">
                                                                         <dictionary key="options">
                                                                             <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
-                                                                            <bool key="NSConditionallySetsEnabled" value="NO"/>
+                                                                            <bool key="NSConditionallySetsHidden" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
@@ -996,7 +999,7 @@
                                                             <constraint firstItem="kbs-MJ-EAk" firstAttribute="top" secondItem="4EP-80-Whp" secondAttribute="bottom" constant="4" id="tXk-j5-ikK"/>
                                                             <constraint firstItem="Xl1-a4-A8o" firstAttribute="top" secondItem="0sV-xk-XRS" secondAttribute="top" constant="8" id="uER-tT-i7w"/>
                                                             <constraint firstItem="pEA-Mo-71o" firstAttribute="bottom" secondItem="kbs-MJ-EAk" secondAttribute="bottom" id="w7I-jE-jlw"/>
-                                                            <constraint firstItem="4EP-80-Whp" firstAttribute="leading" secondItem="Lhs-tR-7OB" secondAttribute="trailing" constant="10" id="x9X-CL-AKY"/>
+                                                            <constraint firstItem="4EP-80-Whp" firstAttribute="leading" secondItem="Lhs-tR-7OB" secondAttribute="trailing" constant="4" id="x9X-CL-AKY"/>
                                                             <constraint firstItem="83S-mO-Tcs" firstAttribute="bottom" secondItem="kbs-MJ-EAk" secondAttribute="bottom" id="xtN-6j-XFG"/>
                                                         </constraints>
                                                         <animations/>
@@ -1018,7 +1021,11 @@
                                                                     <size key="minSize" width="533" height="504"/>
                                                                     <size key="maxSize" width="4030" height="10000000"/>
                                                                     <connections>
-                                                                        <binding destination="WYp-GU-VTD" name="attributedString" keyPath="selection.body" id="VOA-dU-wt9"/>
+                                                                        <binding destination="WYp-GU-VTD" name="attributedString" keyPath="selection.body" id="rAz-Xu-wIL">
+                                                                            <dictionary key="options">
+                                                                                <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                            </dictionary>
+                                                                        </binding>
                                                                     </connections>
                                                                 </textView>
                                                             </subviews>

@@ -66,9 +66,10 @@ class GroupTree : NSObject {
 
 class Article : NSObject {
     private weak var nntp : NNTP?
+    private weak var promise : Promise<NNTPPayload>?
 
-    let num : Int
-    let headers : MIMEHeaders
+    let refs : [(String, Int)]
+    var headers : MIMEHeaders
     dynamic var body : String?
 
     lazy var msgid : String? = {
@@ -174,15 +175,70 @@ class Article : NSObject {
         return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
     }()
 
-    var contactPicture : NSData? {
-        return self.contact?.imageData()
+    private func loadNewsgroups() -> String? {
+        guard let dest = self.headers["newsgroups"] else {
+            return nil
+        }
+
+        var out : [String] = []
+        for entry in dest {
+            switch (entry) {
+            case .Generic(name: _, content: let v):
+                out.append(v)
+
+            default:
+                break
+            }
+        }
+        return ", ".join(out)
     }
 
-    init(nntp : NNTP?, num: Int, headers: MIMEHeaders) {
+    dynamic lazy var to : String? = self.loadNewsgroups()
+
+    lazy var contactPicture : NSImage? = {
+        if let data = self.contact?.imageData() {
+            return NSImage(data: data)
+        } else {
+            return nil
+        }
+    }()
+
+    init(nntp : NNTP?, ref: (String, Int), headers: MIMEHeaders) {
         self.nntp = nntp
-        self.num = num
+        self.refs = [ref]
         self.headers = headers
         super.init()
+    }
+
+    func load() {
+        if self.promise != nil {
+            return
+        }
+
+        if let msgid = self.msgid  {
+            self.promise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid)))
+        } else {
+            self.nntp?.sendCommand(.Group(self.refs[0].0))
+            self.promise = self.nntp?.sendCommand(.Article(ArticleId.Number(self.refs[0].1)))
+        }
+
+        self.promise?.then({
+            (payload) in
+
+            switch payload {
+            case .Article(_, _, let msg):
+                self.headers = msg.headers
+                self.body = msg.body
+                self.to = self.loadNewsgroups()
+
+            default:
+                break
+            }
+        })
+    }
+
+    func cancelLoad() {
+        self.promise?.cancel()
     }
 }
 
@@ -199,7 +255,7 @@ class UserBadgeView : NSImageView {
         self.wantsLayer = true
 
         self.layer!.borderWidth = 0
-        self.layer!.cornerRadius = 59.0 / 2
+        self.layer!.cornerRadius = self.bounds.size.width / 2
         self.layer!.masksToBounds = true
     }
 }
@@ -304,7 +360,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
                 case .Overview(let messages):
                     var articles : [Article] = []
                     for msg in messages.reverse() {
-                        articles.append(Article(nntp: self.nntp, num: msg.num,
+                        articles.append(Article(nntp: self.nntp, ref: (group.fullName!, msg.num),
                             headers: msg.headers))
                     }
                     self.threads = articles
@@ -340,42 +396,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     weak var threadsPromise : Promise<NNTPPayload>?
     var threadIndexes = NSIndexSet() {
         didSet {
-            self.articlePormise?.cancel()
-
             if self.threadIndexes.count == 0 {
                 return
             }
 
-            let article = self.threads[self.threadIndexes.firstIndex]
-            if article.body == nil {
-                self.articlePormise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(article.msgid!))).then({
-                    (payload) in
-
-                    switch (payload) {
-                    case .Article(_, _, let msg):
-                        article.body = msg.body
-
-                    default:
-                        throw NNTPError.ServerProtocolError
-                    }
-                }, otherwise: {
-                    (error) in
-
-                    switch (error) {
-                    case let a where a is News.Error:
-                        print("NewsError \((error as! News.Error).detail)")
-
-                    default:
-                        print("error \(error)")
-                    }
-                })
-            }
-
+            self.threads[self.threadIndexes.firstIndex].load()
         }
     }
-
-    /* Article view */
-    weak var articlePormise : Promise<Void>?
 
     /* Model handling */
     var nntp : NNTP?
