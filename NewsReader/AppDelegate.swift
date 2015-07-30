@@ -8,6 +8,7 @@
 
 
 import Cocoa
+import AddressBook
 import Lib
 import News
 
@@ -85,6 +86,25 @@ class Article : NSObject {
     }()
 
     lazy var from : String? = {
+        if let contact = self.contact {
+            var res = ""
+
+            if let firstName = contact.valueForProperty(kABFirstNameProperty) as? String {
+                res.extend(firstName)
+            }
+
+            if let lastName = contact.valueForProperty(kABLastNameProperty) as? String {
+                if !res.isEmpty {
+                    res.append(Character(" "))
+                }
+                res.extend(lastName)
+            }
+
+            if !res.isEmpty {
+                return res
+            }
+        }
+
         guard let from = self.headers["from"]?.first else {
             return nil
         }
@@ -92,6 +112,20 @@ class Article : NSObject {
         switch (from) {
         case .Address(name: _, address: let a):
             return a.name == nil ? a.email : a.name
+
+        default:
+            return nil
+        }
+    }()
+
+    lazy var email : String? = {
+        guard let from = self.headers["from"]?.first else {
+            return nil
+        }
+
+        switch (from) {
+        case .Address(name: _, address: let a):
+            return a.email
 
         default:
             return nil
@@ -126,11 +160,32 @@ class Article : NSObject {
         }
     }()
 
+    lazy var contact : ABPerson? = {
+        guard let email = self.email else {
+            return nil
+        }
+
+        guard let ab = ABAddressBook.sharedAddressBook() else {
+            return nil
+        }
+
+        let pattern = ABPerson.searchElementForProperty(kABEmailProperty, label: nil, key: nil, value: email as NSString, comparison: CFIndex(kABPrefixMatchCaseInsensitive.rawValue))
+
+        return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
+    }()
+
     init(nntp : NNTP?, num: Int, headers: MIMEHeaders) {
         self.nntp = nntp
         self.num = num
         self.headers = headers
         super.init()
+    }
+}
+
+class BackgroundView : NSView {
+    override func drawRect(dirtyRect: NSRect) {
+        NSColor.whiteColor().set()
+        NSRectFill(dirtyRect)
     }
 }
 
@@ -197,13 +252,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     /* Groups view */
     @IBOutlet weak var groupView: NSOutlineView!
     @IBOutlet weak var groupTreeController: NSTreeController!
-    var groupRoots = [GroupTree(root: "Groups")]
+    dynamic var groupRoots = [GroupTree(root: "Groups")]
     var groupIndexes : [NSIndexPath] = [] {
         didSet {
             self.threadsPromise?.cancel()
 
             if self.groupIndexes.count == 0 {
-                self.threadArrayController.removeObjects(self.threads)
+                self.threads = []
                 return
             }
 
@@ -232,15 +287,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
                 switch(payload) {
                 case .Overview(let messages):
-                    self.threadArrayController.removeObjects(self.threads)
-
-                    print("have articles")
                     var articles : [Article] = []
                     for msg in messages.reverse() {
                         articles.append(Article(nntp: self.nntp, num: msg.num,
                             headers: msg.headers))
                     }
-                    self.threadArrayController.addObjects(articles)
+                    self.threads = articles
 
                 default:
                     throw NNTPError.ServerProtocolError
@@ -269,15 +321,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
     /* Thread view */
     @IBOutlet weak var threadView: NSCollectionView!
-    @IBOutlet weak var threadArrayController: NSArrayController!
-    var threads : [Article] = []
+    dynamic var threads : [Article] = []
     weak var threadsPromise : Promise<NNTPPayload>?
     var threadIndexes = NSIndexSet() {
         didSet {
             self.articlePormise?.cancel()
 
             if self.threadIndexes.count == 0 {
-                self.articleView.string = ""
                 return
             }
 
@@ -310,7 +360,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     }
 
     /* Article view */
-    @IBOutlet var articleView: NSTextView!
     weak var articlePormise : Promise<Void>?
 
     /* Model handling */
@@ -351,9 +400,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
                     group.fullName = groupName
                     group.shortDesc = shortDesc
-                    self.groupTreeController.addObject(group)
+                    self.groupRoots.append(group)
                 }
-                self.groupView.reloadItem(nil, reloadChildren: true)
 
             default:
                 throw NNTPError.ServerProtocolError
