@@ -18,4 +18,10 @@ extension NSScanner {
 
         return self.scanCharactersFromSet(set, intoString: &padding)
     }
+
+    public func skipString(string: String) -> Bool {
+        var padding : NSString?
+
+        return self.scanString(string, intoString: &padding)
+    }
 }

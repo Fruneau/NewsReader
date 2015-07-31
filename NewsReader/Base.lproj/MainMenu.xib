@@ -683,13 +683,13 @@
                     <splitView arrangesAllSubviews="NO" dividerStyle="thin" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Ys-jn-8Cv">
                         <rect key="frame" x="0.0" y="0.0" width="1065" height="595"/>
                         <subviews>
-                            <customView id="cdI-zd-Z7O">
-                                <rect key="frame" x="0.0" y="0.0" width="310" height="595"/>
+                            <customView misplaced="YES" id="cdI-zd-Z7O">
+                                <rect key="frame" x="0.0" y="0.0" width="400" height="595"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="W8X-Lb-R2L">
                                         <rect key="frame" x="0.0" y="0.0" width="310" height="595"/>
-                                        <clipView key="contentView" drawsBackground="NO" id="ubl-Xv-JR5">
+                                        <clipView key="contentView" horizontalCompressionResistancePriority="250" drawsBackground="NO" id="ubl-Xv-JR5">
                                             <rect key="frame" x="0.0" y="0.0" width="310" height="595"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
@@ -764,14 +764,36 @@
                                                                                 <binding destination="UJX-Cb-sBh" name="toolTip" keyPath="objectValue.shortDesc" id="aB8-Qg-ZD3"/>
                                                                             </connections>
                                                                         </textField>
+                                                                        <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8V4-bk-0LJ">
+                                                                            <rect key="frame" x="261" y="-1" width="39" height="17"/>
+                                                                            <constraints>
+                                                                                <constraint firstAttribute="height" constant="16" id="1iO-8d-1bO"/>
+                                                                                <constraint firstAttribute="width" constant="46" id="wcc-28-8qs"/>
+                                                                            </constraints>
+                                                                            <animations/>
+                                                                            <buttonCell key="cell" type="inline" title="Count" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="CCg-g5-wsk">
+                                                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                                <font key="font" metaFont="smallSystemBold"/>
+                                                                            </buttonCell>
+                                                                            <connections>
+                                                                                <binding destination="UJX-Cb-sBh" name="hidden" keyPath="objectValue.unreadCountText" id="o7d-Cm-fpX">
+                                                                                    <dictionary key="options">
+                                                                                        <string key="NSValueTransformerName">NSIsNil</string>
+                                                                                    </dictionary>
+                                                                                </binding>
+                                                                                <binding destination="UJX-Cb-sBh" name="title" keyPath="objectValue.unreadCountText" id="yqG-bn-HKI"/>
+                                                                            </connections>
+                                                                        </button>
                                                                     </subviews>
                                                                     <constraints>
+                                                                        <constraint firstItem="8V4-bk-0LJ" firstAttribute="centerY" secondItem="UJX-Cb-sBh" secondAttribute="centerY" id="0EP-Tc-yif"/>
                                                                         <constraint firstItem="hdU-0D-MSc" firstAttribute="leading" secondItem="6pZ-ng-LiI" secondAttribute="trailing" constant="7" id="3HP-0a-LyK"/>
                                                                         <constraint firstItem="6pZ-ng-LiI" firstAttribute="leading" secondItem="UJX-Cb-sBh" secondAttribute="leading" constant="3" id="DFH-aC-Aly"/>
                                                                         <constraint firstItem="6pZ-ng-LiI" firstAttribute="top" secondItem="UJX-Cb-sBh" secondAttribute="top" id="DlB-hi-p9S"/>
                                                                         <constraint firstItem="hdU-0D-MSc" firstAttribute="leading" secondItem="6pZ-ng-LiI" secondAttribute="trailing" constant="7" id="Ere-3I-opO"/>
                                                                         <constraint firstItem="hdU-0D-MSc" firstAttribute="top" secondItem="UJX-Cb-sBh" secondAttribute="top" id="Jsd-s3-zhv"/>
                                                                         <constraint firstAttribute="bottom" secondItem="6pZ-ng-LiI" secondAttribute="bottom" id="c7x-Ab-tW3"/>
+                                                                        <constraint firstAttribute="trailing" secondItem="8V4-bk-0LJ" secondAttribute="trailing" id="enf-Pe-HoN"/>
                                                                         <constraint firstAttribute="trailing" secondItem="hdU-0D-MSc" secondAttribute="trailing" constant="3" id="wJz-oc-hev"/>
                                                                         <constraint firstAttribute="bottom" secondItem="hdU-0D-MSc" secondAttribute="bottom" id="wfd-48-XJy"/>
                                                                     </constraints>
@@ -816,8 +838,8 @@
                                 </constraints>
                                 <animations/>
                             </customView>
-                            <customView id="K8r-O6-qfg">
-                                <rect key="frame" x="311" y="0.0" width="200" height="595"/>
+                            <customView misplaced="YES" id="K8r-O6-qfg">
+                                <rect key="frame" x="401" y="0.0" width="251" height="595"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bgm-la-nQs">
@@ -867,14 +889,14 @@
                                 </constraints>
                                 <animations/>
                             </customView>
-                            <customView id="PsQ-zJ-uD3">
-                                <rect key="frame" x="512" y="0.0" width="553" height="595"/>
+                            <customView misplaced="YES" id="PsQ-zJ-uD3">
+                                <rect key="frame" x="653" y="0.0" width="412" height="595"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
                                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="DAY-0P-lxX" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="553" height="595"/>
                                         <subviews>
-                                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DMN-I8-Dhp">
+                                            <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DMN-I8-Dhp">
                                                 <rect key="frame" x="20" y="0.0" width="533" height="595"/>
                                                 <subviews>
                                                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="0sV-xk-XRS" userLabel="Header View">
@@ -1005,20 +1027,20 @@
                                                         <animations/>
                                                     </customView>
                                                     <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yVE-Cu-jNf">
-                                                        <rect key="frame" x="0.0" y="0.0" width="533" height="504"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
                                                         <clipView key="contentView" copiesOnScroll="NO" id="2Jc-5Y-jG5">
-                                                            <rect key="frame" x="0.0" y="0.0" width="533" height="504"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textView editable="NO" importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="uhx-Dw-DrR">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="533" height="504"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <animations/>
                                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                                    <size key="minSize" width="533" height="504"/>
+                                                                    <size key="minSize" width="533" height="512"/>
                                                                     <size key="maxSize" width="4030" height="10000000"/>
                                                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <size key="minSize" width="533" height="504"/>
+                                                                    <size key="minSize" width="533" height="512"/>
                                                                     <size key="maxSize" width="4030" height="10000000"/>
                                                                     <connections>
                                                                         <binding destination="WYp-GU-VTD" name="attributedString" keyPath="selection.body" id="rAz-Xu-wIL">
@@ -1039,7 +1061,7 @@
                                                             <animations/>
                                                         </scroller>
                                                         <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="u3z-VZ-aEy">
-                                                            <rect key="frame" x="517" y="0.0" width="16" height="504"/>
+                                                            <rect key="frame" x="517" y="0.0" width="16" height="512"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <animations/>
                                                         </scroller>
@@ -1047,7 +1069,6 @@
                                                 </subviews>
                                                 <animations/>
                                                 <constraints>
-                                                    <constraint firstItem="yVE-Cu-jNf" firstAttribute="top" secondItem="0sV-xk-XRS" secondAttribute="bottom" id="F8X-LL-T7V"/>
                                                     <constraint firstItem="0sV-xk-XRS" firstAttribute="leading" secondItem="DMN-I8-Dhp" secondAttribute="leading" id="MFG-pM-kvV"/>
                                                     <constraint firstAttribute="trailing" secondItem="0sV-xk-XRS" secondAttribute="trailing" id="ONm-Fs-Kyi"/>
                                                     <constraint firstAttribute="trailing" secondItem="yVE-Cu-jNf" secondAttribute="trailing" id="fmh-pX-h3Y"/>
@@ -1186,18 +1207,20 @@
                 <string>contactPicture</string>
             </declaredKeys>
             <connections>
-                <binding destination="Voe-Tx-rLC" name="selectionIndexes" keyPath="threadIndexes" id="ZPd-Cd-v5V"/>
-                <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="threads" id="HUB-NF-w5P"/>
+                <binding destination="oQ9-zf-5Dh" name="contentArray" keyPath="selection.threads" id="RH8-ba-I8t"/>
+                <binding destination="oQ9-zf-5Dh" name="selectionIndexes" keyPath="selection.selection" id="G1n-y1-HQh"/>
             </connections>
         </arrayController>
-        <treeController objectClassName="Group" editable="NO" childrenKeyPath="children" leafKeyPath="isLeaf" avoidsEmptySelection="NO" selectsInsertedObjects="NO" id="oQ9-zf-5Dh" userLabel="Group Tree Controller">
+        <treeController objectClassName="GroupTree" editable="NO" childrenKeyPath="children" leafKeyPath="isLeaf" avoidsEmptySelection="NO" selectsInsertedObjects="NO" id="oQ9-zf-5Dh" userLabel="Group Tree Controller">
             <declaredKeys>
                 <string>name</string>
                 <string>shortDesc</string>
+                <string>threads</string>
+                <string>unreadCountText</string>
             </declaredKeys>
             <connections>
-                <binding destination="Voe-Tx-rLC" name="selectionIndexPaths" keyPath="groupIndexes" id="ack-pz-Cgx"/>
                 <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="groupRoots" id="TG2-CW-LXh"/>
+                <binding destination="Voe-Tx-rLC" name="selectionIndexPaths" keyPath="groupIndexes" id="yLk-Th-BMV"/>
             </connections>
         </treeController>
     </objects>

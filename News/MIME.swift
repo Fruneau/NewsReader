@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Lib
 
 private func charToHex(char: UInt8) -> UInt8? {
     switch (char) {
@@ -160,6 +161,8 @@ public struct MIMEAddress {
 public enum MIMEHeader {
     case Generic(name: String, content: String)
     case Address(name: String, address: MIMEAddress)
+    case Newsgroup(name: String, group: String)
+    case NewsgroupRef(group: String, number: Int)
     case Date(NSDate)
 
     private static let dateParser : NSDateFormatter = {
@@ -196,25 +199,6 @@ public enum MIMEHeader {
         return nil
     }
 
-    private init(name: String, content: String) throws {
-        let lower = name.lowercaseString
-
-        switch (lower) {
-        case "from", "cc", "to":
-            self = .Address(name: lower, address: MIMEAddress.parse(content))
-
-        case "date":
-            guard let date = MIMEHeader.parseDate(content) else {
-                throw Error.MalformedDate(content)
-            }
-
-            self = .Date(date)
-
-        default:
-            self = .Generic(name: lower, content: content)
-        }
-    }
-
     private var name : String {
         switch (self) {
         case .Generic(name: let name, content: _):
@@ -222,6 +206,12 @@ public enum MIMEHeader {
 
         case .Address(name: let name, address: _):
             return name
+
+        case .Newsgroup(name: let name, group: _):
+            return name
+
+        case .NewsgroupRef(group: _, number: _):
+            return "xref"
 
         case .Date(_):
             return "date"
@@ -285,6 +275,60 @@ public enum MIMEHeader {
         return headerLine
     }
 
+    static func appendHeader(inout headers : [MIMEHeader], name: String, encodedContent : String) throws {
+        let content = try MIMEHeader.decodeRFC2047(encodedContent)
+        let lower = name.lowercaseString
+
+        switch lower {
+        case "from":
+            headers.append(.Address(name: lower, address: MIMEAddress.parse(content)))
+
+        case "cc", "to":
+            for slice in split(content.characters, isSeparator: { $0 == "," }) {
+                let addr = String(slice).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+
+                headers.append(.Address(name: lower, address: MIMEAddress.parse(addr)))
+            }
+
+        case "newsgroups", "followup-to":
+            for slice in split(content.characters, isSeparator: { $0 == "," }) {
+                let group = String(slice).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+
+                headers.append(.Newsgroup(name: lower, group: group))
+            }
+
+        case "date":
+            guard let date = MIMEHeader.parseDate(content) else {
+                throw Error.MalformedDate(content)
+            }
+
+            headers.append(.Date(date))
+
+        case "xref":
+            let slices = split(content.characters){ $0 == " " }
+
+            for slice in slices[1..<slices.count] {
+                let scanner = NSScanner(string: String(slice))
+                var group : NSString?
+                var num : Int = 0
+
+                if !scanner.scanUpToString(":", intoString: &group)
+                || !scanner.skipString(":")
+                || !scanner.scanInteger(&num)
+                || !scanner.atEnd
+                {
+                    throw Error.MalformedHeader(content)
+                }
+
+                headers.append(.NewsgroupRef(group: group! as String, number: num))
+            }
+            break
+
+        default:
+            headers.append(.Generic(name: lower, content: content))
+        }
+    }
+
     static func parseHeaders<S : SequenceType where S.Generator.Element == String>(data: S) throws -> [MIMEHeader] {
         let cset = NSCharacterSet.whitespaceCharacterSet()
         var headers : [MIMEHeader] = []
@@ -299,9 +343,8 @@ public enum MIMEHeader {
                 currentValue?.append(Character(" "))
                 currentValue?.extend(line)
             } else {
-                if let hdr = currentHeader {
-                    let val = try MIMEHeader.decodeRFC2047(currentValue!)
-                    headers.append(try MIMEHeader(name: hdr, content: val))
+                if let hdr = currentHeader, let value = currentValue {
+                    try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
                 }
 
                 let vals = split(line.characters, maxSplit: 1, allowEmptySlices: true){ $0 == ":" }.map(String.init)
@@ -320,9 +363,8 @@ public enum MIMEHeader {
             }
         }
 
-        if let hdr = currentHeader {
-            let val = try MIMEHeader.decodeRFC2047(currentValue!)
-            headers.append(try MIMEHeader(name: hdr, content: val))
+        if let hdr = currentHeader, let value = currentValue {
+            try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
         }
 
         return headers

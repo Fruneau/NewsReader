@@ -681,12 +681,12 @@ public enum NNTPCommand {
                     break
 
                 case "VERSION":
-                    var version : Int32 = 0
+                    var version : Int = 0
 
                     if !scanner.skipCharactersFromSet(cset) {
                         continue lines
                     }
-                    if !scanner.scanInt(&version) {
+                    if !scanner.scanInteger(&version) {
                         continue lines
                     }
                     set.insert(.Version(Int(version)))
@@ -703,10 +703,10 @@ public enum NNTPCommand {
 
     private func parseArticleFound(response: NNTPResponse) throws -> (Int, String) {
         let scanner = NSScanner(string: response.message)
-        var number : Int32 = 0
+        var number : Int = 0
 
         scanner.charactersToBeSkipped = nil
-        if !scanner.scanInt(&number)
+        if !scanner.scanInteger(&number)
             || !scanner.skipCharactersFromSet(Global.spaceCset)
         {
             throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
@@ -749,17 +749,17 @@ public enum NNTPCommand {
 
         case ("2", "1", "1"):
             let scanner = NSScanner(string: response.message)
-            var count : Int32 = 0
-            var low : Int32 = 0
-            var high : Int32 = 0
+            var count : Int = 0
+            var low : Int = 0
+            var high : Int = 0
             var ids : [Int]?
 
             scanner.charactersToBeSkipped = nil
-            if !scanner.scanInt(&count)
+            if !scanner.scanInteger(&count)
                 || !scanner.skipCharactersFromSet(Global.spaceCset)
-                || !scanner.scanInt(&low)
+                || !scanner.scanInteger(&low)
                 || !scanner.skipCharactersFromSet(Global.spaceCset)
-                || !scanner.scanInt(&high)
+                || !scanner.scanInteger(&high)
                 || !scanner.skipCharactersFromSet(Global.spaceCset)
             {
                 throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)

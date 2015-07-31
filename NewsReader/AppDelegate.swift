@@ -16,59 +16,10 @@ enum Error : ErrorType {
     case NoMessage
 }
 
-class GroupTree : NSObject {
-    let name : String
-    var fullName : String?
-    var shortDesc : String?
-    let isRoot : Bool
-    var children : [String: GroupTree] = [:]
-
-    var childrenCount : Int {
-        return self.children.count
-    }
-
-    var isLeaf : Bool {
-        return self.fullName != nil || self.isRoot
-    }
-
-    init(root: String) {
-        self.name = root
-        self.isRoot = true
-        super.init()
-    }
-
-    init(node: String) {
-        self.name = node
-        self.isRoot = false
-        super.init()
-    }
-
-    func addGroup(fullName: String, shortDesc: String?) {
-        var node = self
-
-        for tok in split(fullName.characters, isSeparator: { $0 == "." }) {
-            let str = String(tok)
-
-            if let child = node.children[str] {
-                node = child
-            } else {
-                let child = GroupTree(node: str)
-
-                node.children[str] = child
-                node = child
-            }
-        }
-
-        node.fullName = fullName
-        node.shortDesc = shortDesc
-    }
-}
-
 class Article : NSObject {
     private weak var nntp : NNTP?
     private weak var promise : Promise<NNTPPayload>?
 
-    let refs : [(String, Int)]
     var headers : MIMEHeaders
     dynamic var body : String?
 
@@ -117,7 +68,7 @@ class Article : NSObject {
         default:
             return nil
         }
-    }()
+        }()
 
     lazy var email : String? = {
         guard let from = self.headers["from"]?.first else {
@@ -131,7 +82,7 @@ class Article : NSObject {
         default:
             return nil
         }
-    }()
+        }()
 
     lazy var subject : String? = {
         guard let subject = self.headers["subject"]?.first else {
@@ -145,7 +96,7 @@ class Article : NSObject {
         default:
             return nil
         }
-    }()
+        }()
 
     lazy var date : NSDate? = {
         guard let date = self.headers["date"]?.first else {
@@ -159,7 +110,7 @@ class Article : NSObject {
         default:
             return nil
         }
-    }()
+        }()
 
     lazy var contact : ABPerson? = {
         guard let email = self.email else {
@@ -173,7 +124,7 @@ class Article : NSObject {
         let pattern = ABPerson.searchElementForProperty(kABEmailProperty, label: nil, key: nil, value: email as NSString, comparison: CFIndex(kABPrefixMatchCaseInsensitive.rawValue))
 
         return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
-    }()
+        }()
 
     private func loadNewsgroups() -> String? {
         guard let dest = self.headers["newsgroups"] else {
@@ -183,7 +134,7 @@ class Article : NSObject {
         var out : [String] = []
         for entry in dest {
             switch (entry) {
-            case .Generic(name: _, content: let v):
+            case .Newsgroup(name: _, group: let v):
                 out.append(v)
 
             default:
@@ -193,6 +144,25 @@ class Article : NSObject {
         return ", ".join(out)
     }
 
+    private func loadRefs() {
+        guard let dest = self.headers["xref"] else {
+            return
+        }
+
+        var refs : [(String, Int)] = []
+        for entry in dest {
+            switch (entry) {
+            case .NewsgroupRef(group: let group, number: let num):
+                refs.append((group, num))
+
+            default:
+                break
+            }
+        }
+        self.refs = refs
+    }
+
+    var refs : [(String, Int)]
     dynamic lazy var to : String? = self.loadNewsgroups()
 
     lazy var contactPicture : NSImage? = {
@@ -201,13 +171,14 @@ class Article : NSObject {
         } else {
             return nil
         }
-    }()
+        }()
 
     init(nntp : NNTP?, ref: (String, Int), headers: MIMEHeaders) {
         self.nntp = nntp
         self.refs = [ref]
         self.headers = headers
         super.init()
+        self.loadRefs()
     }
 
     func load() {
@@ -230,15 +201,159 @@ class Article : NSObject {
                 self.headers = msg.headers
                 self.body = msg.body
                 self.to = self.loadNewsgroups()
-
+                self.loadRefs()
+                
             default:
                 break
             }
         })
     }
-
+    
     func cancelLoad() {
         self.promise?.cancel()
+    }
+}
+
+class GroupTree : NSObject {
+    let name : String
+    var fullName : String?
+    var shortDesc : String?
+
+    var unreadCount : Int? {
+        didSet {
+            if let count = self.unreadCount {
+                self.unreadCountText = "\(count)"
+            } else {
+                self.unreadCountText = nil
+            }
+        }
+    }
+    dynamic var unreadCountText : String?
+
+    let isRoot : Bool
+    var children : [String: GroupTree] = [:]
+
+    var isLeaf : Bool {
+        return self.fullName != nil || self.isRoot
+    }
+
+    init(root: String) {
+        self.name = root
+        self.isRoot = true
+        super.init()
+    }
+
+    init(nntp : NNTP?, node: String) {
+        self.name = node
+        self.isRoot = false
+        self.nntp = nntp
+        super.init()
+    }
+
+    func addGroup(fullName: String, shortDesc: String?) {
+        var node = self
+
+        for tok in split(fullName.characters, isSeparator: { $0 == "." }) {
+            let str = String(tok)
+
+            if let child = node.children[str] {
+                node = child
+            } else {
+                let child = GroupTree(nntp: self.nntp, node: str)
+
+                node.children[str] = child
+                node = child
+            }
+        }
+
+        node.fullName = fullName
+        node.shortDesc = shortDesc
+    }
+
+    dynamic var threads : [Article]?
+    private weak var nntp : NNTP?
+    private weak var promise : Promise<NNTPPayload>?
+    var selection = NSIndexSet() {
+        didSet {
+            if self.selection.count == 0 {
+                return
+            }
+
+            self.threads?[self.selection.firstIndex].load()
+        }
+    }
+
+    func load() {
+        if self.threads != nil || self.fullName == nil {
+            return
+        }
+
+        self.promise = self.nntp?.sendCommand(.Group(self.fullName!)).thenChain({
+            (payload) throws in
+
+            guard let nntp = self.nntp else {
+                throw NNTPError.ServerProtocolError
+            }
+
+            switch payload {
+            case .GroupContent(_, let count, let lowestNumber, let highestNumber, _):
+                let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
+
+                self.unreadCount = count
+                return nntp.sendCommand(.Over(ArticleRangeOrId.From(from)))
+
+            default:
+                throw NNTPError.ServerProtocolError
+            }
+        })
+        self.promise?.then({
+            (payload) throws in
+
+            switch(payload) {
+            case .Overview(let messages):
+                var articles : [Article] = []
+                for msg in messages.reverse() {
+                    articles.append(Article(nntp: self.nntp, ref: (self.fullName!, msg.num),
+                        headers: msg.headers))
+                }
+                self.threads = articles
+
+            default:
+                throw NNTPError.ServerProtocolError
+            }
+        }).otherwise({
+            (var error) in
+
+            switch (error) {
+            case PromiseError.UncaughtError(let e, _):
+                error = e
+
+            default:
+                break
+            }
+
+            switch (error) {
+            case NNTPError.MalformedOverviewLine(let l):
+                print("Error: \(l)")
+
+            default:
+                print("Other: \(error)")
+            }
+        })
+    }
+
+    func refreshCount() {
+        self.nntp?.sendCommand(.Group(self.fullName!)).then({
+            (payload) throws in
+
+            switch payload {
+            case .GroupContent(_, let count, _, _, _):
+                self.unreadCount = count
+
+            default:
+                break
+            }
+        })
     }
 }
 
@@ -326,83 +441,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     dynamic var groupRoots = [GroupTree(root: "Groups")]
     var groupIndexes : [NSIndexPath] = [] {
         didSet {
-            self.threadsPromise?.cancel()
-
             if self.groupIndexes.count == 0 {
-                self.threads = []
                 return
             }
 
             let group = self.groupTreeController.selectedObjects[0] as! GroupTree
-            self.threadsPromise = self.nntp?.sendCommand(.Group(group.name)).thenChain({
-                (payload) throws in
-
-                print("got reply")
-                guard let nntp = self.nntp else {
-                    throw NNTPError.ServerProtocolError
-                }
-
-                switch payload {
-                case .GroupContent(_, let count, let lowestNumber, let highestNumber, _):
-                    let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
-
-                    print("requesting from \(from)")
-                    return nntp.sendCommand(.Over(ArticleRangeOrId.From(from)))
-
-                default:
-                    throw NNTPError.ServerProtocolError
-                }
-            })
-            self.threadsPromise?.then({
-                (payload) throws in
-
-                switch(payload) {
-                case .Overview(let messages):
-                    var articles : [Article] = []
-                    for msg in messages.reverse() {
-                        articles.append(Article(nntp: self.nntp, ref: (group.fullName!, msg.num),
-                            headers: msg.headers))
-                    }
-                    self.threads = articles
-
-                default:
-                    throw NNTPError.ServerProtocolError
-                }
-            }).otherwise({
-                (var error) in
-
-                switch (error) {
-                case PromiseError.UncaughtError(let e, _):
-                    error = e
-
-                default:
-                    break
-                }
-
-                switch (error) {
-                case NNTPError.MalformedOverviewLine(let l):
-                    print("Error: \(l)")
-
-                default:
-                    print("Other: \(error)")
-                }
-            })
+            group.load()
         }
     }
 
     /* Thread view */
     @IBOutlet weak var threadView: NSCollectionView!
-    dynamic var threads : [Article] = []
-    weak var threadsPromise : Promise<NNTPPayload>?
-    var threadIndexes = NSIndexSet() {
-        didSet {
-            if self.threadIndexes.count == 0 {
-                return
-            }
-
-            self.threads[self.threadIndexes.firstIndex].load()
-        }
-    }
 
     /* Model handling */
     var nntp : NNTP?
@@ -415,7 +464,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         self.groupView.setDelegate(self)
-        self.nntp = nil
         guard var rcContent = NSData(contentsOfFile: "~/.newsreaderrc".stringByStandardizingPath)?.utf8String else {
             return
         }
@@ -438,11 +486,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
             switch (payload) {
             case .GroupList(let list):
                 for (groupName, shortDesc) in list {
-                    let group = GroupTree(node: groupName)
+                    let group = GroupTree(nntp: self.nntp, node: groupName)
 
                     group.fullName = groupName
                     group.shortDesc = shortDesc
                     self.groupRoots.append(group)
+                    group.refreshCount()
                 }
 
             default:
