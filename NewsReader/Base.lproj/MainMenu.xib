@@ -694,7 +694,7 @@
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <outlineView allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="dUc-yG-wLJ" id="4OP-Rn-hna">
-                                                    <rect key="frame" x="0.0" y="0.0" width="310" height="595"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="310" height="0.0"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
                                                     <size key="intercellSpacing" width="3" height="0.0"/>
@@ -1127,7 +1127,7 @@
             <rect key="frame" x="0.0" y="0.0" width="367" height="37"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="01a-kR-SqC">
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="01a-kR-SqC">
                     <rect key="frame" x="11" y="21" width="323" height="16"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="8C7-HR-uF6">
@@ -1161,10 +1161,10 @@
                         <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.subject" id="hTv-Xt-gEq"/>
                     </connections>
                 </textField>
-                <textField horizontalHuggingPriority="500" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nUq-xe-Bwj">
+                <textField horizontalHuggingPriority="500" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nUq-xe-Bwj">
                     <rect key="frame" x="335" y="21" width="31" height="16"/>
                     <animations/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Date" id="zRu-Tf-rLp">
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" id="zRu-Tf-rLp">
                         <customFormatter key="formatter" id="pct-py-Q1Y" customClass="ShortDateFormatter" customModule="NewsReader" customModuleProvider="target"/>
                         <font key="font" metaFont="cellTitle"/>
                         <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -1207,8 +1207,8 @@
                 <string>contactPicture</string>
             </declaredKeys>
             <connections>
-                <binding destination="oQ9-zf-5Dh" name="contentArray" keyPath="selection.threads" id="RH8-ba-I8t"/>
                 <binding destination="oQ9-zf-5Dh" name="selectionIndexes" keyPath="selection.selection" id="G1n-y1-HQh"/>
+                <binding destination="oQ9-zf-5Dh" name="contentArray" keyPath="selection.threads" id="RH8-ba-I8t"/>
             </connections>
         </arrayController>
         <treeController objectClassName="GroupTree" editable="NO" childrenKeyPath="children" leafKeyPath="isLeaf" avoidsEmptySelection="NO" selectsInsertedObjects="NO" id="oQ9-zf-5Dh" userLabel="Group Tree Controller">
@@ -1219,8 +1219,8 @@
                 <string>unreadCountText</string>
             </declaredKeys>
             <connections>
-                <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="groupRoots" id="TG2-CW-LXh"/>
                 <binding destination="Voe-Tx-rLC" name="selectionIndexPaths" keyPath="groupIndexes" id="yLk-Th-BMV"/>
+                <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="groupRoots" id="TG2-CW-LXh"/>
             </connections>
         </treeController>
     </objects>
