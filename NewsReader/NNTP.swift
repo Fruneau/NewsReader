@@ -122,6 +122,8 @@ public struct NNTPResponse {
 
 public enum NNTPError : ErrorType {
     case NotConnected
+    case NoCommandProvided
+
     case ClientProtocolError(NNTPResponseContext, Character, String)
     case UnsupportedError(NNTPResponseContext, Character, String)
     case ServerProtocolError
@@ -894,14 +896,16 @@ public class NNTP {
         private let command : NNTPCommand
         private let onSuccess : (NNTPPayload) -> Void
         private let onError : (ErrorType) -> Void
+        private let isCancelled : (Void) -> Bool
 
         private var response : NNTPResponse?
         private var payload : [String]?
 
-        private init(command: NNTPCommand, onSuccess: (NNTPPayload) -> Void, onError: (ErrorType) -> Void) {
+        private init(command: NNTPCommand, onSuccess: (NNTPPayload) -> Void, onError: (ErrorType) -> Void, isCancelled: (Void) -> Bool) {
             self.command = command
             self.onSuccess = onSuccess
             self.onError = onError
+            self.isCancelled = isCancelled
 
             if self.command.isMultiline {
                 self.payload = []
@@ -993,7 +997,7 @@ public class NNTP {
         self.onConnected = Promise<NNTPPayload>() {
             (onSuccess, onError) in
 
-            self.sentCommands.push(NNTP.Reply(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError))
+            self.sentCommands.push(NNTP.Reply(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
         }
         self.onConnected = self.sendCommand(NNTPCommand.ModeReader)
     }
@@ -1145,8 +1149,10 @@ public class NNTP {
         while !self.pendingCommands.isEmpty && self.outBuffer.length < 4096 {
             let cmd = self.pendingCommands.pop()!
 
-            cmd.command.pack(self.outBuffer)
-            self.sentCommands.push(cmd)
+            if !cmd.isCancelled() {
+                cmd.command.pack(self.outBuffer)
+                self.sentCommands.push(cmd)
+            }
         }
 
         self.outBuffer.read() {
@@ -1170,31 +1176,90 @@ public class NNTP {
     }
 
     private var currentGroup : String?
-    public func sendCommand(command: NNTPCommand) -> Promise<NNTPPayload> {
+
+    public func sendCommands(immutableCommands: [NNTPCommand]) -> Promise<NNTPPayload> {
         return self.onConnected.thenChain({
             (_) in
 
-            switch (command) {
-            case .Group(let group):
-                self.currentGroup = group
+            if immutableCommands.count == 0 {
+                return Promise(failed: NNTPError.NoCommandProvided)
+            }
 
-            case .ListGroup(let group, _) where group != nil:
-                if group != self.currentGroup {
-                    self.currentGroup = group
+            var commands : [NNTPCommand] = immutableCommands
+            var isCancelled = false
+            
+            for var i = 0; i < commands.count; i++ {
+                switch commands[i] {
+                case .Group(let group):
+                    if group == self.currentGroup && i < commands.count - 1 {
+                        commands.removeAtIndex(i)
+                        i--
+                    } else {
+                        self.currentGroup = group
+                    }
+
+                case .ListGroup(let group, _) where group != nil:
+                    if group != self.currentGroup && i < commands.count - 1 {
+                        commands.removeAtIndex(i)
+                        i--
+                    } else {
+                        self.currentGroup = group
+                    }
+
+                default:
+                    break
+                }
+            }
+
+            let promise = Promise<NNTPPayload>(action: {
+                (onSuccess, onError) in
+                var actualOnSuccess = onSuccess
+                var actualOnError = onError
+
+
+                if commands.count > 1 {
+                    actualOnSuccess = {
+                        (payload) in
+
+                        if !isCancelled {
+                            onSuccess(payload)
+                        }
+                    }
+
+                    actualOnError = {
+                        (error) in
+
+                        if !isCancelled {
+                            isCancelled = true
+                            onError(error)
+                        }
+                    }
                 }
 
-            default:
-                break
-            }
+                for var i = 0; i < commands.count - 1; i++ {
+                    print("chaining commands")
+                    self.pendingCommands.push(NNTP.Reply(command: commands[i],
+                        onSuccess: { (_) in () }, onError: actualOnError,
+                        isCancelled: { isCancelled }))
+                }
 
-            let promise = Promise<NNTPPayload>() {
-                (onSuccess, onError) in
-
-                self.pendingCommands.push(NNTP.Reply(command: command, onSuccess: onSuccess, onError: onError))
-            }
-            self.flush()
+                self.pendingCommands.push(NNTP.Reply(command: commands.last!,
+                    onSuccess: actualOnSuccess, onError: actualOnError,
+                    isCancelled: { isCancelled }))
+                self.flush()
+            }, onCancel: { isCancelled = true })
             return promise
         })
+
+    }
+
+    public func sendCommand(command: NNTPCommand) -> Promise<NNTPPayload> {
+        return self.sendCommands([command])
+    }
+    
+
+    public func sendCommand(command: NNTPCommand, inGroup group: String) -> Promise<NNTPPayload> {
+        return self.sendCommands([ .Group(group), command ])
     }
 
     private var status : NNTPStatus = .Disconnected
