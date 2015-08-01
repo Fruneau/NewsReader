@@ -1250,13 +1250,11 @@ public class NNTP {
             }, onCancel: { isCancelled = true })
             return promise
         })
-
     }
 
     public func sendCommand(command: NNTPCommand) -> Promise<NNTPPayload> {
         return self.sendCommands([command])
     }
-    
 
     public func sendCommand(command: NNTPCommand, inGroup group: String) -> Promise<NNTPPayload> {
         return self.sendCommands([ .Group(group), command ])

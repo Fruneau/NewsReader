@@ -123,14 +123,11 @@ public struct MIMEAddress {
     public let name : String?
 
     static private let nameEmailRe = try!
-        NSRegularExpression(pattern: "\"?([^<>\"]+)\"? +<(.+@.+)>",
-            options: NSRegularExpressionOptions(rawValue: 0))
+        NSRegularExpression(pattern: "\"?([^<>\"]+)\"? +<(.+@.+)>", options: [])
     static private let emailNameRe = try!
-        NSRegularExpression(pattern: "([^ ]+@[^ ]+) \\((.*)\\)",
-            options: NSRegularExpressionOptions(rawValue: 0))
+        NSRegularExpression(pattern: "([^ ]+@[^ ]+) \\((.*)\\)", options: [])
     static private let emailRe = try!
-        NSRegularExpression(pattern: "<?([^< ]+@[^> ]+)>?",
-            options: NSRegularExpressionOptions(rawValue: 0))
+        NSRegularExpression(pattern: "<?([^< ]+@[^> ]+)>?", options: [])
 
     private static func parse(address: String) -> MIMEAddress {
         let range = NSMakeRange(0, address.characters.count)
@@ -192,7 +189,7 @@ public enum MIMEHeader {
             return date
         } else if let date = MIMEHeader.dateAltParser.dateFromString(content) {
             return date
-        } else if let match = MIMEHeader.dateDetector.firstMatchInString(content, options: NSMatchingOptions(rawValue: 0), range: NSMakeRange(0, content.characters.count)) {
+        } else if let match = MIMEHeader.dateDetector.firstMatchInString(content, options: [], range: NSMakeRange(0, content.characters.count)) {
             return match.date
         }
 
@@ -235,7 +232,7 @@ public enum MIMEHeader {
 
         switch (encoding) {
         case "b", "B":
-            guard let data = NSData(base64EncodedString: chunk, options: NSDataBase64DecodingOptions(rawValue: 0)) else {
+            guard let data = NSData(base64EncodedString: chunk, options: []) else {
                 throw Error.EncodingError(value: chunk)
             }
             guard let decoded = NSString(data: data, encoding: charset) else {
@@ -260,7 +257,7 @@ public enum MIMEHeader {
     }
 
     static private func decodeRFC2047(var headerLine: String) throws -> String {
-        var matches = rfc2047Re.matchesInString(headerLine, options: NSMatchingOptions(rawValue: 0), range: NSMakeRange(0, headerLine.characters.count))
+        var matches = rfc2047Re.matchesInString(headerLine, options: [], range: NSMakeRange(0, headerLine.characters.count))
 
         matches.sortInPlace { $0.range.location > $1.range.location }
 

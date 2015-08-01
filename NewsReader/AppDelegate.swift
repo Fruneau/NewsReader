@@ -436,7 +436,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     @IBOutlet weak var window: NSWindow!
 
     /* Groups view */
-    @IBOutlet weak var groupView: NSOutlineView!
     @IBOutlet weak var groupTreeController: NSTreeController!
     dynamic var groupRoots = [GroupTree(root: "Groups")]
     var groupIndexes : [NSIndexPath] = [] {
@@ -463,7 +462,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
-        self.groupView.setDelegate(self)
         guard var rcContent = NSData(contentsOfFile: "~/.newsreaderrc".stringByStandardizingPath)?.utf8String else {
             return
         }
