@@ -12,6 +12,8 @@
 		B442B9421B5519E60088FA0F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B442B9401B5519E60088FA0F /* MainMenu.xib */; };
 		B442B94D1B5519E60088FA0F /* NewsReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B94C1B5519E60088FA0F /* NewsReaderTests.swift */; };
 		B442B9581B5519E60088FA0F /* NewsReaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B9571B5519E60088FA0F /* NewsReaderUITests.swift */; };
+		B449CE3A1B6D55E3005C02FC /* NewsRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = B449CE391B6D55E3005C02FC /* NewsRC.swift */; };
+		B449CE3C1B6D644D005C02FC /* NewsRCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B449CE3B1B6D644D005C02FC /* NewsRCTests.swift */; };
 		B45A81BF1B6502F5005323EC /* Lib.h in Headers */ = {isa = PBXBuildFile; fileRef = B45A81BE1B6502F5005323EC /* Lib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B45A81C61B6502F5005323EC /* Lib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B45A81BC1B6502F5005323EC /* Lib.framework */; };
 		B45A81D11B6502F5005323EC /* Lib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B45A81BC1B6502F5005323EC /* Lib.framework */; };
@@ -129,6 +131,8 @@
 		B442B9651B551B9E0088FA0F /* NSScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSScanner.swift; path = ../NewsReader/NSScanner.swift; sourceTree = "<group>"; };
 		B442B96D1B552ADB0088FA0F /* BufferedReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BufferedReader.swift; path = ../NewsReader/BufferedReader.swift; sourceTree = "<group>"; };
 		B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BufferedReaderTests.swift; path = ../NewsReaderTests/BufferedReaderTests.swift; sourceTree = "<group>"; };
+		B449CE391B6D55E3005C02FC /* NewsRC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsRC.swift; sourceTree = "<group>"; };
+		B449CE3B1B6D644D005C02FC /* NewsRCTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsRCTests.swift; sourceTree = "<group>"; };
 		B45A81BC1B6502F5005323EC /* Lib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Lib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45A81BE1B6502F5005323EC /* Lib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Lib.h; sourceTree = "<group>"; };
 		B45A81C01B6502F5005323EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -301,6 +305,7 @@
 				B45A81E11B6503A4005323EC /* News.h */,
 				B42372701B59951C0046B987 /* NNTP.swift */,
 				B45A82091B6507B2005323EC /* MIME.swift */,
+				B449CE391B6D55E3005C02FC /* NewsRC.swift */,
 				B45A81E31B6503A4005323EC /* Info.plist */,
 			);
 			path = News;
@@ -310,6 +315,7 @@
 			isa = PBXGroup;
 			children = (
 				B4E047581B56E68E001C8BFF /* NNTPTests.swift */,
+				B449CE3B1B6D644D005C02FC /* NewsRCTests.swift */,
 				B45A81F11B6503A4005323EC /* Info.plist */,
 			);
 			path = NewsTests;
@@ -636,6 +642,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B449CE3A1B6D55E3005C02FC /* NewsRC.swift in Sources */,
 				B45A82061B6504BD005323EC /* NNTP.swift in Sources */,
 				B45A820A1B6507B2005323EC /* MIME.swift in Sources */,
 			);
@@ -646,6 +653,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B45A82071B6504C3005323EC /* NNTPTests.swift in Sources */,
+				B449CE3C1B6D644D005C02FC /* NewsRCTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1042,6 +1050,7 @@
 				B45A81D41B6502F5005323EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B45A81D91B6502F5005323EC /* Build configuration list for PBXNativeTarget "LibTests" */ = {
 			isa = XCConfigurationList;
@@ -1050,6 +1059,7 @@
 				B45A81D61B6502F5005323EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B45A81F61B6503A4005323EC /* Build configuration list for PBXNativeTarget "News" */ = {
 			isa = XCConfigurationList;
@@ -1058,6 +1068,7 @@
 				B45A81F81B6503A4005323EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B45A81F91B6503A4005323EC /* Build configuration list for PBXNativeTarget "NewsTests" */ = {
 			isa = XCConfigurationList;
@@ -1066,6 +1077,7 @@
 				B45A81FB1B6503A4005323EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

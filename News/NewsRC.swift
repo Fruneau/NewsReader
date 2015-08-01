@@ -39,6 +39,9 @@ public struct GroupSubscription {
 
     /// Check that the read list is properly optimized.
     internal func checkOptimized() -> Bool {
+        if self.read.count == 0 {
+            return true
+        }
         for i in 1..<self.read.count {
             if NSMaxRange(self.read[i - 1]) >= self.read[i].location {
                 return false
@@ -105,6 +108,18 @@ public struct GroupSubscription {
         return false
     }
 
+    /// Mark a range of articles as read
+    ///
+    /// Mark all the elements of the provided range as read. This helper is not
+    /// currently implemented efficiently.
+    ///
+    /// - parameter range: The range of article number to mark as read
+    public mutating func markRangeAsRead(range: NSRange) {
+        for i in range.location..<NSMaxRange(range) {
+            self.markAsRead(i)
+        }
+    }
+
     /// Mark an article as unread.
     ///
     /// This function removes an article from the list of read articles in
@@ -134,7 +149,7 @@ public struct GroupSubscription {
 
             case _ where NSLocationInRange(num, range):
                 self.read[i] = NSMakeRange(range.location, num - range.location)
-                self.read.insert(NSMakeRange(num + 1, NSMaxRange(range) - num), atIndex: i + 1)
+                self.read.insert(NSMakeRange(num + 1, NSMaxRange(range) - (num + 1)), atIndex: i + 1)
                 return true
 
             default:
@@ -143,6 +158,19 @@ public struct GroupSubscription {
         }
         return false
     }
+
+    /// Mark a range of articles as read
+    ///
+    /// Mark all the elements of the provided range as unread. This helper is
+    /// not currently implemented efficiently.
+    ///
+    /// - parameter range: The range of article number to mark as unread
+    public mutating func unmarkRangeAsRead(range: NSRange) {
+        for i in range.location..<NSMaxRange(range) {
+            self.unmarkAsRead(i)
+        }
+    }
+
 
     /// Check if an article is marked as read.
     ///
