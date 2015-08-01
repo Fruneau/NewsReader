@@ -137,18 +137,16 @@ public class Promise<T> {
     }
 
     public func cancel() {
-        switch (self.state) {
-        case .Running:
-            self.state = .Cancelled
-            self.onCancel?()
-            for handler in self.handlers {
-                handler.fail(PromiseError.Cancelled)
-            }
-            self.handlers.removeAll()
-
-        default:
-            break
+        guard case .Running = self.state else {
+            return
         }
+
+        self.state = .Cancelled
+        self.onCancel?()
+        for handler in self.handlers {
+            handler.fail(PromiseError.Cancelled)
+        }
+        self.handlers.removeAll()
     }
 
     private func registerHandler(success: SuccessHandler?, error: ErrorHandler?) -> Promise<Void> {

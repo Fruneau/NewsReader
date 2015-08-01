@@ -24,17 +24,10 @@ class Article : NSObject {
     dynamic var body : String?
 
     lazy var msgid : String? = {
-        guard let hdr = self.headers["message-id"]?.first else {
-            return nil
-        }
-
-        switch (hdr) {
-        case .Generic(name: _, content: let val):
+        if case .Generic(name: _, content: let val)? = self.headers["message-id"]?.first {
             return val
-
-        default:
-            return nil
         }
+        return nil
     }()
 
     lazy var from : String? = {
@@ -57,60 +50,33 @@ class Article : NSObject {
             }
         }
 
-        guard let from = self.headers["from"]?.first else {
-            return nil
-        }
-
-        switch (from) {
-        case .Address(name: _, address: let a):
+        if case .Address(name: _, address: let a)? = self.headers["from"]?.first {
             return a.name == nil ? a.email : a.name
-
-        default:
-            return nil
         }
-        }()
+
+        return nil
+    }()
 
     lazy var email : String? = {
-        guard let from = self.headers["from"]?.first else {
-            return nil
-        }
-
-        switch (from) {
-        case .Address(name: _, address: let a):
+        if case .Address(name: _, address: let a)? = self.headers["from"]?.first {
             return a.email
-
-        default:
-            return nil
         }
-        }()
+        return nil
+    }()
 
     lazy var subject : String? = {
-        guard let subject = self.headers["subject"]?.first else {
-            return nil
-        }
-
-        switch (subject) {
-        case .Generic(name: _, content: let c):
+        if case .Generic(name: _, content: let c)? = self.headers["subject"]?.first  {
             return c
-
-        default:
-            return nil
         }
-        }()
+        return nil
+    }()
 
     lazy var date : NSDate? = {
-        guard let date = self.headers["date"]?.first else {
-            return nil
-        }
-
-        switch date {
-        case .Date(let d):
+        if case .Date(let d)? = self.headers["date"]?.first {
             return d
-
-        default:
-            return nil
         }
-        }()
+        return nil
+    }()
 
     lazy var contact : ABPerson? = {
         guard let email = self.email else {
@@ -124,7 +90,7 @@ class Article : NSObject {
         let pattern = ABPerson.searchElementForProperty(kABEmailProperty, label: nil, key: nil, value: email as NSString, comparison: CFIndex(kABPrefixMatchCaseInsensitive.rawValue))
 
         return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
-        }()
+    }()
 
     private func loadNewsgroups() -> String? {
         guard let dest = self.headers["newsgroups"] else {
@@ -132,14 +98,8 @@ class Article : NSObject {
         }
 
         var out : [String] = []
-        for entry in dest {
-            switch (entry) {
-            case .Newsgroup(name: _, group: let v):
-                out.append(v)
-
-            default:
-                break
-            }
+        for case .Newsgroup(name: _, group: let v) in dest {
+            out.append(v)
         }
         return ", ".join(out)
     }
@@ -150,14 +110,8 @@ class Article : NSObject {
         }
 
         var refs : [(String, Int)] = []
-        for entry in dest {
-            switch (entry) {
-            case .NewsgroupRef(group: let group, number: let num):
-                refs.append((group, num))
-
-            default:
-                break
-            }
+        for case .NewsgroupRef(group: let group, number: let num) in dest {
+            refs.append((group, num))
         }
         self.refs = refs
     }
@@ -171,7 +125,7 @@ class Article : NSObject {
         } else {
             return nil
         }
-        }()
+    }()
 
     init(nntp : NNTP?, ref: (String, Int), headers: MIMEHeaders) {
         self.nntp = nntp
@@ -196,19 +150,17 @@ class Article : NSObject {
         self.promise?.then({
             (payload) in
 
-            switch payload {
-            case .Article(_, _, let msg):
-                self.headers = msg.headers
-                self.body = msg.body
-                self.to = self.loadNewsgroups()
-                self.loadRefs()
-                
-            default:
-                break
+            guard case .Article(_, _, let msg) = payload else {
+                return
             }
+
+            self.headers = msg.headers
+            self.body = msg.body
+            self.to = self.loadNewsgroups()
+            self.loadRefs()
         })
     }
-    
+
     func cancelLoad() {
         self.promise?.cancel()
     }
@@ -295,41 +247,33 @@ class GroupTree : NSObject {
                 throw NNTPError.ServerProtocolError
             }
 
-            switch payload {
-            case .GroupContent(_, let count, let lowestNumber, let highestNumber, _):
-                let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
-
-                self.unreadCount = count
-                return nntp.sendCommand(.Over(ArticleRangeOrId.From(from)), inGroup: self.fullName!)
-
-            default:
+            guard case .GroupContent(_, let count, let lowestNumber, let highestNumber, _) = payload else {
                 throw NNTPError.ServerProtocolError
             }
+
+            let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
+
+            self.unreadCount = count
+            return nntp.sendCommand(.Over(ArticleRangeOrId.From(from)), inGroup: self.fullName!)
         })
         self.promise?.then({
             (payload) throws in
 
-            switch(payload) {
-            case .Overview(let messages):
-                var articles : [Article] = []
-                for msg in messages.reverse() {
-                    articles.append(Article(nntp: self.nntp, ref: (self.fullName!, msg.num),
-                        headers: msg.headers))
-                }
-                self.threads = articles
-
-            default:
+            guard case .Overview(let messages) = payload else {
                 throw NNTPError.ServerProtocolError
             }
+
+            var articles : [Article] = []
+            for msg in messages.reverse() {
+                articles.append(Article(nntp: self.nntp, ref: (self.fullName!, msg.num),
+                    headers: msg.headers))
+            }
+            self.threads = articles
         }).otherwise({
             (var error) in
 
-            switch (error) {
-            case PromiseError.UncaughtError(let e, _):
+            if case PromiseError.UncaughtError(let e, _) = error {
                 error = e
-
-            default:
-                break
             }
 
             switch (error) {
@@ -346,13 +290,11 @@ class GroupTree : NSObject {
         self.nntp?.sendCommand(.Group(self.fullName!)).then({
             (payload) throws in
 
-            switch payload {
-            case .GroupContent(_, let count, _, _, _):
-                self.unreadCount = count
-
-            default:
-                break
+            guard case .GroupContent(_, let count, _, _, _) = payload else {
+                return
             }
+
+            self.unreadCount = count
         })
     }
 }
@@ -481,19 +423,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
         self.nntp?.sendCommand(.ListNewsgroups(nil)).then({
             (payload) in
 
-            switch (payload) {
-            case .GroupList(let list):
-                for (groupName, shortDesc) in list {
-                    let group = GroupTree(nntp: self.nntp, node: groupName)
-
-                    group.fullName = groupName
-                    group.shortDesc = shortDesc
-                    self.groupRoots.append(group)
-                    group.refreshCount()
-                }
-
-            default:
+            guard case .GroupList(let list) = payload else {
                 throw NNTPError.ServerProtocolError
+            }
+
+            for (groupName, shortDesc) in list {
+                let group = GroupTree(nntp: self.nntp, node: groupName)
+
+                group.fullName = groupName
+                group.shortDesc = shortDesc
+                self.groupRoots.append(group)
+                group.refreshCount()
             }
         })
     }
