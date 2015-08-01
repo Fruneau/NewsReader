@@ -39,7 +39,7 @@ class BufferedReaderTests: XCTestCase {
     }
 
     func testReadLineNewline() {
-        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne\r\n\r\n")
+        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne\r\n\r\n", lineBreak: "\r\n")
 
         XCTAssertNotNil(buf)
         self.checkLine(buf!, exp: "a")
@@ -50,7 +50,7 @@ class BufferedReaderTests: XCTestCase {
     }
 
     func testReadLineNonNewline() {
-        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne")
+        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne", lineBreak: "\r\n")
 
         XCTAssertNotNil(buf)
         self.checkLine(buf!, exp: "a")

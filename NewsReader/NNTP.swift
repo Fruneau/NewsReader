@@ -978,11 +978,11 @@ public class NNTP {
         if let ins = istream, let ous = ostream {
             self.istream = ins
             self.ostream = ous
-            self.reader = BufferedReader(fromStream: ins)
+            self.reader = BufferedReader(fromStream: ins, lineBreak: "\r\n")
         } else {
             self.istream = NSInputStream(data: NSData(bytes: nil, length: 0))
             self.ostream = NSOutputStream(toBuffer: nil, capacity: 0)
-            self.reader = BufferedReader(fromStream: self.istream)
+            self.reader = BufferedReader(fromStream: self.istream, lineBreak: "\r\n")
             return nil
         }
 
