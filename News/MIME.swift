@@ -77,7 +77,7 @@ extension NSData {
 
 }
 
-public enum Error : ErrorType {
+public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
     case MalformedHeader(String)
     case EmptyHeaderLine
     case MalformedHeaderName(String)
@@ -88,7 +88,11 @@ public enum Error : ErrorType {
     case UnsupportedHeaderCharset(charset: String)
     case EncodingError(value: String)
 
-    public var detail : String {
+    public var description : String {
+        return self.debugDescription
+    }
+
+    public var debugDescription : String {
         switch (self) {
         case .MalformedHeader(let s):
             return "MalformedHeader(\(s))"
