@@ -349,7 +349,7 @@ public class Promise<T> {
     ///
     /// - note: Several handlers may be registered on the same promise. In that
     ///    case, they are called in their registration order.
-    /// - note: if the current promise is successful, it won't be chained to 
+    /// - warning: if the current promise is successful, it won't be chained to
     ///    the returned promise.
     ///
     /// - parameter handler: the callback to call when the promise fails
