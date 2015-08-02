@@ -141,15 +141,15 @@ class Article : NSObject {
         }
 
         if let msgid = self.msgid  {
-            self.promise = self.nntp?.sendCommand(.Article(NNTPCommand.ArticleId.MessageId(msgid)))
+            self.promise = self.nntp?.sendCommand(.ArticleByMsgid(msgid: msgid))
         } else {
-            self.promise = self.nntp?.sendCommand(.Article(NNTPCommand.ArticleId.Number(self.refs[0].1)),
-                inGroup: self.refs[0].0)
+            self.promise = self.nntp?.sendCommand(.Article(group: self.refs[0].0, article: self.refs[0].1))
         }
 
         self.promise?.then({
             (payload) in
 
+            print(payload)
             guard case .Article(_, _, let msg) = payload else {
                 return
             }
@@ -158,7 +158,7 @@ class Article : NSObject {
             self.body = msg.body
             self.to = self.loadNewsgroups()
             self.loadRefs()
-        })
+        }, otherwise: { (error) in print(error) })
     }
 
     func cancelLoad() {
@@ -240,7 +240,7 @@ class GroupTree : NSObject {
             return
         }
 
-        self.promise = self.nntp?.sendCommand(.Group(self.fullName!)).thenChain({
+        self.promise = self.nntp?.sendCommand(.Group(group: self.fullName!)).thenChain({
             (payload) throws in
 
             guard let nntp = self.nntp else {
@@ -254,7 +254,7 @@ class GroupTree : NSObject {
             let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
 
             self.unreadCount = count
-            return nntp.sendCommand(.Over(NNTPCommand.ArticleRangeOrId.From(from)), inGroup: self.fullName!)
+            return nntp.sendCommand(.Over(group: self.fullName!, range: NNTPCommand.ArticleRange.From(from)))
         })
         self.promise?.then({
             (payload) throws in
@@ -287,7 +287,7 @@ class GroupTree : NSObject {
     }
 
     func refreshCount() {
-        self.nntp?.sendCommand(.Group(self.fullName!)).then({
+        self.nntp?.sendCommand(.Group(group: self.fullName!)).then({
             (payload) throws in
 
             guard case .GroupContent(_, let count, _, _, _) = payload else {

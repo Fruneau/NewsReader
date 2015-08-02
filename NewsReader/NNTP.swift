@@ -113,26 +113,30 @@ public enum NNTPResponseContext : Character {
     case Extension = "9"
 }
 
-public struct NNTPResponse {
+public struct NNTPResponse : CustomStringConvertible {
     public let status : NNTPResponseStatus
     public let context : NNTPResponseContext
     public let code : Character
     public let message : String
+
+    public var description : String {
+        return "\(self.status.rawValue)\(self.context.rawValue)\(self.code) \(self.message)"
+    }
 }
 
-public enum NNTPError : ErrorType {
+public enum NNTPError : ErrorType, CustomStringConvertible {
     case NotConnected
     case NoCommandProvided
 
-    case ClientProtocolError(NNTPResponseContext, Character, String)
-    case UnsupportedError(NNTPResponseContext, Character, String)
+    case ClientProtocolError(NNTPResponse)
+    case UnsupportedError(NNTPResponse)
     case ServerProtocolError
-    case UnexpectedResponse(NNTPResponseStatus, NNTPResponseContext, Character, String)
-    case MalformedResponse(NNTPResponseStatus, NNTPResponseContext, Character, String)
+    case UnexpectedResponse(NNTPResponse)
+    case MalformedResponse(NNTPResponse)
     case MalformedOverviewLine(String)
 
     case ServiceTemporarilyUnvailable /* Error 400 */
-    case NoSuchNewsgroup /* Error 411 */
+    case NoSuchNewsgroup(group: String?) /* Error 411 */
     case NoNewsgroupSelected /* Error 412 */
     case CurrentArticleNumberIsInvalid /* Error 420 */
     case NoNextArticleInGroup /* Error 421 */
@@ -142,71 +146,86 @@ public enum NNTPError : ErrorType {
     case ArticleNotWanted /* Error 435 */
     case TransferTemporaryFailure /* Error 436 */
     case TransferPermanentFailure /* Error 437 */
-    case PostingNotPermitted /* Error 440 */
-    case PostingFailed /* Error 441 */
-    case AuthenticationFailed /* Error 481 */
+    case PostingNotPermitted(reason: String) /* Error 440 */
+    case PostingFailed(reason: String) /* Error 441 */
+    case AuthenticationFailed(reason: String) /* Error 481 */
     case AuthenticationSequenceError /* Error 482 */
 
     case ServicePermanentlyUnavailable /* Error 502 */
 
-    private init?(response: NNTPResponse) {
-        switch ((response.status, response.context, response.code, response.message)) {
-        case (.Failure, .Status, "0", _):
-            self = .ServiceTemporarilyUnvailable
+    public var description : String {
+        switch self {
+        case .NotConnected:
+            return "not connected"
 
-        case (.Failure, .NewsgroupSelection, "1", _):
-            self = .NoSuchNewsgroup
+        case .NoCommandProvided:
+            return "no command provided"
 
-        case (.Failure, .NewsgroupSelection, "2", _):
-            self = .NoNewsgroupSelected
+        case .ClientProtocolError(let response):
+            return "client protocol error: \(response)"
 
-        case (.Failure, .ArticleSelection, "0", _):
-            self = .CurrentArticleNumberIsInvalid
+        case .UnsupportedError(let response):
+            return "unsupported error: \(response)"
 
-        case (.Failure, .ArticleSelection, "1", _):
-            self = .NoNextArticleInGroup
+        case .ServerProtocolError:
+            return "server error"
 
-        case (.Failure, .ArticleSelection, "2", _):
-            self = .NoPreviousArticleInGroup
+        case .UnexpectedResponse(let response):
+            return "unexpected server response: \(response)"
 
-        case (.Failure, .ArticleSelection, "3", _):
-            self = .NoArticleWithThatNumber
+        case .MalformedResponse(let response):
+            return "malformed server response: \(response)"
 
-        case (.Failure, .Distribution, "0", _):
-            self = .NoArticleWithThatMsgId
+        case .MalformedOverviewLine(let line):
+            return "malformed message overview: \(line)"
 
-        case (.Failure, .Distribution, "5", _):
-            self = .ArticleNotWanted
+        case .ServiceTemporarilyUnvailable:
+            return "service temporarily unavailable (retry later)"
 
-        case (.Failure, .Distribution, "6", _):
-            self = .TransferTemporaryFailure
+        case .NoSuchNewsgroup(group: let group):
+            return "unknown newsgroup: \(group)"
 
-        case (.Failure, .Distribution, "7", _):
-            self = .TransferPermanentFailure
+        case .NoNewsgroupSelected:
+            return "no newsgroup selected"
 
-        case (.Failure, .Posting, "0", _):
-            self = .PostingNotPermitted
+        case .CurrentArticleNumberIsInvalid:
+            return "current article number is invalid"
 
-        case (.Failure, .Posting, "1", _):
-            self = .PostingFailed
+        case .NoNextArticleInGroup:
+            return "no next article in group"
 
-        case (.Failure, .Authentication, "1", _):
-            self = .AuthenticationFailed
+        case .NoPreviousArticleInGroup:
+            return "no previous article in group"
 
-        case (.Failure, .Authentication, "2", _):
-            self = .AuthenticationSequenceError
+        case .NoArticleWithThatNumber:
+            return "no article with the given number"
 
-        case (.Failure, let context, let code, let message):
-            self = .UnsupportedError(context, code, message)
+        case .NoArticleWithThatMsgId:
+            return "no article with the given message id"
 
-        case (.ProtocolError, .Status, "2", _):
-            self = .ServicePermanentlyUnavailable
+        case .ArticleNotWanted:
+            return "article not wanted"
 
-        case (.ProtocolError, let context, let code, let message):
-            self = .ClientProtocolError(context, code, message)
-            
-        default:
-            return nil
+        case .TransferTemporaryFailure:
+            return "transfer temporary failure"
+
+        case .TransferPermanentFailure:
+            return "transfer permanent failure"
+
+        case .PostingNotPermitted:
+            return "posting not permitted"
+
+        case .PostingFailed:
+            return "posting failed"
+
+        case .AuthenticationFailed:
+            return "authentication failed"
+
+        case .AuthenticationSequenceError:
+            return "authentication sequence error"
+
+        case .ServicePermanentlyUnavailable:
+            return "service permanently unavailable"
         }
     }
 }
@@ -266,21 +285,6 @@ public enum NNTPCommand : CustomStringConvertible {
         case RANGE
     }
 
-    public enum ArticleId {
-        case MessageId(String)
-        case Number(Int)
-
-        func pack(buffer: Buffer) {
-            switch (self) {
-            case .MessageId(let msgid):
-                buffer.appendString("\(msgid)")
-
-            case .Number(let num):
-                buffer.appendString("\(num)")
-            }
-        }
-    }
-
     public enum ArticleRange {
         case Number(Int)
         case From(Int)
@@ -300,29 +304,6 @@ public enum NNTPCommand : CustomStringConvertible {
         }
     }
 
-    public enum ArticleRangeOrId {
-        case MessageId(String)
-        case Number(Int)
-        case From(Int)
-        case Between(Int, Int)
-
-        func pack(buffer: Buffer) {
-            switch (self) {
-            case .MessageId(let msgid):
-                buffer.appendString("\(msgid)")
-
-            case .Number(let num):
-                buffer.appendString("\(num)")
-
-            case .From(let from):
-                buffer.appendString("\(from)-")
-
-            case .Between(let from, let to):
-                buffer.appendString("\(from)-\(to)")
-            }
-        }
-    }
-    
     public struct Wildmat {
         let pattern : String
         
@@ -340,16 +321,20 @@ public enum NNTPCommand : CustomStringConvertible {
     case Quit
 
     /* Group and article selection */
-    case Group(String)
-    case ListGroup(String?, ArticleRange?)
-    case Last
-    case Next
+    case Group(group: String)
+    case ListGroup(group: String, range: ArticleRange?)
+    case Last(group: String)
+    case Next(group: String)
 
     /* Article retrieval */
-    case Article(ArticleId?)
-    case Head(ArticleId?)
-    case Body(ArticleId?)
-    case Stat(ArticleId?)
+    case ArticleByMsgid(msgid: String)
+    case Article(group: String, article: Int?)
+    case HeadByMsgid(msgid: String)
+    case Head(group: String, article: Int?)
+    case BodyByMsgid(msgid: String)
+    case Body(group: String, article: Int?)
+    case StatByMsgid(msgid: String)
+    case Stat(group: String, article: Int?)
 
     /* Posting */
     case Post
@@ -369,9 +354,11 @@ public enum NNTPCommand : CustomStringConvertible {
     case ListNewsgroups(Wildmat?)
 
     /* Article field access */
-    case Over(ArticleRangeOrId?)
+    case OverByMsgid(msgid: String)
+    case Over(group: String, range: ArticleRange?)
     case ListOverviewFmt
-    case Hdr(String, ArticleRangeOrId?)
+    case HdrByMsgid(field: String, msgid: String)
+    case Hdr(group: String, field: String, range: ArticleRange?)
     case ListHeaders(ListHeadersVariant?)
 
     /* RFC 4643: NNTP Authentication */
@@ -396,56 +383,62 @@ public enum NNTPCommand : CustomStringConvertible {
         case .Quit:
             buffer.appendString("QUIT")
 
-        case .Group(let group):
+        case .Group(group: let group):
             buffer.appendString("GROUP \(group)")
 
-        case .ListGroup(let optGroup, let optRange):
+        case .ListGroup(group: let group, range: let optRange):
             buffer.appendString("LISTGROUP")
-            if let group = optGroup {
-                buffer.appendString(" \(group)")
+            buffer.appendString(" \(group)")
 
-                if let range = optRange {
-                    buffer.appendString(" ")
-                    range.pack(buffer)
-                }
+            if let range = optRange {
+                buffer.appendString(" ")
+                range.pack(buffer)
             }
 
-        case .Last:
+        case .Last(group: _):
             buffer.appendString("LAST")
 
-        case .Next:
+        case .Next(group: _):
             buffer.appendString("NEXT")
 
-        case .Article(let optArticle):
+        case .ArticleByMsgid(msgid: let msgid):
+            buffer.appendString("ARTICLE \(msgid)")
+
+        case .Article(group: _, article: let optArticle):
             buffer.appendString("ARTICLE")
 
             if let article = optArticle {
-                buffer.appendString(" ")
-                article.pack(buffer)
+                buffer.appendString(" \(article)")
             }
 
-        case .Head(let optArticle):
+        case .HeadByMsgid(msgid: let msgid):
+            buffer.appendString("HEAD \(msgid)")
+
+        case .Head(group: _, article: let optArticle):
             buffer.appendString("HEAD")
 
             if let article = optArticle {
-                buffer.appendString(" ")
-                article.pack(buffer)
+                buffer.appendString(" \(article)")
             }
 
-        case .Body(let optArticle):
+        case .BodyByMsgid(msgid: let msgid):
+            buffer.appendString("BODY \(msgid)")
+
+        case .Body(group: _, article: let optArticle):
             buffer.appendString("BODY")
 
             if let article = optArticle {
-                buffer.appendString(" ")
-                article.pack(buffer)
+                buffer.appendString(" \(article)")
             }
 
-        case .Stat(let optArticle):
+        case .StatByMsgid(msgid: let msgid):
+            buffer.appendString("STAT \(msgid)")
+
+        case .Stat(group: _, article: let optArticle):
             buffer.appendString("STAT")
 
             if let article = optArticle {
-                buffer.appendString(" ")
-                article.pack(buffer)
+                buffer.appendString(" \(article)")
             }
 
         case .Post:
@@ -505,7 +498,10 @@ public enum NNTPCommand : CustomStringConvertible {
                 wildmat.pack(buffer)
             }
 
-        case .Over(let optArticle):
+        case .OverByMsgid(msgid: let msgid):
+            buffer.appendString("OVER \(msgid)")
+
+        case .Over(group: _, range: let optArticle):
             buffer.appendString("OVER")
 
             if let article = optArticle {
@@ -516,7 +512,10 @@ public enum NNTPCommand : CustomStringConvertible {
         case .ListOverviewFmt:
             buffer.appendString("LIST OVERVIEW.FMT")
 
-        case .Hdr(let field, let optArticle):
+        case .HdrByMsgid(field: let field, msgid: let msgid):
+            buffer.appendString("HDR \(field) \(msgid)")
+
+        case .Hdr(group: _, field: let field, range: let optArticle):
             buffer.appendString("HDR \(field)")
 
             if let article = optArticle {
@@ -600,37 +599,90 @@ public enum NNTPCommand : CustomStringConvertible {
         }
     }
 
+    private var group : String? {
+        switch self {
+        case .Last(group: let x):
+            return x
+
+        case .Next(group: let x):
+            return x
+
+        case .Article(group: let x, _):
+            return x
+
+        case .Head(group: let x, _):
+            return x
+
+        case .Body(group: let x, _):
+            return x
+
+        case .Stat(group: let x, _):
+            return x
+
+        default:
+            return nil
+        }
+    }
+}
+
+private class NNTPOperation {
+    private let command : NNTPCommand
+    private let onSuccess : (NNTPPayload) -> Void
+    private let onError : (ErrorType) -> Void
+    private let isCancelled : (Void) -> Bool
+
+    private var response : NNTPResponse?
+    private var payload : [String]?
+
+    private init(command: NNTPCommand, onSuccess: (NNTPPayload) -> Void, onError: (ErrorType) -> Void, isCancelled: (Void) -> Bool) {
+        self.command = command
+        self.onSuccess = onSuccess
+        self.onError = onError
+        self.isCancelled = isCancelled
+
+        if self.command.isMultiline {
+            self.payload = []
+        }
+    }
+
     private func acceptResponse(response: NNTPResponse) -> Bool {
-        switch (self, response.status.rawValue, response.context.rawValue, response.code) {
+        switch (self.command, response.status.rawValue, response.context.rawValue, response.code) {
         case (.Connect, "2", "0", "0"), (.Connect, "2", "0", "1"),
-            (.Capabilities, "1", "0", "1"),
-            (.ModeReader, "2", "0", "0"), (.ModeReader, "2", "0", "1"),
-            (.Quit, "2", "0", "5"),
-            (.Group, "2", "1", "1"),
-            (.ListGroup, "2", "1", "1"),
-            (.Last, "2", "2", "3"),
-            (.Next, "2", "2", "3"),
-            (.Article, "2", "2", "0"),
-            (.Head, "2", "2", "1"),
-            (.Body, "2", "2", "2"),
-            (.Stat, "2", "2", "3"),
-            (.Post, "3", "4", "0"),
-            (.PostBody, "2", "4", "0"),
-            (.Ihave, "3", "3", "5"), (.Ihave, "2", "3", "5"),
-            (.Date, "1", "1", "1"),
-            (.Help, "1", "0", "0"),
-            (.NewGroups, "2", "3", "1"),
-            (.NewNews, "2", "3", "0"),
-            (.ListActive, "2", "1", "5"),
-            (.ListActiveTimes, "2", "1", "5"),
-            (.ListDistribPats, "2", "1", "5"),
-            (.ListNewsgroups, "2", "1", "5"),
-            (.Over, "2", "2", "4"),
-            (.ListOverviewFmt, "2", "1", "5"),
-            (.Hdr, "2", "2", "5"),
-            (.ListHeaders, "2", "1", "5"),
-            (.AuthinfoUser, "2", "8", "1"), (.AuthinfoUser, "3", "8", "1"),
-            (.AuthinfoPass, "2", "8", "1"):
+        (.Capabilities, "1", "0", "1"),
+        (.ModeReader, "2", "0", "0"), (.ModeReader, "2", "0", "1"),
+        (.Quit, "2", "0", "5"),
+        (.Group, "2", "1", "1"),
+        (.ListGroup, "2", "1", "1"),
+        (.Last, "2", "2", "3"),
+        (.Next, "2", "2", "3"),
+        (.ArticleByMsgid, "2", "2", "0"),
+        (.Article, "2", "2", "0"),
+        (.HeadByMsgid, "2", "2", "1"),
+        (.Head, "2", "2", "1"),
+        (.BodyByMsgid, "2", "2", "2"),
+        (.Body, "2", "2", "2"),
+        (.StatByMsgid, "2", "2", "3"),
+        (.Stat, "2", "2", "3"),
+        (.Post, "3", "4", "0"),
+        (.PostBody, "2", "4", "0"),
+        (.Ihave, "3", "3", "5"), (.Ihave, "2", "3", "5"),
+        (.Date, "1", "1", "1"),
+        (.Help, "1", "0", "0"),
+        (.NewGroups, "2", "3", "1"),
+        (.NewNews, "2", "3", "0"),
+        (.ListActive, "2", "1", "5"),
+        (.ListActiveTimes, "2", "1", "5"),
+        (.ListDistribPats, "2", "1", "5"),
+        (.ListNewsgroups, "2", "1", "5"),
+        (.OverByMsgid, "2", "2", "4"),
+        (.Over, "2", "2", "4"),
+        (.ListOverviewFmt, "2", "1", "5"),
+        (.HdrByMsgid, "2", "2", "5"),
+        (.Hdr, "2", "2", "5"),
+        (.ListHeaders, "2", "1", "5"),
+        (.AuthinfoUser, "2", "8", "1"), (.AuthinfoUser, "3", "8", "1"),
+        (.AuthinfoPass, "2", "8", "1"),
+        (_, "4", _, _), (_, "5", _, _):
             return true
 
         default:
@@ -638,9 +690,12 @@ public enum NNTPCommand : CustomStringConvertible {
         }
     }
 
-    private func parseCapabilities(payload: [String]) -> Set<NNTPCapability> {
-        var set = Set<NNTPCapability>()
+    private func parseCapabilities() -> Set<NNTPCapability> {
+        guard let payload = self.payload else {
+            assert (false)
+        }
 
+        var set = Set<NNTPCapability>()
         lines: for line in payload {
             switch (line) {
             case "HDR":
@@ -713,14 +768,14 @@ public enum NNTPCommand : CustomStringConvertible {
                         continue lines
                     }
                     set.insert(.Version(Int(version)))
-
+                    
                 default:
                     break
                 }
                 break
             }
         }
-
+        
         return set
     }
 
@@ -732,19 +787,19 @@ public enum NNTPCommand : CustomStringConvertible {
         if !scanner.scanInteger(&number)
             || !scanner.skipCharactersFromSet(Global.spaceCset)
         {
-            throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+            throw NNTPError.MalformedResponse(response)
         }
 
         return (Int(number), scanner.remainder)
     }
 
-    private func parseResponse(response: NNTPResponse, payload: [String]?) throws -> NNTPPayload {
-        if let error = NNTPError(response: response) {
-            throw error
+    private func parsePayload() throws -> NNTPPayload {
+        guard let response = self.response else {
+            throw NNTPError.ServerProtocolError
         }
 
         if !self.acceptResponse(response) {
-            throw NNTPError.UnexpectedResponse(response.status, response.context, response.code, response.message)
+            throw NNTPError.UnexpectedResponse(response)
         }
 
         switch ((response.status.rawValue, response.context.rawValue, response.code)) {
@@ -752,11 +807,11 @@ public enum NNTPCommand : CustomStringConvertible {
             return NNTPPayload.Information(response.message)
 
         case ("1", "0", "1"):
-            return .Capabilities(self.parseCapabilities(payload!))
+            return .Capabilities(self.parseCapabilities())
 
         case ("1", "1", "1"):
             guard let date = Global.dateParser.dateFromString(response.message) else {
-                throw NNTPError.UnexpectedResponse(response.status, response.context, response.code, response.message)
+                throw NNTPError.UnexpectedResponse(response)
             }
 
             return .Date(date)
@@ -785,7 +840,7 @@ public enum NNTPCommand : CustomStringConvertible {
                 || !scanner.scanInteger(&high)
                 || !scanner.skipCharactersFromSet(Global.spaceCset)
             {
-                throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+                throw NNTPError.MalformedResponse(response)
             }
 
             if let idList = payload {
@@ -795,7 +850,7 @@ public enum NNTPCommand : CustomStringConvertible {
                     let numId = Int(id)
 
                     if numId == nil {
-                        throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+                        throw NNTPError.MalformedResponse(response)
                     }
                     ids?.append(numId!)
                 }
@@ -875,7 +930,7 @@ public enum NNTPCommand : CustomStringConvertible {
             return .Overview(overviews)
 
         case ("2", "1", "5"):
-            switch (self) {
+            switch (self.command) {
             case .ListNewsgroups(_):
                 var res : [(String, String)] = []
                 let cset = NSCharacterSet(charactersInString: " \t")
@@ -888,9 +943,9 @@ public enum NNTPCommand : CustomStringConvertible {
                     if !scanner.scanUpToCharactersFromSet(cset, intoString: &group)
                         || !scanner.skipCharactersFromSet(cset)
                     {
-                        throw NNTPError.MalformedResponse(response.status, response.context, response.code, response.message)
+                        throw NNTPError.MalformedResponse(response)
                     }
-
+                    
                     res.append((group! as String), scanner.remainder)
                 }
                 return .GroupList(res)
@@ -899,8 +954,127 @@ public enum NNTPCommand : CustomStringConvertible {
                 throw NNTPError.ServerProtocolError
             }
 
+        case ("4", "0", "0"):
+            throw NNTPError.ServiceTemporarilyUnvailable
+
+        case ("4", "1", "1"):
+            throw NNTPError.NoSuchNewsgroup(group: command.group)
+
+        case ("4", "1", "2"):
+            throw NNTPError.NoNewsgroupSelected
+
+        case ("4", "2", "0"):
+            throw NNTPError.CurrentArticleNumberIsInvalid
+
+        case ("4", "2", "1"):
+            throw NNTPError.NoNextArticleInGroup
+
+        case ("4", "2", "2"):
+            throw NNTPError.NoPreviousArticleInGroup
+
+        case ("4", "3", "3"):
+            throw NNTPError.NoArticleWithThatNumber
+
+        case ("4", "3", "0"):
+            throw NNTPError.NoArticleWithThatMsgId
+
+        case ("4", "3", "5"):
+            throw NNTPError.ArticleNotWanted
+
+        case ("4", "3", "6"):
+            throw NNTPError.TransferTemporaryFailure
+
+        case ("4", "3", "7"):
+            throw NNTPError.TransferPermanentFailure
+
+        case ("4", "4", "0"):
+            throw NNTPError.PostingNotPermitted(reason: response.message)
+
+        case ("4", "4", "1"):
+            throw NNTPError.PostingFailed(reason: response.message)
+
+        case ("4", "8", "1"):
+            throw NNTPError.AuthenticationFailed(reason: response.message)
+
+        case ("4", "8", "2"):
+            throw NNTPError.AuthenticationSequenceError
+
+        case ("4", _, _):
+            throw NNTPError.UnsupportedError(response)
+
+        case ("5", "0", "2"):
+            throw NNTPError.ServicePermanentlyUnavailable
+
+        case ("5", _, _):
+            throw NNTPError.ClientProtocolError(response)
+
         default:
             throw NNTPError.ServerProtocolError
+        }
+    }
+
+    private func parseResponse(line: String) throws -> NNTPResponse {
+        let chars = line.characters
+        var status : NNTPResponseStatus?
+        var context : NNTPResponseContext?
+        var pos = 0
+
+        if chars.count < 5 {
+            throw NNTPError.ServerProtocolError
+        }
+
+        for char in chars {
+            switch (pos) {
+            case 0:
+                status = NNTPResponseStatus(rawValue: char)
+                if status == nil {
+                    throw NNTPError.ServerProtocolError
+                }
+            case 1:
+                context = NNTPResponseContext(rawValue: char)
+                if context == nil {
+                    throw NNTPError.ServerProtocolError
+                }
+            case 2:
+                if char < "0" || char > "9" {
+                    throw NNTPError.ServerProtocolError
+                }
+                return NNTPResponse(status: status!, context: context!, code: char,
+                    message: (line as NSString).substringFromIndex(4))
+
+            default:
+                throw NNTPError.ServerProtocolError
+            }
+            pos++
+        }
+        
+        throw NNTPError.ServerProtocolError
+    }
+
+    private func receivedLine(line: String) throws -> Bool {
+        if self.response == nil {
+            self.response = try self.parseResponse(line)
+            return self.response!.status != .Completed || !self.command.isMultiline
+        } else {
+            assert(self.command.isMultiline)
+
+            if line == "." {
+                return true
+            }
+            self.payload?.append(line)
+            return false
+        }
+    }
+
+    private func fail(error: ErrorType) {
+        self.onError(error)
+    }
+
+    private func process() {
+        do {
+            self.onSuccess(try self.parsePayload())
+        } catch let e {
+            self.onError(e)
         }
     }
 }
@@ -919,31 +1093,13 @@ public enum NNTPStatus {
 /// current group and article.
 public class NNTPClient {
     private class Operation {
-        private let command : NNTPCommand
-        private let onSuccess : (NNTPPayload) -> Void
-        private let onError : (ErrorType) -> Void
-        private let isCancelled : (Void) -> Bool
-
-        private var response : NNTPResponse?
-        private var payload : [String]?
-
-        private init(command: NNTPCommand, onSuccess: (NNTPPayload) -> Void, onError: (ErrorType) -> Void, isCancelled: (Void) -> Bool) {
-            self.command = command
-            self.onSuccess = onSuccess
-            self.onError = onError
-            self.isCancelled = isCancelled
-
-            if self.command.isMultiline {
-                self.payload = []
-            }
-        }
     }
 
     private let istream : NSInputStream
     private let ostream : NSOutputStream
     private let reader : BufferedReader
-    private let pendingCommands = FifoQueue<NNTPClient.Operation>()
-    private let sentCommands = FifoQueue<NNTPClient.Operation>()
+    private let pendingCommands = FifoQueue<NNTPOperation>()
+    private let sentCommands = FifoQueue<NNTPOperation>()
     private let outBuffer = Buffer(capacity: 2 << 20)
 
     private var pipelineBarrier : Promise<NNTPPayload>
@@ -1034,7 +1190,7 @@ public class NNTPClient {
         self.pipelineBarrier = Promise<NNTPPayload>() {
             (onSuccess, onError) in
 
-            self.sentCommands.push(NNTPClient.Operation(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
+            self.sentCommands.push(NNTPOperation(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
         }
         self.sendCommand(NNTPCommand.ModeReader)
     }
@@ -1123,78 +1279,19 @@ public class NNTPClient {
         self.ostream.removeFromRunLoop(runLoop, forMode: mode)
     }
 
-    private func commandProcessed(reply: NNTPClient.Operation) {
-        guard let response = reply.response else {
-            reply.onError(NNTPError.ServerProtocolError)
-            return
-        }
-        do {
-            reply.onSuccess(try reply.command.parseResponse(response, payload: reply.payload))
-        } catch let e {
-            reply.onError(e)
-        }
-    }
-
-    private func parseResponse(line: String) -> NNTPResponse? {
-        let chars = line.characters
-        var status : NNTPResponseStatus?
-        var context : NNTPResponseContext?
-        var pos = 0
-
-        if chars.count < 5 {
-            return nil
-        }
-
-        for char in chars {
-            switch (pos) {
-            case 0:
-                status = NNTPResponseStatus(rawValue: char)
-                if status == nil {
-                    return nil
-                }
-            case 1:
-                context = NNTPResponseContext(rawValue: char)
-                if context == nil {
-                    return nil
-                }
-            case 2:
-                if char < "0" || char > "9" {
-                    return nil
-                }
-                return NNTPResponse(status: status!, context: context!, code: char,
-                    message: (line as NSString).substringFromIndex(4))
-
-            default:
-                return nil
-            }
-            pos++
-        }
-
-        return nil
-    }
-
     private func read() throws {
         while let line = try self.reader.readLine() {
             if let reply = self.sentCommands.head {
-                if reply.response == nil {
-                    reply.response = self.parseResponse(line)
-
-                    if let response = reply.response {
-                        if response.status != .Completed || !reply.command.isMultiline {
-                            self.sentCommands.pop()
-                            self.commandProcessed(reply)
-                        }
-                    } else {
-                        self.close()
-                        return
-                    }
-                } else {
-                    if line == "." {
+                do {
+                    if try reply.receivedLine(line) {
                         self.sentCommands.pop()
-                        commandProcessed(reply)
-                    } else {
-                        reply.payload?.append(line)
+                        reply.process()
                     }
+                } catch let e {
+                    self.sentCommands.pop()
+                    reply.fail(e)
+                    self.close()
+                    return
                 }
             } else {
                 self.close()
@@ -1272,7 +1369,7 @@ public class NNTPClient {
                         self.currentGroup = group
                     }
 
-                case .ListGroup(let group, _) where group != nil:
+                case .ListGroup(let group, _):
                     if group != self.currentGroup && i < commands.count - 1 {
                         commands.removeAtIndex(i)
                         i--
@@ -1281,6 +1378,12 @@ public class NNTPClient {
                     }
 
                 default:
+                    if let group = commands[i].group {
+                        if group != self.currentGroup {
+                            commands.insert(.Group(group: group), atIndex: i)
+                            self.currentGroup = group
+                        }
+                    }
                     break
                 }
             }
@@ -1311,12 +1414,12 @@ public class NNTPClient {
                 }
 
                 for var i = 0; i < commands.count - 1; i++ {
-                    self.pendingCommands.push(NNTPClient.Operation(command: commands[i],
+                    self.pendingCommands.push(NNTPOperation(command: commands[i],
                         onSuccess: { (_) in () }, onError: actualOnError,
                         isCancelled: { isCancelled }))
                 }
 
-                self.pendingCommands.push(NNTPClient.Operation(command: commands.last!,
+                self.pendingCommands.push(NNTPOperation(command: commands.last!,
                     onSuccess: actualOnSuccess, onError: actualOnError,
                     isCancelled: { isCancelled }))
                 self.flush()
@@ -1353,20 +1456,6 @@ public class NNTPClient {
             self.queueOnPipelineError = !command.fatalOnError
         }
         return promise
-    }
-
-    /// Sends a single command that requires being run in the content of a group.
-    ///
-    /// This function is a convenience helper to send a single command after ensuring
-    /// the connection context is set to the given group. It behaves like `sendCommands()`
-    ///
-    /// - seealso: NNTPClient.sendCommands()
-    /// - parameter command: The command to send
-    /// - parameter inGroup: The group in which the server should be
-    /// - returns: a promise waiting allowing notification when the command is
-    ///    executed
-    public func sendCommand(command: NNTPCommand, inGroup group: String) -> Promise<NNTPPayload> {
-        return self.sendCommands([ .Group(group), command ])
     }
 
     private var status : NNTPStatus = .Disconnected
