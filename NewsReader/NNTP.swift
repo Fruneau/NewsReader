@@ -211,71 +211,6 @@ public enum NNTPError : ErrorType {
     }
 }
 
-public enum ArticleRange {
-    case Number(Int)
-    case From(Int)
-    case Between(Int, Int)
-
-    func pack(buffer: Buffer) {
-        switch (self) {
-        case .Number(let num):
-            buffer.appendString("\(num)")
-
-        case .From(let from):
-            buffer.appendString("\(from)-")
-
-        case .Between(let from, let to):
-            buffer.appendString("\(from)-\(to)")
-        }
-    }
-}
-
-public enum ArticleId {
-    case MessageId(String)
-    case Number(Int)
-
-    func pack(buffer: Buffer) {
-        switch (self) {
-        case .MessageId(let msgid):
-            buffer.appendString("\(msgid)")
-
-        case .Number(let num):
-            buffer.appendString("\(num)")
-        }
-    }
-}
-
-public enum ArticleRangeOrId {
-    case MessageId(String)
-    case Number(Int)
-    case From(Int)
-    case Between(Int, Int)
-
-    func pack(buffer: Buffer) {
-        switch (self) {
-        case .MessageId(let msgid):
-            buffer.appendString("\(msgid)")
-
-        case .Number(let num):
-            buffer.appendString("\(num)")
-
-        case .From(let from):
-            buffer.appendString("\(from)-")
-
-        case .Between(let from, let to):
-            buffer.appendString("\(from)-\(to)")
-        }
-    }
-}
-
-public struct Wildmat {
-    let pattern : String
-
-    func pack(buffer: Buffer) {
-        buffer.appendString(self.pattern)
-    }
-}
-
 private struct Global {
     static private let dateFormatter : NSDateFormatter = {
         let f = NSDateFormatter()
@@ -325,11 +260,77 @@ public enum NNTPPayload {
     case Overview([NNTPOverview])
 }
 
-public enum NNTPCommand {
+public enum NNTPCommand : CustomStringConvertible {
     public enum ListHeadersVariant : String {
         case MSGID = "MSGID"
         case RANGE = "RANGE"
     }
+
+    public enum ArticleId {
+        case MessageId(String)
+        case Number(Int)
+
+        func pack(buffer: Buffer) {
+            switch (self) {
+            case .MessageId(let msgid):
+                buffer.appendString("\(msgid)")
+
+            case .Number(let num):
+                buffer.appendString("\(num)")
+            }
+        }
+    }
+
+    public enum ArticleRange {
+        case Number(Int)
+        case From(Int)
+        case Between(Int, Int)
+
+        func pack(buffer: Buffer) {
+            switch (self) {
+            case .Number(let num):
+                buffer.appendString("\(num)")
+
+            case .From(let from):
+                buffer.appendString("\(from)-")
+
+            case .Between(let from, let to):
+                buffer.appendString("\(from)-\(to)")
+            }
+        }
+    }
+
+    public enum ArticleRangeOrId {
+        case MessageId(String)
+        case Number(Int)
+        case From(Int)
+        case Between(Int, Int)
+
+        func pack(buffer: Buffer) {
+            switch (self) {
+            case .MessageId(let msgid):
+                buffer.appendString("\(msgid)")
+
+            case .Number(let num):
+                buffer.appendString("\(num)")
+
+            case .From(let from):
+                buffer.appendString("\(from)-")
+
+            case .Between(let from, let to):
+                buffer.appendString("\(from)-\(to)")
+            }
+        }
+    }
+    
+    public struct Wildmat {
+        let pattern : String
+        
+        func pack(buffer: Buffer) {
+            buffer.appendString(self.pattern)
+        }
+    }
+
 
     case Connect
 
@@ -1270,7 +1271,7 @@ public class NNTP {
     }
 
     public func listArticles(group: String, since: NSDate) -> Promise<NNTPPayload> {
-        return self.sendCommand(.NewNews(Wildmat(pattern: group), since))
+        return self.sendCommand(.NewNews(NNTPCommand.Wildmat(pattern: group), since))
     }
 
     public func post(message: String) -> Promise<NNTPPayload> {

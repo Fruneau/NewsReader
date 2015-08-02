@@ -141,9 +141,9 @@ class Article : NSObject {
         }
 
         if let msgid = self.msgid  {
-            self.promise = self.nntp?.sendCommand(.Article(ArticleId.MessageId(msgid)))
+            self.promise = self.nntp?.sendCommand(.Article(NNTPCommand.ArticleId.MessageId(msgid)))
         } else {
-            self.promise = self.nntp?.sendCommand(.Article(ArticleId.Number(self.refs[0].1)),
+            self.promise = self.nntp?.sendCommand(.Article(NNTPCommand.ArticleId.Number(self.refs[0].1)),
                 inGroup: self.refs[0].0)
         }
 
@@ -254,7 +254,7 @@ class GroupTree : NSObject {
             let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
 
             self.unreadCount = count
-            return nntp.sendCommand(.Over(ArticleRangeOrId.From(from)), inGroup: self.fullName!)
+            return nntp.sendCommand(.Over(NNTPCommand.ArticleRangeOrId.From(from)), inGroup: self.fullName!)
         })
         self.promise?.then({
             (payload) throws in
