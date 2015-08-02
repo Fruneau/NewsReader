@@ -11,7 +11,7 @@ import News
 
 class NNTPTests : XCTestCase {
     let runLoop = NSRunLoop.currentRunLoop()
-    var nntp : NNTP?
+    var nntp : NNTPClient?
 
     override func setUp() {
         super.setUp()
@@ -23,7 +23,7 @@ class NNTPTests : XCTestCase {
             }
 
             if let url = NSURL(string: rcContent) {
-                self.nntp = NNTP(url: url)
+                self.nntp = NNTPClient(url: url)
 
                 XCTAssertNotNil(self.nntp, "unsupported news server url")
                 self.nntp?.scheduleInRunLoop(self.runLoop, forMode: NSDefaultRunLoopMode)

@@ -17,7 +17,7 @@ enum Error : ErrorType {
 }
 
 class Article : NSObject {
-    private weak var nntp : NNTP?
+    private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
 
     var headers : MIMEHeaders
@@ -127,7 +127,7 @@ class Article : NSObject {
         }
     }()
 
-    init(nntp : NNTP?, ref: (String, Int), headers: MIMEHeaders) {
+    init(nntp : NNTPClient?, ref: (String, Int), headers: MIMEHeaders) {
         self.nntp = nntp
         self.refs = [ref]
         self.headers = headers
@@ -195,7 +195,7 @@ class GroupTree : NSObject {
         super.init()
     }
 
-    init(nntp : NNTP?, node: String) {
+    init(nntp : NNTPClient?, node: String) {
         self.name = node
         self.isRoot = false
         self.nntp = nntp
@@ -223,7 +223,7 @@ class GroupTree : NSObject {
     }
 
     dynamic var threads : [Article]?
-    private weak var nntp : NNTP?
+    private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
     var selection = NSIndexSet() {
         didSet {
@@ -395,7 +395,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     @IBOutlet weak var threadView: NSCollectionView!
 
     /* Model handling */
-    var nntp : NNTP?
+    var nntp : NNTPClient?
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -415,7 +415,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
         guard let url = NSURL(string: rcContent) else {
             return
         }
-        self.nntp = NNTP(url: url)
+        self.nntp = NNTPClient(url: url)
 
         self.nntp?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
         self.nntp?.open()

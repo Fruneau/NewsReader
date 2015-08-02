@@ -892,8 +892,13 @@ public enum NNTPStatus {
     case Ready
 }
 
-public class NNTP {
-    private class Reply {
+/// The NNTPClient class manages the connection to a news server.
+///
+/// The client wraps the connection to the server. It handles the command
+/// queue as well as the current state of the connection, including the
+/// current group and article.
+public class NNTPClient {
+    private class Operation {
         private let command : NNTPCommand
         private let onSuccess : (NNTPPayload) -> Void
         private let onError : (ErrorType) -> Void
@@ -917,8 +922,8 @@ public class NNTP {
     private let istream : NSInputStream
     private let ostream : NSOutputStream
     private let reader : BufferedReader
-    private let pendingCommands = FifoQueue<NNTP.Reply>()
-    private let sentCommands = FifoQueue<NNTP.Reply>()
+    private let pendingCommands = FifoQueue<NNTPClient.Operation>()
+    private let sentCommands = FifoQueue<NNTPClient.Operation>()
     private let outBuffer = Buffer(capacity: 2 << 20)
     private var onConnected : Promise<NNTPPayload>
 
@@ -928,9 +933,9 @@ public class NNTP {
     /* {{{ Stream delegate */
 
     private class StreamDelegate : NSObject, NSStreamDelegate {
-        weak var nntp : NNTP?
+        private weak var nntp : NNTPClient?
 
-        init(nntp: NNTP) {
+        init(nntp: NNTPClient) {
             self.nntp = nntp
             super.init()
         }
@@ -968,6 +973,15 @@ public class NNTP {
 
     /* }}} */
 
+    /// Build a new client to the given server.
+    ///
+    /// Create a connection to the given `host` and `port`, optionally enabling
+    /// SSL on the connection.
+    ///
+    /// - parameter host: the hostname of the server
+    /// - parameter port: the port of the newsserver on the server
+    /// - parameter ssl: indicates wether the connection should use SSL
+    /// - returns: The creation will fail if the socket cannot be created
     public init?(host: String, port: Int, ssl: Bool) {
         var istream : NSInputStream?
         var ostream : NSOutputStream?
@@ -998,11 +1012,29 @@ public class NNTP {
         self.onConnected = Promise<NNTPPayload>() {
             (onSuccess, onError) in
 
-            self.sentCommands.push(NNTP.Reply(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
+            self.sentCommands.push(NNTPClient.Operation(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
         }
         self.onConnected = self.sendCommand(NNTPCommand.ModeReader)
     }
 
+    /// Build a new client to the given URL
+    ///
+    /// This convenience initializer build a client to an URL. The URL must
+    /// use one of the following scheme:
+    /// - `news://` or `nntp://` for simple connections to a server. In that
+    ///   case the port defaults to 465
+    /// - `nntps://` for SSL-wrapped connections to a server. In that case
+    ///   the port defaults to 563
+    ///
+    /// The provided URL must include a host name and can optionally specify
+    /// a port in order to overwrite the default one.
+    ///
+    /// A user and password can also optionally be specified if the connection
+    /// required authentication.
+    ///
+    /// - parameter url: the URL of the news server
+    /// - returns: The creation will fail if the URL is invalid or if the
+    ///    underlying sockets cannot be created.
     public convenience init?(url: NSURL) {
         var ssl = false
         var port = 465
@@ -1017,7 +1049,7 @@ public class NNTP {
             return nil
         }
 
-        if url.host == nil {
+        guard let host = url.host else {
             return nil
         }
 
@@ -1025,10 +1057,17 @@ public class NNTP {
             port = urlPort.integerValue
         }
 
-        self.init(host: url.host!, port: port, ssl: ssl)
+        self.init(host: host, port: port, ssl: ssl)
         self.setCredentials(url.user, password: url.password)
     }
 
+    /// Set the credentials to use for the connection to the news server
+    ///
+    /// You can set no credentials (default), a login or a pair of login and
+    /// password.
+    ///
+    /// - parameter login: The login to use
+    /// - parameter password: The password to use
     public func setCredentials(login: String?, password: String?) {
         self.login = login
         self.password = password
@@ -1062,7 +1101,7 @@ public class NNTP {
         self.ostream.removeFromRunLoop(runLoop, forMode: mode)
     }
 
-    private func commandProcessed(reply: NNTP.Reply) {
+    private func commandProcessed(reply: NNTPClient.Operation) {
         guard let response = reply.response else {
             reply.onError(NNTPError.ServerProtocolError)
             return
@@ -1178,6 +1217,20 @@ public class NNTP {
 
     private var currentGroup : String?
 
+    /// Schedule the emission of a sequence of commands.
+    ///
+    /// This function put the given list of commands in the pending queue and
+    /// return a promise that allow the caller to be notified of the execution
+    /// of the last command and receive its result.
+    ///
+    /// This function can be used in order to send commands that must strictly
+    /// follow each other. It updates the internal context of the connection
+    /// maintaining the current group selection. Moreover it tries to get
+    /// rid of useless `.Group()` or `.ListGroup()` commands.
+    ///
+    /// - parameter immutableCommands: the commands to send
+    /// - returns: a promise that will fail if any command fail, or succeed 
+    ///    with the payload of the last command if all commands succeed
     public func sendCommands(immutableCommands: [NNTPCommand]) -> Promise<NNTPPayload> {
         return self.onConnected.thenChain({
             (_) in
@@ -1239,12 +1292,12 @@ public class NNTP {
 
                 for var i = 0; i < commands.count - 1; i++ {
                     print("chaining commands")
-                    self.pendingCommands.push(NNTP.Reply(command: commands[i],
+                    self.pendingCommands.push(NNTPClient.Operation(command: commands[i],
                         onSuccess: { (_) in () }, onError: actualOnError,
                         isCancelled: { isCancelled }))
                 }
 
-                self.pendingCommands.push(NNTP.Reply(command: commands.last!,
+                self.pendingCommands.push(NNTPClient.Operation(command: commands.last!,
                     onSuccess: actualOnSuccess, onError: actualOnError,
                     isCancelled: { isCancelled }))
                 self.flush()
@@ -1253,10 +1306,29 @@ public class NNTP {
         })
     }
 
+    /// Sends a single command to the news server.
+    ///
+    /// This function is a convenience helper to send a single command. It
+    /// behaves like `sendCommands()`
+    ///
+    /// - seealso: NNTPClient.sendCommands()
+    /// - parameter command: The command to send
+    /// - returns: a promise waiting allowing notification when the command is
+    ///    executed
     public func sendCommand(command: NNTPCommand) -> Promise<NNTPPayload> {
         return self.sendCommands([command])
     }
 
+    /// Sends a single command that requires being run in the content of a group.
+    ///
+    /// This function is a convenience helper to send a single command after ensuring
+    /// the connection context is set to the given group. It behaves like `sendCommands()`
+    ///
+    /// - seealso: NNTPClient.sendCommands()
+    /// - parameter command: The command to send
+    /// - parameter inGroup: The group in which the server should be
+    /// - returns: a promise waiting allowing notification when the command is
+    ///    executed
     public func sendCommand(command: NNTPCommand, inGroup group: String) -> Promise<NNTPPayload> {
         return self.sendCommands([ .Group(group), command ])
     }
