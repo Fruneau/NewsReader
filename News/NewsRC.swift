@@ -8,7 +8,13 @@
 
 import Foundation
 
-public struct GroupSubscription {
+/// Description of the subscription status to a group
+///
+/// This object contains the details of the subscription to a group, including
+/// the subscription state and the list of read messages.
+///
+/// It maps to the content of a `.newsrc` file 
+public struct GroupSubscription : CustomStringConvertible {
     /// Full name of the group.
     public let name : String
 
@@ -171,7 +177,6 @@ public struct GroupSubscription {
         }
     }
 
-
     /// Check if an article is marked as read.
     ///
     /// - parameter num: The article number to check
@@ -183,5 +188,27 @@ public struct GroupSubscription {
             }
         }
         return false
+    }
+
+    /// Representation of the subscription in .newsrc format
+    public var description : String {
+        var buffer = self.name
+
+        buffer += self.subscribed ? ": " : "! "
+
+        for i in 0..<self.read.count {
+            let range = self.read[i]
+
+            if i != 0 {
+                buffer += ","
+            }
+
+            if range.length == 1 {
+                buffer += "\(range.location)"
+            } else {
+                buffer += "\(range.location)-\(NSMaxRange(range) - 1)"
+            }
+        }
+        return buffer
     }
 }
