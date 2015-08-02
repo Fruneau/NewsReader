@@ -115,8 +115,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B42372701B59951C0046B987 /* NNTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NNTP.swift; path = NewsReader/NNTP.swift; sourceTree = SOURCE_ROOT; };
-		B423727F1B5A6A600046B987 /* NSData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSData.swift; path = ../NewsReader/NSData.swift; sourceTree = "<group>"; };
+		B42372701B59951C0046B987 /* NNTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NNTP.swift; path = News/NNTP.swift; sourceTree = SOURCE_ROOT; };
+		B423727F1B5A6A600046B987 /* NSData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSData.swift; sourceTree = "<group>"; };
 		B442B9391B5519E60088FA0F /* NewsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NewsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B442B93C1B5519E60088FA0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B442B93E1B5519E60088FA0F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -128,9 +128,9 @@
 		B442B9531B5519E60088FA0F /* NewsReaderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NewsReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B442B9571B5519E60088FA0F /* NewsReaderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsReaderUITests.swift; sourceTree = "<group>"; };
 		B442B9591B5519E60088FA0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B442B9651B551B9E0088FA0F /* NSScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSScanner.swift; path = ../NewsReader/NSScanner.swift; sourceTree = "<group>"; };
-		B442B96D1B552ADB0088FA0F /* BufferedReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BufferedReader.swift; path = ../NewsReader/BufferedReader.swift; sourceTree = "<group>"; };
-		B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BufferedReaderTests.swift; path = ../NewsReaderTests/BufferedReaderTests.swift; sourceTree = "<group>"; };
+		B442B9651B551B9E0088FA0F /* NSScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSScanner.swift; sourceTree = "<group>"; };
+		B442B96D1B552ADB0088FA0F /* BufferedReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BufferedReader.swift; sourceTree = "<group>"; };
+		B442B96F1B553EA00088FA0F /* BufferedReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BufferedReaderTests.swift; sourceTree = "<group>"; };
 		B449CE391B6D55E3005C02FC /* NewsRC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsRC.swift; sourceTree = "<group>"; };
 		B449CE3B1B6D644D005C02FC /* NewsRCTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsRCTests.swift; sourceTree = "<group>"; };
 		B45A81BC1B6502F5005323EC /* Lib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Lib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,15 +144,15 @@
 		B45A81E81B6503A4005323EC /* NewsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NewsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45A81F11B6503A4005323EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B45A82091B6507B2005323EC /* MIME.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MIME.swift; sourceTree = "<group>"; };
-		B45A820B1B652B89005323EC /* String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = String.swift; path = ../NewsReader/String.swift; sourceTree = "<group>"; };
+		B45A820B1B652B89005323EC /* String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		B45A820D1B652D0C005323EC /* StringTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringTests.swift; sourceTree = "<group>"; };
-		B4E047501B564CD3001C8BFF /* FifoQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FifoQueue.swift; path = ../NewsReader/FifoQueue.swift; sourceTree = "<group>"; };
-		B4E047521B565079001C8BFF /* FifoQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FifoQueueTests.swift; path = ../NewsReaderTests/FifoQueueTests.swift; sourceTree = "<group>"; };
-		B4E047541B5667DA001C8BFF /* Buffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Buffer.swift; path = ../NewsReader/Buffer.swift; sourceTree = "<group>"; };
-		B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSRunLoop.swift; path = ../NewsReader/NSRunLoop.swift; sourceTree = "<group>"; };
-		B4E047581B56E68E001C8BFF /* NNTPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NNTPTests.swift; path = ../NewsReaderTests/NNTPTests.swift; sourceTree = "<group>"; };
-		B4FF60731B5AB504006D17DA /* Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Promise.swift; path = ../NewsReader/Promise.swift; sourceTree = "<group>"; };
-		B4FF60751B5ADA6B006D17DA /* PromiseTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PromiseTests.swift; path = ../NewsReaderTests/PromiseTests.swift; sourceTree = "<group>"; };
+		B4E047501B564CD3001C8BFF /* FifoQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueue.swift; sourceTree = "<group>"; };
+		B4E047521B565079001C8BFF /* FifoQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FifoQueueTests.swift; sourceTree = "<group>"; };
+		B4E047541B5667DA001C8BFF /* Buffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Buffer.swift; sourceTree = "<group>"; };
+		B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSRunLoop.swift; sourceTree = "<group>"; };
+		B4E047581B56E68E001C8BFF /* NNTPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NNTPTests.swift; sourceTree = "<group>"; };
+		B4FF60731B5AB504006D17DA /* Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
+		B4FF60751B5ADA6B006D17DA /* PromiseTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PromiseTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
