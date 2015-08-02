@@ -127,6 +127,7 @@ public struct NNTPResponse : CustomStringConvertible {
 public enum NNTPError : ErrorType, CustomStringConvertible {
     case NotConnected
     case NoCommandProvided
+    case Aborted
 
     case ClientProtocolError(NNTPResponse)
     case UnsupportedError(NNTPResponse)
@@ -160,6 +161,9 @@ public enum NNTPError : ErrorType, CustomStringConvertible {
 
         case .NoCommandProvided:
             return "no command provided"
+
+        case .Aborted:
+            return "operation aborted"
 
         case .ClientProtocolError(let response):
             return "client protocol error: \(response)"
@@ -1265,6 +1269,14 @@ public class NNTPClient {
     }
 
     public func close() {
+        while let reply = self.sentCommands.pop() {
+            reply.fail(NNTPError.Aborted)
+        }
+
+        while let reply = self.pendingCommands.pop() {
+            reply.fail(NNTPError.Aborted)
+        }
+
         self.istream.close()
         self.ostream.close()
     }
@@ -1433,7 +1445,13 @@ public class NNTPClient {
 
         if self.queueOnPipelineError {
             out = out.otherwiseChain({
-                (_) in chain()
+                (error) in
+
+                if case NNTPError.Aborted = error {
+                    return Promise<NNTPPayload>(failed: error)
+                } else {
+                    return chain()
+                }
             })
         }
         return out
