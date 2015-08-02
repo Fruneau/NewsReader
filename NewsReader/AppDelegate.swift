@@ -149,7 +149,6 @@ class Article : NSObject {
         self.promise?.then({
             (payload) in
 
-            print(payload)
             guard case .Article(_, _, let msg) = payload else {
                 return
             }
@@ -158,7 +157,7 @@ class Article : NSObject {
             self.body = msg.body
             self.to = self.loadNewsgroups()
             self.loadRefs()
-        }, otherwise: { (error) in print(error) })
+        })
     }
 
     func cancelLoad() {
@@ -418,7 +417,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
         self.nntp = NNTPClient(url: url)
 
         self.nntp?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-        self.nntp?.open()
+        self.nntp?.connect()
 
         self.nntp?.sendCommand(.ListNewsgroups(nil)).then({
             (payload) in

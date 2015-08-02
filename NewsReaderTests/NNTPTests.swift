@@ -27,7 +27,7 @@ class NNTPTests : XCTestCase {
 
                 XCTAssertNotNil(self.nntp, "unsupported news server url")
                 self.nntp?.scheduleInRunLoop(self.runLoop, forMode: NSDefaultRunLoopMode)
-                self.nntp?.open()
+                self.nntp?.connect()
             } else {
                 XCTAssert(false, "invalid URL provided in ~/.newsreaderrc file")
             }
@@ -37,7 +37,7 @@ class NNTPTests : XCTestCase {
     }
 
     override func tearDown() {
-        self.nntp?.close()
+        self.nntp?.disconnect()
         self.nntp?.removeFromRunLoop(self.runLoop, forMode: NSDefaultRunLoopMode)
         self.nntp = nil
 
@@ -48,8 +48,8 @@ class NNTPTests : XCTestCase {
         let nntp = self.nntp!
         let date = NSDate(timeIntervalSinceNow: -18 * 86400)
 
-        nntp.sendCommand(.Group("corp.software.general")).then({
-            (payload) in
+        nntp.sendCommand(.Group(group: "corp.software.general")).then({
+            (payload) throws in
 
             switch (payload) {
             case .GroupContent(_, let count, let low, let high, _):

@@ -127,6 +127,7 @@ public struct NNTPResponse : CustomStringConvertible {
 public enum NNTPError : ErrorType, CustomStringConvertible {
     case NotConnected
     case NoCommandProvided
+    case CannotConnect
     case Aborted
 
     case ClientProtocolError(NNTPResponse)
@@ -161,6 +162,9 @@ public enum NNTPError : ErrorType, CustomStringConvertible {
 
         case .NoCommandProvided:
             return "no command provided"
+
+        case .CannotConnect:
+            return "cannot connect to server"
 
         case .Aborted:
             return "operation aborted"
@@ -1083,11 +1087,140 @@ private class NNTPOperation {
     }
 }
 
-public enum NNTPStatus {
-    case Disconnected
-    case Connecting
-    case Connected
-    case Ready
+/// Manage a single connection to a NNTP server.
+private class NNTPConnection {
+    private let istream : NSInputStream
+    private let ostream : NSOutputStream
+    private let reader : BufferedReader
+    private let pendingCommands = FifoQueue<NNTPOperation>()
+    private let sentCommands = FifoQueue<NNTPOperation>()
+    private let outBuffer = Buffer(capacity: 2 << 20)
+
+    private init?(host: String, port: Int, ssl: Bool) {
+        var istream : NSInputStream?
+        var ostream : NSOutputStream?
+
+        NSStream.getStreamsToHostWithName(host, port: port,
+            inputStream: &istream, outputStream: &ostream)
+
+        if let ins = istream, let ous = ostream {
+            self.istream = ins
+            self.ostream = ous
+            self.reader = BufferedReader(fromStream: ins, lineBreak: "\r\n")
+
+        } else {
+            self.istream = NSInputStream(data: NSData(bytes: nil, length: 0))
+            self.ostream = NSOutputStream(toBuffer: nil, capacity: 0)
+            self.reader = BufferedReader(fromStream: self.istream, lineBreak: "\r\n")
+            return nil
+        }
+        if ssl {
+            self.istream.setProperty(NSStreamSocketSecurityLevelNegotiatedSSL,
+                forKey: NSStreamSocketSecurityLevelKey)
+        }
+    }
+
+    private var delegate : NSStreamDelegate? {
+        set {
+            self.istream.delegate = newValue
+            self.ostream.delegate = newValue
+        }
+
+        get {
+            return self.istream.delegate
+        }
+    }
+
+    private func open() {
+        self.istream.open()
+        self.ostream.open()
+    }
+
+    private func close() {
+        while let reply = self.sentCommands.pop() {
+            reply.fail(NNTPError.Aborted)
+        }
+
+        while let reply = self.pendingCommands.pop() {
+            reply.fail(NNTPError.Aborted)
+        }
+
+        self.istream.close()
+        self.ostream.close()
+    }
+    
+    private func scheduleInRunLoop(runLoop: NSRunLoop, forMode mode: String) {
+        self.istream.scheduleInRunLoop(runLoop, forMode: mode)
+        self.ostream.scheduleInRunLoop(runLoop, forMode: mode)
+    }
+
+    private func removeFromRunLoop(runLoop: NSRunLoop, forMode mode: String) {
+        self.istream.removeFromRunLoop(runLoop, forMode: mode)
+        self.ostream.removeFromRunLoop(runLoop, forMode: mode)
+    }
+
+    private func read() throws {
+        while let line = try self.reader.readLine() {
+            if let reply = self.sentCommands.head {
+                do {
+                    if try reply.receivedLine(line) {
+                        self.sentCommands.pop()
+                        reply.process()
+                    }
+                } catch let e {
+                    self.sentCommands.pop()
+                    reply.fail(e)
+                    self.close()
+                    return
+                }
+            } else {
+                self.close()
+                return
+            }
+        }
+    }
+
+    private func queue(operation: NNTPOperation) {
+        self.pendingCommands.push(operation)
+    }
+
+    private func flush() {
+        if !self.ostream.hasSpaceAvailable {
+            return
+        }
+
+        while !self.pendingCommands.isEmpty && self.outBuffer.length < 4096 {
+            let cmd = self.pendingCommands.pop()!
+
+            if !cmd.isCancelled() {
+                cmd.command.pack(self.outBuffer)
+                self.sentCommands.push(cmd)
+            }
+        }
+
+        self.outBuffer.read() {
+            (buffer, length) in
+
+            if length == 0 {
+                return  0
+            }
+
+            switch (self.ostream.write(UnsafePointer<UInt8>(buffer), maxLength: length)) {
+            case let e where e > 0:
+                return e
+
+            case let e where e < 0:
+                return 0
+                
+            default:
+                return 0
+            }
+        }
+    }
+
+    private var hasPendingCommands : Bool {
+        return !self.sentCommands.isEmpty || !self.pendingCommands.isEmpty
+    }
 }
 
 /// The NNTPClient class manages the connection to a news server.
@@ -1096,19 +1229,15 @@ public enum NNTPStatus {
 /// queue as well as the current state of the connection, including the
 /// current group and article.
 public class NNTPClient {
-    private class Operation {
-    }
-
-    private let istream : NSInputStream
-    private let ostream : NSOutputStream
-    private let reader : BufferedReader
-    private let pendingCommands = FifoQueue<NNTPOperation>()
-    private let sentCommands = FifoQueue<NNTPOperation>()
-    private let outBuffer = Buffer(capacity: 2 << 20)
+    private var connection : NNTPConnection?
+    private var runLoops : [(NSRunLoop, String)] = []
 
     private var pipelineBarrier : Promise<NNTPPayload>
     private var queueOnPipelineError = false
 
+    private let host : String
+    private let port : Int
+    private let ssl : Bool
     private var login : String?
     private var password : String?
 
@@ -1132,18 +1261,18 @@ public class NNTPClient {
 
             case NSStreamEvent.HasBytesAvailable:
                 do {
-                    try self.nntp?.read()
+                    try self.nntp?.connection?.read()
                 } catch {
                 }
 
             case NSStreamEvent.HasSpaceAvailable:
-                self.nntp?.flush()
+                self.nntp?.connection?.flush()
 
-            case NSStreamEvent.ErrorOccurred:
-                self.nntp?.status = .Disconnected
-
-            case NSStreamEvent.EndEncountered:
-                self.nntp?.status = .Disconnected
+            case NSStreamEvent.ErrorOccurred, NSStreamEvent.EndEncountered:
+                if let connection = self.nntp?.connection {
+                    self.nntp?.connection = nil
+                    connection.close()
+                }
 
             default:
                 break
@@ -1163,38 +1292,17 @@ public class NNTPClient {
     /// - parameter host: the hostname of the server
     /// - parameter port: the port of the newsserver on the server
     /// - parameter ssl: indicates wether the connection should use SSL
-    /// - returns: The creation will fail if the socket cannot be created
-    public init?(host: String, port: Int, ssl: Bool) {
-        var istream : NSInputStream?
-        var ostream : NSOutputStream?
-
-        NSStream.getStreamsToHostWithName(host, port: port,
-            inputStream: &istream, outputStream: &ostream)
-
+    public init(host: String, port: Int, ssl: Bool) {
+        self.host = host
+        self.port = port
+        self.ssl = ssl
         self.pipelineBarrier = Promise(failed: NNTPError.NotConnected)
-        if let ins = istream, let ous = ostream {
-            self.istream = ins
-            self.ostream = ous
-            self.reader = BufferedReader(fromStream: ins, lineBreak: "\r\n")
-        } else {
-            self.istream = NSInputStream(data: NSData(bytes: nil, length: 0))
-            self.ostream = NSOutputStream(toBuffer: nil, capacity: 0)
-            self.reader = BufferedReader(fromStream: self.istream, lineBreak: "\r\n")
-            return nil
-        }
-
         self.streamDelegate = StreamDelegate(nntp: self)
-        self.istream.delegate = self.streamDelegate!
-        self.ostream.delegate = self.streamDelegate!
-        if ssl {
-            self.istream.setProperty(NSStreamSocketSecurityLevelNegotiatedSSL,
-                forKey: NSStreamSocketSecurityLevelKey)
-        }
 
         self.pipelineBarrier = Promise<NNTPPayload>() {
             (onSuccess, onError) in
 
-            self.sentCommands.push(NNTPOperation(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
+            self.connection?.queue(NNTPOperation(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
         }
         self.sendCommand(NNTPCommand.ModeReader)
     }
@@ -1263,90 +1371,76 @@ public class NNTPClient {
         }
     }
 
-    public func open() {
-        self.istream.open()
-        self.ostream.open()
+    /// Connects to the remote sever
+    ///
+    /// - returns: a promise a will be fired when the connection is established
+    public func connect() -> Promise<NNTPPayload> {
+        if self.connection != nil {
+            return self.pipelineBarrier
+        }
+
+        self.connection = NNTPConnection(host: self.host, port: self.port, ssl: self.ssl)
+        if self.connection == nil {
+            return Promise<NNTPPayload>(failed: NNTPError.CannotConnect)
+        }
+
+        self.connection?.delegate = self.streamDelegate
+        self.connection?.open()
+        for (runLoop, mode) in self.runLoops {
+            self.connection?.scheduleInRunLoop(runLoop, forMode: mode)
+        }
+
+        let promise = Promise<NNTPPayload>() {
+            (onSuccess, onError) in
+
+            self.connection?.sentCommands.push(NNTPOperation(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
+        }
+        self.pipelineBarrier = promise
+        self.sendCommand(NNTPCommand.ModeReader)
+        if let lg = self.login {
+            self.sendCommand(NNTPCommand.AuthinfoUser(lg))
+
+            if let pwd = self.password {
+                self.sendCommand(NNTPCommand.AuthinfoPass(pwd))
+            }
+        }
+
+        return promise
     }
 
-    public func close() {
-        while let reply = self.sentCommands.pop() {
-            reply.fail(NNTPError.Aborted)
+    /// Disconnect the remote server
+    ///
+    /// Force disconnection of the underlying channel from the server.
+    public func disconnect() {
+        if let connection = self.connection {
+            self.connection = nil
+            connection.close()
         }
-
-        while let reply = self.pendingCommands.pop() {
-            reply.fail(NNTPError.Aborted)
-        }
-
-        self.istream.close()
-        self.ostream.close()
     }
 
     public func scheduleInRunLoop(runLoop: NSRunLoop, forMode mode: String) {
-        self.istream.scheduleInRunLoop(runLoop, forMode: mode)
-        self.ostream.scheduleInRunLoop(runLoop, forMode: mode)
+        self.runLoops.append((runLoop, mode))
+        self.connection?.scheduleInRunLoop(runLoop, forMode: mode)
     }
 
     public func removeFromRunLoop(runLoop: NSRunLoop, forMode mode: String) {
-        self.istream.removeFromRunLoop(runLoop, forMode: mode)
-        self.ostream.removeFromRunLoop(runLoop, forMode: mode)
-    }
-
-    private func read() throws {
-        while let line = try self.reader.readLine() {
-            if let reply = self.sentCommands.head {
-                do {
-                    if try reply.receivedLine(line) {
-                        self.sentCommands.pop()
-                        reply.process()
-                    }
-                } catch let e {
-                    self.sentCommands.pop()
-                    reply.fail(e)
-                    self.close()
-                    return
-                }
-            } else {
-                self.close()
-                return
-            }
+        if let idx = self.runLoops.indexOf({ $0.0 === runLoop && $0.1 == mode }) {
+            self.runLoops.removeAtIndex(idx)
+            self.connection?.removeFromRunLoop(runLoop, forMode: mode)
         }
     }
 
-    private func flush() {
-        if !self.ostream.hasSpaceAvailable {
-            return
-        }
 
-        while !self.pendingCommands.isEmpty && self.outBuffer.length < 4096 {
-            let cmd = self.pendingCommands.pop()!
-
-            if !cmd.isCancelled() {
-                cmd.command.pack(self.outBuffer)
-                self.sentCommands.push(cmd)
-            }
-        }
-
-        self.outBuffer.read() {
-            (buffer, length) in
-
-            if length == 0 {
-                return  0
-            }
-
-            switch (self.ostream.write(UnsafePointer<UInt8>(buffer), maxLength: length)) {
-            case let e where e > 0:
-                return e
-
-            case let e where e < 0:
-                return 0
-
-            default:
-                return 0
-            }
-        }
-    }
 
     private var currentGroup : String?
+
+    private func queue(operation: NNTPOperation) throws {
+        guard let connection = self.connection else {
+            throw NNTPError.Aborted
+        }
+
+        connection.queue(operation)
+    }
 
     /// Schedule the emission of a sequence of commands.
     ///
@@ -1401,7 +1495,7 @@ public class NNTPClient {
             }
 
             let promise = Promise<NNTPPayload>(action: {
-                (onSuccess, onError) in
+                (onSuccess, onError) throws in
                 var actualOnSuccess = onSuccess
                 var actualOnError = onError
 
@@ -1426,15 +1520,15 @@ public class NNTPClient {
                 }
 
                 for var i = 0; i < commands.count - 1; i++ {
-                    self.pendingCommands.push(NNTPOperation(command: commands[i],
+                    try self.queue(NNTPOperation(command: commands[i],
                         onSuccess: { (_) in () }, onError: actualOnError,
                         isCancelled: { isCancelled }))
                 }
 
-                self.pendingCommands.push(NNTPOperation(command: commands.last!,
+                try self.queue(NNTPOperation(command: commands.last!,
                     onSuccess: actualOnSuccess, onError: actualOnError,
                     isCancelled: { isCancelled }))
-                self.flush()
+                self.connection?.flush()
             }, onCancel: { isCancelled = true })
             return promise
         }
@@ -1476,13 +1570,12 @@ public class NNTPClient {
         return promise
     }
 
-    private var status : NNTPStatus = .Disconnected
-    public var nntpStatus : NNTPStatus {
-        return status
-    }
 
     public var hasPendingCommands : Bool {
-        return !self.sentCommands.isEmpty || !self.pendingCommands.isEmpty
+        if let res = self.connection?.hasPendingCommands {
+            return res
+        }
+        return false
     }
 
     public func listArticles(group: String, since: NSDate) -> Promise<NNTPPayload> {
