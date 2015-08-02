@@ -571,7 +571,7 @@ public enum NNTPCommand : CustomStringConvertible {
     }
 
     private var isMultiline : Bool {
-        switch (self) {
+        switch self {
         case .Connect, .ModeReader, .Quit, .Group(_), .Last, .Next, .Post, .PostBody(_), .Ihave(_),
         .Date, .AuthinfoUser(_), .AuthinfoPass(_), .AuthinfoSASL:
             return false
@@ -580,8 +580,28 @@ public enum NNTPCommand : CustomStringConvertible {
         }
     }
 
+    private var allowPipelining : Bool {
+        switch self {
+        case .Connect, .ModeReader, .Post, .PostBody(_), .Ihave(_), .AuthinfoUser(_), .AuthinfoPass(_), .AuthinfoSASL:
+            return false
+
+        default:
+            return true
+        }
+    }
+
+    private var fatalOnError : Bool {
+        switch self {
+        case .Connect, .ModeReader, AuthinfoUser(_), .AuthinfoPass(_), .AuthinfoSASL:
+            return true
+
+        default:
+            return false
+        }
+    }
+
     private func acceptResponse(response: NNTPResponse) -> Bool {
-        switch ((self, response.status.rawValue, response.context.rawValue, response.code)) {
+        switch (self, response.status.rawValue, response.context.rawValue, response.code) {
         case (.Connect, "2", "0", "0"), (.Connect, "2", "0", "1"),
             (.Capabilities, "1", "0", "1"),
             (.ModeReader, "2", "0", "0"), (.ModeReader, "2", "0", "1"),
@@ -925,7 +945,9 @@ public class NNTPClient {
     private let pendingCommands = FifoQueue<NNTPClient.Operation>()
     private let sentCommands = FifoQueue<NNTPClient.Operation>()
     private let outBuffer = Buffer(capacity: 2 << 20)
-    private var onConnected : Promise<NNTPPayload>
+
+    private var pipelineBarrier : Promise<NNTPPayload>
+    private var queueOnPipelineError = false
 
     private var login : String?
     private var password : String?
@@ -989,7 +1011,7 @@ public class NNTPClient {
         NSStream.getStreamsToHostWithName(host, port: port,
             inputStream: &istream, outputStream: &ostream)
 
-        self.onConnected = Promise(failed: NNTPError.NotConnected)
+        self.pipelineBarrier = Promise(failed: NNTPError.NotConnected)
         if let ins = istream, let ous = ostream {
             self.istream = ins
             self.ostream = ous
@@ -1009,12 +1031,12 @@ public class NNTPClient {
                 forKey: NSStreamSocketSecurityLevelKey)
         }
 
-        self.onConnected = Promise<NNTPPayload>() {
+        self.pipelineBarrier = Promise<NNTPPayload>() {
             (onSuccess, onError) in
 
             self.sentCommands.push(NNTPClient.Operation(command: NNTPCommand.Connect, onSuccess: onSuccess, onError: onError, isCancelled: { false }))
         }
-        self.onConnected = self.sendCommand(NNTPCommand.ModeReader)
+        self.sendCommand(NNTPCommand.ModeReader)
     }
 
     /// Build a new client to the given URL
@@ -1073,10 +1095,10 @@ public class NNTPClient {
         self.password = password
 
         if let lg = login {
-            self.onConnected = self.sendCommand(NNTPCommand.AuthinfoUser(lg))
+            self.sendCommand(NNTPCommand.AuthinfoUser(lg))
 
             if let pwd = password {
-                self.onConnected = self.sendCommand(NNTPCommand.AuthinfoPass(pwd))
+                self.sendCommand(NNTPCommand.AuthinfoPass(pwd))
             }
         }
     }
@@ -1232,16 +1254,14 @@ public class NNTPClient {
     /// - returns: a promise that will fail if any command fail, or succeed 
     ///    with the payload of the last command if all commands succeed
     public func sendCommands(immutableCommands: [NNTPCommand]) -> Promise<NNTPPayload> {
-        return self.onConnected.thenChain({
-            (_) in
-
+        func chain() -> Promise<NNTPPayload> {
             if immutableCommands.count == 0 {
                 return Promise(failed: NNTPError.NoCommandProvided)
             }
 
-            var commands : [NNTPCommand] = immutableCommands
+            var commands = immutableCommands
             var isCancelled = false
-            
+
             for var i = 0; i < commands.count; i++ {
                 switch commands[i] {
                 case .Group(let group):
@@ -1291,7 +1311,6 @@ public class NNTPClient {
                 }
 
                 for var i = 0; i < commands.count - 1; i++ {
-                    print("chaining commands")
                     self.pendingCommands.push(NNTPClient.Operation(command: commands[i],
                         onSuccess: { (_) in () }, onError: actualOnError,
                         isCancelled: { isCancelled }))
@@ -1303,7 +1322,18 @@ public class NNTPClient {
                 self.flush()
             }, onCancel: { isCancelled = true })
             return promise
+        }
+
+        var out = self.pipelineBarrier.thenChain({
+            (_) in chain()
         })
+
+        if self.queueOnPipelineError {
+            out = out.otherwiseChain({
+                (_) in chain()
+            })
+        }
+        return out
     }
 
     /// Sends a single command to the news server.
@@ -1316,7 +1346,13 @@ public class NNTPClient {
     /// - returns: a promise waiting allowing notification when the command is
     ///    executed
     public func sendCommand(command: NNTPCommand) -> Promise<NNTPPayload> {
-        return self.sendCommands([command])
+        let promise = self.sendCommands([command])
+
+        if !command.allowPipelining {
+            self.pipelineBarrier = promise
+            self.queueOnPipelineError = !command.fatalOnError
+        }
+        return promise
     }
 
     /// Sends a single command that requires being run in the content of a group.
