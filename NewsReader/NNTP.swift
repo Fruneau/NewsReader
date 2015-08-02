@@ -262,8 +262,8 @@ public enum NNTPPayload {
 
 public enum NNTPCommand : CustomStringConvertible {
     public enum ListHeadersVariant : String {
-        case MSGID = "MSGID"
-        case RANGE = "RANGE"
+        case MSGID
+        case RANGE
     }
 
     public enum ArticleId {
