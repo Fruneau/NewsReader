@@ -65,7 +65,7 @@ class PromiseTests : XCTestCase {
         XCTAssertEqual(out, [ "1.1.2", "1.1.2.1", "2", "2.1", "2.1.2" ])
     }
 
-    func testChain() {
+    func testThenChain() {
         var out : [String] = []
         var onSuccess : ((Void) -> Void)?
         let promise = Promise<Void>() {
@@ -97,5 +97,115 @@ class PromiseTests : XCTestCase {
         XCTAssert(onSuccess != nil)
         onSuccess?()
         XCTAssertEqual(out, ["1", "2", "3"])
+    }
+
+    func testOtherwiseChainSuccess() {
+        var out : [String] = []
+        var onSuccess : ((Void) -> Void)?
+        let promise = Promise<Void>() {
+            (s, _) in
+            onSuccess = s
+        }
+
+        promise.then({
+            out.append("1")
+        }).otherwiseChain({
+            (_) in
+
+            out.append("2")
+            return Promise<Void>(action: {
+                (s, _) in
+
+                onSuccess = s
+            })
+        }).then({
+            out.append("3")
+        })
+
+        XCTAssert(onSuccess != nil)
+        XCTAssertEqual(out, [])
+        if let cb = onSuccess {
+            onSuccess = nil
+            cb()
+        }
+        XCTAssertEqual(out, ["1"])
+        XCTAssert(onSuccess == nil)
+    }
+
+    func testOtherwiseChainFail() {
+        var out : [String] = []
+        var onError : ((ErrorType) -> Void)?
+        var onSuccess : ((Void) -> Void)?
+        let promise = Promise<Void>() {
+            (_, e) in
+            onError = e
+        }
+
+        promise.then({
+            out.append("1")
+        }).otherwiseChain({
+            (_) in
+
+            out.append("2")
+            return Promise<Void>(action: {
+                (s, _) in
+
+                onSuccess = s
+            })
+        }).then({
+            out.append("3")
+        })
+
+        XCTAssert(onError != nil)
+        XCTAssertEqual(out, [])
+        if let cb = onError {
+            onError = nil
+            cb(Error.Fail)
+        }
+        XCTAssertEqual(out, ["2"])
+
+        XCTAssert(onSuccess != nil)
+        onSuccess?()
+        XCTAssertEqual(out, ["2", "3"])
+    }
+
+    func testOtherwiseChainFailFail() {
+        var out : [String] = []
+        var onError : ((ErrorType) -> Void)?
+        let promise = Promise<Void>() {
+            (_, e) in
+            onError = e
+        }
+
+        promise.then({
+            out.append("1")
+        }).otherwiseChain({
+            (_) in
+
+            out.append("2")
+            return Promise<Void>(action: {
+                (_, e) in
+
+                onError = e
+            })
+        }).then({
+            out.append("3")
+        }).otherwise({
+            (_) in
+
+            out.append("4")
+        })
+
+        XCTAssert(onError != nil)
+        XCTAssertEqual(out, [])
+        if let cb = onError {
+            onError = nil
+            cb(Error.Fail)
+        }
+        XCTAssertEqual(out, ["2"])
+
+        XCTAssert(onError != nil)
+        onError?(Error.Fail)
+        XCTAssertEqual(out, ["2", "4"])
     }
 }

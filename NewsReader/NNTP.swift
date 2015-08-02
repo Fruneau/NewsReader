@@ -1296,7 +1296,7 @@ public class NNTPClient {
         self.host = host
         self.port = port
         self.ssl = ssl
-        self.pipelineBarrier = Promise(failed: NNTPError.NotConnected)
+        self.pipelineBarrier = Promise(failure: NNTPError.NotConnected)
         self.streamDelegate = StreamDelegate(nntp: self)
 
         self.pipelineBarrier = Promise<NNTPPayload>() {
@@ -1381,7 +1381,7 @@ public class NNTPClient {
 
         self.connection = NNTPConnection(host: self.host, port: self.port, ssl: self.ssl)
         if self.connection == nil {
-            return Promise<NNTPPayload>(failed: NNTPError.CannotConnect)
+            return Promise<NNTPPayload>(failure: NNTPError.CannotConnect)
         }
 
         self.connection?.delegate = self.streamDelegate
@@ -1459,7 +1459,7 @@ public class NNTPClient {
     public func sendCommands(immutableCommands: [NNTPCommand]) -> Promise<NNTPPayload> {
         func chain() -> Promise<NNTPPayload> {
             if immutableCommands.count == 0 {
-                return Promise(failed: NNTPError.NoCommandProvided)
+                return Promise(failure: NNTPError.NoCommandProvided)
             }
 
             var commands = immutableCommands
@@ -1542,7 +1542,7 @@ public class NNTPClient {
                 (error) in
 
                 if case NNTPError.Aborted = error {
-                    return Promise<NNTPPayload>(failed: error)
+                    return Promise<NNTPPayload>(failure: error)
                 } else {
                     return chain()
                 }
