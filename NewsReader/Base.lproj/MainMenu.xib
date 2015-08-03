@@ -3,7 +3,6 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8164.2"/>
-        <capability name="stacking Non-gravity area distributions on NSStackView" minToolsVersion="7.0" minSystemVersion="10.11"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -15,6 +14,7 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="NewsReader" customModuleProvider="target">
             <connections>
+                <outlet property="articleView" destination="WZf-XB-Zue" id="DzS-wR-YWx"/>
                 <outlet property="groupTreeController" destination="oQ9-zf-5Dh" id="wDZ-xO-cAe"/>
                 <outlet property="threadView" destination="65F-xb-gPj" id="4V2-O0-hfu"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
@@ -899,14 +899,16 @@
                                             <rect key="frame" x="0.0" y="0.0" width="412" height="595"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <collectionView maxNumberOfColumns="1" id="WZf-XB-Zue" userLabel="Article View">
+                                                <collectionView id="WZf-XB-Zue" userLabel="Article View">
                                                     <rect key="frame" x="0.0" y="0.0" width="412" height="595"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <animations/>
+                                                    <collectionViewFlowLayout key="collectionViewLayout" minimumInteritemSpacing="10" minimumLineSpacing="10" id="a3H-t8-v7b">
+                                                        <size key="itemSize" width="50" height="50"/>
+                                                    </collectionViewFlowLayout>
                                                     <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <connections>
-                                                        <binding destination="WYp-GU-VTD" name="content" keyPath="arrangedObjects" id="XJS-eb-0dz"/>
-                                                        <outlet property="itemPrototype" destination="44Z-V4-ZKE" id="iCH-cD-cPx"/>
+                                                        <outlet property="delegate" destination="Voe-Tx-rLC" id="UVM-Y8-aR7"/>
                                                     </connections>
                                                 </collectionView>
                                             </subviews>
@@ -1036,27 +1038,6 @@
             <animations/>
             <point key="canvasLocation" x="-699.5" y="139.5"/>
         </view>
-        <collectionViewItem id="44Z-V4-ZKE" userLabel="Article View Item">
-            <connections>
-                <outlet property="view" destination="SUl-Dz-JXT" id="TxV-kK-muZ"/>
-            </connections>
-        </collectionViewItem>
-        <arrayController objectClassName="Article" editable="NO" selectsInsertedObjects="NO" avoidsEmptySelection="NO" id="WYp-GU-VTD" userLabel="Article Array Controller">
-            <declaredKeys>
-                <string>msgid</string>
-                <string>num</string>
-                <string>from</string>
-                <string>to</string>
-                <string>date</string>
-                <string>body</string>
-                <string>contactPicture</string>
-                <string>threadCount</string>
-                <string>thread</string>
-            </declaredKeys>
-            <connections>
-                <binding destination="WIB-Kw-PB8" name="contentArray" keyPath="selection.thread" id="PD3-gF-5dT"/>
-            </connections>
-        </arrayController>
         <collectionViewItem id="fCD-bO-1dq" userLabel="Thread View Item" customClass="SelectableCollectionViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
                 <outlet property="view" destination="bCw-MF-nit" id="iWg-U3-Qnd"/>
@@ -1076,7 +1057,7 @@
             </declaredKeys>
             <connections>
                 <binding destination="oQ9-zf-5Dh" name="contentArray" keyPath="selection.roots" id="OhI-XJ-4EG"/>
-                <binding destination="oQ9-zf-5Dh" name="selectionIndexes" keyPath="selection.selection" id="c4r-d7-qcX"/>
+                <binding destination="Voe-Tx-rLC" name="selectionIndexes" keyPath="threadSelection" id="MuA-VT-sPA"/>
             </connections>
         </arrayController>
         <treeController objectClassName="GroupTree" editable="NO" childrenKeyPath="children" leafKeyPath="isLeaf" avoidsEmptySelection="NO" selectsInsertedObjects="NO" id="oQ9-zf-5Dh" userLabel="Group Tree Controller">
@@ -1092,227 +1073,8 @@
                 <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="groupRoots" id="TG2-CW-LXh"/>
             </connections>
         </treeController>
-        <view id="SUl-Dz-JXT" userLabel="Article View">
-            <rect key="frame" x="0.0" y="0.0" width="553" height="595"/>
-            <autoresizingMask key="autoresizingMask"/>
-            <subviews>
-                <customView translatesAutoresizingMaskIntoConstraints="NO" id="DAY-0P-lxX" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
-                    <rect key="frame" x="0.0" y="0.0" width="553" height="595"/>
-                    <subviews>
-                        <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DMN-I8-Dhp">
-                            <rect key="frame" x="20" y="0.0" width="533" height="595"/>
-                            <subviews>
-                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="0sV-xk-XRS" userLabel="Header View">
-                                    <rect key="frame" x="0.0" y="512" width="533" height="83"/>
-                                    <subviews>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Xl1-a4-A8o">
-                                            <rect key="frame" x="0.0" y="58" width="425" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="Eqc-FP-nyQ">
-                                                <font key="font" metaFont="systemBold"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                <connections>
-                                                    <binding destination="WYp-GU-VTD" name="value" keyPath="selection.from" id="SzN-Hc-SSx"/>
-                                                </connections>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="44Z-V4-ZKE" name="value" keyPath="representedObject.from" id="fhS-mW-KTs"/>
-                                            </connections>
-                                        </textField>
-                                        <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Lhs-tR-7OB">
-                                            <rect key="frame" x="0.0" y="37" width="88" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Newsgroups: " id="oN1-mr-DHe">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4EP-80-Whp">
-                                            <rect key="frame" x="88" y="37" width="37" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="FnT-6q-h6f">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="44Z-V4-ZKE" name="value" keyPath="representedObject.to" id="kA2-nL-J2g"/>
-                                            </connections>
-                                        </textField>
-                                        <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kbs-MJ-EAk">
-                                            <rect key="frame" x="0.0" y="16" width="51" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Subject" id="WiG-kr-W5V">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="44Z-V4-ZKE" name="value" keyPath="representedObject.subject" id="j6O-kf-Mf3"/>
-                                            </connections>
-                                        </textField>
-                                        <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="LPV-pc-7fY">
-                                            <rect key="frame" x="429" y="59" width="31" height="16"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Date" id="kbY-Td-1bu">
-                                                <dateFormatter key="formatter" dateStyle="long" timeStyle="short" doesRelativeDateFormatting="YES" id="CR5-rV-tvi"/>
-                                                <font key="font" metaFont="cellTitle"/>
-                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="44Z-V4-ZKE" name="value" keyPath="representedObject.date" id="Kie-Ck-G8m"/>
-                                            </connections>
-                                        </textField>
-                                        <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="NRS-4w-Wxz">
-                                            <rect key="frame" x="0.0" y="-2" width="533" height="5"/>
-                                            <animations/>
-                                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                            <font key="titleFont" metaFont="system"/>
-                                        </box>
-                                        <imageView focusRingType="none" horizontalHuggingPriority="1000" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="pEA-Mo-71o" customClass="UserBadgeView" customModule="NewsReader" customModuleProvider="target">
-                                            <rect key="frame" x="460" y="16" width="59" height="59"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="59" id="L7s-MV-Ao7"/>
-                                                <constraint firstAttribute="width" constant="59" id="hJG-kn-l4V"/>
-                                            </constraints>
-                                            <animations/>
-                                            <imageCell key="cell" refusesFirstResponder="YES" focusRingType="none" alignment="left" imageScaling="proportionallyDown" image="NSUserGuest" id="YTC-Wd-lkx"/>
-                                            <connections>
-                                                <binding destination="44Z-V4-ZKE" name="value" keyPath="representedObject.contactPicture" id="172-0e-oIN">
-                                                    <dictionary key="options">
-                                                        <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
-                                                        <bool key="NSConditionallySetsHidden" value="YES"/>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </imageView>
-                                        <progressIndicator wantsLayer="YES" horizontalHuggingPriority="1000" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="83S-mO-Tcs">
-                                            <rect key="frame" x="442" y="16" width="16" height="16"/>
-                                            <animations/>
-                                            <connections>
-                                                <binding destination="44Z-V4-ZKE" name="animate" keyPath="representedObject.body" id="TFk-Zc-PMB">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSIsNil</string>
-                                                    </dictionary>
-                                                </binding>
-                                                <binding destination="44Z-V4-ZKE" name="hidden" keyPath="representedObject.body" id="u09-6h-Rv1">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSIsNotNil</string>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </progressIndicator>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstAttribute="bottom" secondItem="kbs-MJ-EAk" secondAttribute="bottom" constant="16" id="3b8-w4-si9"/>
-                                        <constraint firstAttribute="trailing" secondItem="NRS-4w-Wxz" secondAttribute="trailing" id="3zf-wF-nfa"/>
-                                        <constraint firstItem="Xl1-a4-A8o" firstAttribute="leading" secondItem="0sV-xk-XRS" secondAttribute="leading" constant="2" id="6Aq-sp-ooO"/>
-                                        <constraint firstItem="4EP-80-Whp" firstAttribute="top" secondItem="Lhs-tR-7OB" secondAttribute="top" id="EFM-1G-sJu"/>
-                                        <constraint firstItem="LPV-pc-7fY" firstAttribute="leading" secondItem="Xl1-a4-A8o" secondAttribute="trailing" constant="8" id="ErI-r3-Zlj"/>
-                                        <constraint firstItem="pEA-Mo-71o" firstAttribute="leading" secondItem="LPV-pc-7fY" secondAttribute="trailing" constant="2" id="MRr-ai-miG"/>
-                                        <constraint firstAttribute="bottom" secondItem="NRS-4w-Wxz" secondAttribute="bottom" id="MZ7-Ub-j3U"/>
-                                        <constraint firstItem="pEA-Mo-71o" firstAttribute="top" secondItem="Xl1-a4-A8o" secondAttribute="top" id="PSH-mN-I1e"/>
-                                        <constraint firstItem="LPV-pc-7fY" firstAttribute="top" secondItem="Xl1-a4-A8o" secondAttribute="top" id="Pud-by-IH5"/>
-                                        <constraint firstItem="Xl1-a4-A8o" firstAttribute="top" secondItem="0sV-xk-XRS" secondAttribute="top" constant="8" id="RSx-77-uFb"/>
-                                        <constraint firstItem="kbs-MJ-EAk" firstAttribute="leading" secondItem="Xl1-a4-A8o" secondAttribute="leading" id="cDY-jq-F1O"/>
-                                        <constraint firstItem="NRS-4w-Wxz" firstAttribute="leading" secondItem="0sV-xk-XRS" secondAttribute="leading" id="dRF-eS-FuG"/>
-                                        <constraint firstItem="83S-mO-Tcs" firstAttribute="trailing" secondItem="LPV-pc-7fY" secondAttribute="trailing" id="fZr-4D-VRN"/>
-                                        <constraint firstAttribute="trailing" secondItem="pEA-Mo-71o" secondAttribute="trailing" constant="14" id="m6Z-Qv-i87"/>
-                                        <constraint firstItem="Lhs-tR-7OB" firstAttribute="top" secondItem="Xl1-a4-A8o" secondAttribute="bottom" constant="4" id="n5q-rw-SoX"/>
-                                        <constraint firstItem="Lhs-tR-7OB" firstAttribute="leading" secondItem="Xl1-a4-A8o" secondAttribute="leading" id="qid-PO-46T"/>
-                                        <constraint firstItem="kbs-MJ-EAk" firstAttribute="top" secondItem="4EP-80-Whp" secondAttribute="bottom" constant="4" id="tXk-j5-ikK"/>
-                                        <constraint firstItem="Xl1-a4-A8o" firstAttribute="top" secondItem="0sV-xk-XRS" secondAttribute="top" constant="8" id="uER-tT-i7w"/>
-                                        <constraint firstItem="pEA-Mo-71o" firstAttribute="bottom" secondItem="kbs-MJ-EAk" secondAttribute="bottom" id="w7I-jE-jlw"/>
-                                        <constraint firstItem="4EP-80-Whp" firstAttribute="leading" secondItem="Lhs-tR-7OB" secondAttribute="trailing" constant="4" id="x9X-CL-AKY"/>
-                                        <constraint firstItem="83S-mO-Tcs" firstAttribute="bottom" secondItem="kbs-MJ-EAk" secondAttribute="bottom" id="xtN-6j-XFG"/>
-                                    </constraints>
-                                    <animations/>
-                                </customView>
-                                <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" verticalScrollElasticity="allowed" translatesAutoresizingMaskIntoConstraints="NO" id="yVE-Cu-jNf">
-                                    <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
-                                    <clipView key="contentView" copiesOnScroll="NO" id="2Jc-5Y-jG5">
-                                        <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <subviews>
-                                            <textView editable="NO" importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="uhx-Dw-DrR">
-                                                <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <animations/>
-                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <size key="minSize" width="533" height="512"/>
-                                                <size key="maxSize" width="4030" height="10000000"/>
-                                                <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                <size key="minSize" width="533" height="512"/>
-                                                <size key="maxSize" width="4030" height="10000000"/>
-                                                <connections>
-                                                    <binding destination="44Z-V4-ZKE" name="attributedString" keyPath="representedObject.body" id="zwc-g3-GRh">
-                                                        <dictionary key="options">
-                                                            <bool key="NSConditionallySetsEditable" value="NO"/>
-                                                        </dictionary>
-                                                    </binding>
-                                                </connections>
-                                            </textView>
-                                        </subviews>
-                                        <animations/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                    </clipView>
-                                    <animations/>
-                                    <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="bZf-qA-MVX">
-                                        <rect key="frame" x="-100" y="-100" width="87" height="18"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <animations/>
-                                    </scroller>
-                                    <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="u3z-VZ-aEy">
-                                        <rect key="frame" x="517" y="0.0" width="16" height="512"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <animations/>
-                                    </scroller>
-                                </scrollView>
-                            </subviews>
-                            <animations/>
-                            <constraints>
-                                <constraint firstItem="0sV-xk-XRS" firstAttribute="leading" secondItem="DMN-I8-Dhp" secondAttribute="leading" id="MFG-pM-kvV"/>
-                                <constraint firstAttribute="trailing" secondItem="0sV-xk-XRS" secondAttribute="trailing" id="ONm-Fs-Kyi"/>
-                                <constraint firstAttribute="trailing" secondItem="yVE-Cu-jNf" secondAttribute="trailing" id="fmh-pX-h3Y"/>
-                                <constraint firstItem="0sV-xk-XRS" firstAttribute="top" secondItem="DMN-I8-Dhp" secondAttribute="top" id="gSw-RD-VCb"/>
-                                <constraint firstItem="yVE-Cu-jNf" firstAttribute="leading" secondItem="DMN-I8-Dhp" secondAttribute="leading" id="inN-Fh-sft"/>
-                                <constraint firstAttribute="bottom" secondItem="yVE-Cu-jNf" secondAttribute="bottom" id="iym-4G-97L"/>
-                            </constraints>
-                            <visibilityPriorities>
-                                <integer value="1000"/>
-                                <integer value="1000"/>
-                            </visibilityPriorities>
-                            <customSpacing>
-                                <real value="3.4028234663852886e+38"/>
-                                <real value="3.4028234663852886e+38"/>
-                            </customSpacing>
-                        </stackView>
-                    </subviews>
-                    <constraints>
-                        <constraint firstAttribute="trailing" secondItem="DMN-I8-Dhp" secondAttribute="trailing" id="6Qf-oI-tVr"/>
-                        <constraint firstAttribute="bottom" secondItem="DMN-I8-Dhp" secondAttribute="bottom" id="BvC-Tg-AXx"/>
-                        <constraint firstItem="DMN-I8-Dhp" firstAttribute="leading" secondItem="DAY-0P-lxX" secondAttribute="leading" constant="20" id="Mdo-7y-9di"/>
-                        <constraint firstItem="DMN-I8-Dhp" firstAttribute="top" secondItem="DAY-0P-lxX" secondAttribute="top" id="NHY-Pt-Ac1"/>
-                    </constraints>
-                    <animations/>
-                </customView>
-            </subviews>
-            <constraints>
-                <constraint firstAttribute="bottom" secondItem="DAY-0P-lxX" secondAttribute="bottom" id="BhH-5G-mQC"/>
-                <constraint firstItem="DAY-0P-lxX" firstAttribute="top" secondItem="SUl-Dz-JXT" secondAttribute="top" id="XSl-uk-u8n"/>
-                <constraint firstAttribute="trailing" secondItem="DAY-0P-lxX" secondAttribute="trailing" id="pct-YY-cwu"/>
-                <constraint firstItem="DAY-0P-lxX" firstAttribute="leading" secondItem="SUl-Dz-JXT" secondAttribute="leading" id="s4p-6e-5aV"/>
-            </constraints>
-            <animations/>
-            <point key="canvasLocation" x="-2243.5" y="696.5"/>
-        </view>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>
-        <image name="NSUserGuest" width="32" height="32"/>
     </resources>
 </document>

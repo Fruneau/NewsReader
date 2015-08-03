@@ -16,7 +16,7 @@ enum Error : ErrorType {
     case NoMessage
 }
 
-class Article : NSObject {
+class Article : NSObject, NSCollectionViewDataSource {
     private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
 
@@ -206,6 +206,20 @@ class Article : NSObject {
     func cancelLoad() {
         self.promise?.cancel()
     }
+
+    func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
+        return self.thread.count
+    }
+
+    func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
+        let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
+
+        let thread = self.thread
+        let article = thread[indexPath.item]
+        item.representedObject = article
+        article.load()
+        return item
+    }
 }
 
 class GroupTree : NSObject {
@@ -270,22 +284,6 @@ class GroupTree : NSObject {
 
     private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
-    var selection = NSIndexSet() {
-        didSet {
-            if self.selection.count == 0 {
-                return
-            }
-
-            guard let thread = self.roots?[self.selection.firstIndex].thread else {
-                return
-            }
-
-            print("selected thread \"\(thread[0].subject)\": \(thread.count) messages")
-            for article in thread {
-                article.load()
-            }
-        }
-    }
 
     func load() {
         if self.articles != nil || self.fullName == nil {
@@ -444,8 +442,12 @@ class ShortDateFormatter : NSFormatter {
     }
 }
 
+class ArticleFlowLayout : NSCollectionViewFlowLayout {
+
+}
+
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate, NSCollectionViewDelegateFlowLayout {
 
     @IBOutlet weak var window: NSWindow!
 
@@ -454,17 +456,34 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
     dynamic var groupRoots = [GroupTree(root: "Groups")]
     var groupIndexes : [NSIndexPath] = [] {
         didSet {
-            if self.groupIndexes.count == 0 {
-                return
-            }
-
-            let group = self.groupTreeController.selectedObjects[0] as! GroupTree
-            group.load()
+            self.currentGroup?.load()
         }
     }
+    var currentGroup : GroupTree? {
+        if self.groupIndexes.count == 0 {
+            return nil
+        }
+
+        return self.groupTreeController.selectedObjects[0] as? GroupTree
+    }
+
+    var threadSelection = NSIndexSet() {
+        didSet {
+            self.articleView.dataSource = self.currentThread
+        }
+    }
+    var currentThread : Article? {
+        if self.threadSelection.count == 0 {
+            return nil
+        }
+
+        return self.currentGroup?.roots?[self.threadSelection.firstIndex]
+    }
+
 
     /* Thread view */
     @IBOutlet weak var threadView: NSCollectionView!
+    @IBOutlet weak var articleView: NSCollectionView!
 
     /* Model handling */
     var nntp : NNTPClient?
@@ -519,4 +538,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate {
 
         return outlineView.makeViewWithIdentifier(node.isRoot ? "HeaderCell" : "DataCell", owner: self)
     }
+
+    func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
+        let size = collectionView.frame.size
+
+        return NSSize(width: size.width, height: CGFloat(100 + indexPath.item * 100))
+    }
+
 }
