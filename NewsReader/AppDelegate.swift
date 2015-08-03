@@ -112,6 +112,15 @@ class Article : NSObject {
         return depth + 1
     }
 
+    var thread : [Article] {
+        var thread : [Article] = [self]
+
+        for article in self.replies {
+            thread.extend(article.thread)
+        }
+        return thread
+    }
+
     private func loadNewsgroups() -> String? {
         guard let dest = self.headers["newsgroups"] else {
             return nil
@@ -334,19 +343,9 @@ class GroupTree : NSObject {
             self.articles = articles
             self.roots = roots
         }).otherwise({
-            (var error) in
+            (error) in
 
-            if case PromiseError.UncaughtError(let e, _) = error {
-                error = e
-            }
-
-            switch (error) {
-            case NNTPError.MalformedOverviewLine(let l):
-                print("Error: \(l)")
-
-            default:
-                print("Other: \(error)")
-            }
+            print("\(error)")
         })
     }
 
