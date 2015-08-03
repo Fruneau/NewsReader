@@ -1570,7 +1570,6 @@ public class NNTPClient {
         return promise
     }
 
-
     public var hasPendingCommands : Bool {
         if let res = self.connection?.hasPendingCommands {
             return res

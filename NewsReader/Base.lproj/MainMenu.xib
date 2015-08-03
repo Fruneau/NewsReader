@@ -1207,16 +1207,17 @@
                 <string>contactPicture</string>
             </declaredKeys>
             <connections>
+                <binding destination="oQ9-zf-5Dh" name="contentArray" keyPath="selection.roots" id="i0X-3N-Xb4"/>
                 <binding destination="oQ9-zf-5Dh" name="selectionIndexes" keyPath="selection.selection" id="G1n-y1-HQh"/>
-                <binding destination="oQ9-zf-5Dh" name="contentArray" keyPath="selection.threads" id="RH8-ba-I8t"/>
             </connections>
         </arrayController>
         <treeController objectClassName="GroupTree" editable="NO" childrenKeyPath="children" leafKeyPath="isLeaf" avoidsEmptySelection="NO" selectsInsertedObjects="NO" id="oQ9-zf-5Dh" userLabel="Group Tree Controller">
             <declaredKeys>
                 <string>name</string>
                 <string>shortDesc</string>
-                <string>threads</string>
                 <string>unreadCountText</string>
+                <string>articles</string>
+                <string>roots</string>
             </declaredKeys>
             <connections>
                 <binding destination="Voe-Tx-rLC" name="selectionIndexPaths" keyPath="groupIndexes" id="yLk-Th-BMV"/>

@@ -96,6 +96,7 @@ public enum MIMEHeader {
     case Address(name: String, address: MIMEAddress)
     case Newsgroup(name: String, group: String)
     case NewsgroupRef(group: String, number: Int)
+    case MessageId(name: String, msgid: String)
     case Date(NSDate)
 
     private static let dateParser : NSDateFormatter = {
@@ -145,6 +146,9 @@ public enum MIMEHeader {
 
         case .NewsgroupRef(group: _, number: _):
             return "xref"
+
+        case .MessageId(name: let name, msgid: _):
+            return name
 
         case .Date(_):
             return "date"
@@ -228,6 +232,24 @@ public enum MIMEHeader {
                 let group = String(slice).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
 
                 headers.append(.Newsgroup(name: lower, group: group))
+            }
+
+        case "message-id", "in-reply-to":
+            headers.append(.MessageId(name: lower, msgid: content))
+
+        case "references":
+            let scanner = NSScanner(string: content)
+
+            scanner.charactersToBeSkipped = NSCharacterSet.whitespaceCharacterSet()
+            while !scanner.atEnd {
+                var msgid : NSString?
+
+                if !scanner.scanUpToString(">", intoString: &msgid)
+                    || !scanner.skipString(">") {
+                    throw Error.MalformedHeader(content)
+                }
+
+                headers.append(.MessageId(name: lower, msgid: (msgid! as String) + ">"))
             }
 
         case "date":

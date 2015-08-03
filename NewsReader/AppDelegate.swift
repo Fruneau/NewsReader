@@ -22,9 +22,11 @@ class Article : NSObject {
 
     var headers : MIMEHeaders
     dynamic var body : String?
+    var replies : [Article] = []
+    weak var inReplyTo : Article?
 
     lazy var msgid : String? = {
-        if case .Generic(name: _, content: let val)? = self.headers["message-id"]?.first {
+        if case .MessageId(name: _, msgid: let val)? = self.headers["message-id"]?.first {
             return val
         }
         return nil
@@ -92,6 +94,24 @@ class Article : NSObject {
         return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
     }()
 
+    var threadCount : Int {
+        var count = 1;
+
+        for article in self.replies {
+            count += article.threadCount
+        }
+        return count
+    }
+
+    var threadDepth : Int {
+        var depth = 0;
+
+        for article in self.replies {
+            depth = max(depth, article.threadDepth)
+        }
+        return depth + 1
+    }
+
     private func loadNewsgroups() -> String? {
         guard let dest = self.headers["newsgroups"] else {
             return nil
@@ -114,6 +134,20 @@ class Article : NSObject {
             refs.append((group, num))
         }
         self.refs = refs
+    }
+
+    private var parentsIds : [String]? {
+        if let references = self.headers["references"] {
+            var parents : [String] = []
+
+            for case .MessageId(name: _, msgid: let ref) in references {
+                parents.append(ref)
+            }
+            return parents
+        } else if case .MessageId(name: _, msgid: let inReplyTo)? = self.headers["in-reply-to"]?.first {
+            return [ inReplyTo ]
+        }
+        return nil
     }
 
     var refs : [(String, Int)]
@@ -221,7 +255,10 @@ class GroupTree : NSObject {
         node.shortDesc = shortDesc
     }
 
-    dynamic var threads : [Article]?
+    var articleByMsgid : [String: Article] = [:]
+    dynamic var articles : [Article]?
+    dynamic var roots : [Article]?
+
     private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
     var selection = NSIndexSet() {
@@ -230,12 +267,12 @@ class GroupTree : NSObject {
                 return
             }
 
-            self.threads?[self.selection.firstIndex].load()
+            self.articles?[self.selection.firstIndex].load()
         }
     }
 
     func load() {
-        if self.threads != nil || self.fullName == nil {
+        if self.articles != nil || self.fullName == nil {
             return
         }
 
@@ -263,11 +300,39 @@ class GroupTree : NSObject {
             }
 
             var articles : [Article] = []
+            var roots : [Article] = []
             for msg in messages.reverse() {
-                articles.append(Article(nntp: self.nntp, ref: (self.fullName!, msg.num),
-                    headers: msg.headers))
+                let article = Article(nntp: self.nntp, ref: (self.fullName!, msg.num),
+                    headers: msg.headers)
+
+                articles.append(article)
+
+                if let msgid = article.msgid {
+                    self.articleByMsgid[msgid] = article
+                }
             }
-            self.threads = articles
+
+            threads: for article in articles {
+                if let parentIds = article.parentsIds {
+                    for parentId in parentIds {
+                        guard let parent = self.articleByMsgid[parentId] else {
+                            continue
+                        }
+
+                        if parent === article {
+                            continue
+                        }
+
+                        article.inReplyTo = parent
+                        parent.replies.append(article)
+                        continue threads
+                    }
+                }
+                roots.append(article)
+            }
+
+            self.articles = articles
+            self.roots = roots
         }).otherwise({
             (var error) in
 
