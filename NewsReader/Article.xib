@@ -141,7 +141,7 @@
                                     </constraints>
                                     <animations/>
                                 </customView>
-                                <scrollView horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" verticalScrollElasticity="allowed" translatesAutoresizingMaskIntoConstraints="NO" id="7V9-EW-8l3">
+                                <scrollView horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" verticalScrollElasticity="allowed" translatesAutoresizingMaskIntoConstraints="NO" id="7V9-EW-8l3" customClass="UnscrollableScrollView" customModule="NewsReader" customModuleProvider="target">
                                     <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
                                     <clipView key="contentView" copiesOnScroll="NO" id="okK-cx-IIg">
                                         <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>

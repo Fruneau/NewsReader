@@ -410,6 +410,12 @@ class SelectableCollectionViewItem : NSCollectionViewItem {
     }
 }
 
+class UnscrollableScrollView : NSScrollView {
+    override func scrollWheel(theEvent: NSEvent) {
+        self.superview?.scrollWheel(theEvent)
+    }
+}
+
 class ShortDateFormatter : NSFormatter {
     private static let todayFormatter : NSDateFormatter = {
         let f = NSDateFormatter();
