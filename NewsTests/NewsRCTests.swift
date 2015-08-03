@@ -66,7 +66,7 @@ class NewsRCTests : XCTestCase {
             }
         }
 
-        group.markRangeAsRead(NSMakeRange(2, 3))
+        XCTAssertEqual(group.markRangeAsRead(NSMakeRange(2, 3)), 1)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<10 {
             switch i {
@@ -78,7 +78,7 @@ class NewsRCTests : XCTestCase {
             }
         }
 
-        group.markRangeAsRead(NSMakeRange(6, 2))
+        XCTAssertEqual(group.markRangeAsRead(NSMakeRange(6, 2)), 2)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<10 {
             switch i {
@@ -102,7 +102,7 @@ class NewsRCTests : XCTestCase {
             }
         }
 
-        group.markRangeAsRead(NSMakeRange(0, 10))
+        XCTAssertEqual(group.markRangeAsRead(NSMakeRange(0, 10)), 2)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<10 {
             XCTAssertTrue(group.isMarkedAsRead(i))
@@ -113,11 +113,11 @@ class NewsRCTests : XCTestCase {
         var group = GroupSubscription(name: "toto")
 
         XCTAssertFalse(group.markAsRead(1))
-        group.markRangeAsRead(NSMakeRange(3, 3))
-        group.markRangeAsRead(NSMakeRange(7, 2))
+        XCTAssertEqual(group.markRangeAsRead(NSMakeRange(3, 3)), 3)
+        XCTAssertEqual(group.markRangeAsRead(NSMakeRange(7, 2)), 2)
         XCTAssertFalse(group.markAsRead(10))
-        group.markRangeAsRead(NSMakeRange(12, 2))
-        group.markRangeAsRead(NSMakeRange(15, 3))
+        XCTAssertEqual(group.markRangeAsRead(NSMakeRange(12, 2)), 2)
+        XCTAssertEqual(group.markRangeAsRead(NSMakeRange(15, 3)), 3)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<20 {
             switch i {
@@ -153,7 +153,7 @@ class NewsRCTests : XCTestCase {
             }
         }
 
-        group.unmarkRangeAsRead(NSMakeRange(1, 3))
+        XCTAssertEqual(group.unmarkRangeAsRead(NSMakeRange(1, 3)), 1)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<20 {
             switch i {
@@ -165,7 +165,7 @@ class NewsRCTests : XCTestCase {
             }
         }
         
-        group.unmarkRangeAsRead(NSMakeRange(0, 7))
+        XCTAssertEqual(group.unmarkRangeAsRead(NSMakeRange(0, 7)), 2)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<20 {
             switch i {
@@ -177,7 +177,7 @@ class NewsRCTests : XCTestCase {
             }
         }
 
-        group.unmarkRangeAsRead(NSMakeRange(8, 5))
+        XCTAssertEqual(group.unmarkRangeAsRead(NSMakeRange(8, 5)), 3)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<20 {
             switch i {
@@ -189,7 +189,7 @@ class NewsRCTests : XCTestCase {
             }
         }
 
-        group.unmarkRangeAsRead(NSMakeRange(0, 15))
+        XCTAssertEqual(group.unmarkRangeAsRead(NSMakeRange(0, 15)), 2)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<20 {
             switch i {
@@ -213,7 +213,7 @@ class NewsRCTests : XCTestCase {
             }
         }
         
-        group.unmarkRangeAsRead(NSMakeRange(0, 21))
+        XCTAssertEqual(group.unmarkRangeAsRead(NSMakeRange(0, 21)), 2)
         XCTAssertTrue(group.checkOptimized())
         for i in 0..<20 {
             XCTAssertFalse(group.isMarkedAsRead(i))

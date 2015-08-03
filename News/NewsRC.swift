@@ -120,10 +120,16 @@ public struct GroupSubscription : CustomStringConvertible {
     /// currently implemented efficiently.
     ///
     /// - parameter range: The range of article number to mark as read
-    public mutating func markRangeAsRead(range: NSRange) {
+    /// - returns: the number of article marked as read
+    public mutating func markRangeAsRead(range: NSRange) -> Int {
+        var count = 0
+
         for i in range.location..<NSMaxRange(range) {
-            self.markAsRead(i)
+            if !self.markAsRead(i) {
+                count++
+            }
         }
+        return count
     }
 
     /// Mark an article as unread.
@@ -165,16 +171,22 @@ public struct GroupSubscription : CustomStringConvertible {
         return false
     }
 
-    /// Mark a range of articles as read
+    /// Mark a range of articles as unread
     ///
     /// Mark all the elements of the provided range as unread. This helper is
     /// not currently implemented efficiently.
     ///
     /// - parameter range: The range of article number to mark as unread
-    public mutating func unmarkRangeAsRead(range: NSRange) {
+    /// - returns: the number of unmarked items
+    public mutating func unmarkRangeAsRead(range: NSRange) -> Int {
+        var count = 0
+
         for i in range.location..<NSMaxRange(range) {
-            self.unmarkAsRead(i)
+            if self.unmarkAsRead(i) {
+                count++
+            }
         }
+        return count
     }
 
     /// Check if an article is marked as read.
