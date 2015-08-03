@@ -906,8 +906,9 @@
                                                     <collectionViewFlowLayout key="collectionViewLayout" minimumInteritemSpacing="10" minimumLineSpacing="10" id="a3H-t8-v7b">
                                                         <size key="itemSize" width="50" height="50"/>
                                                     </collectionViewFlowLayout>
-                                                    <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="primaryBackgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     <connections>
+                                                        <outlet property="dataSource" destination="Voe-Tx-rLC" id="h4G-9r-lua"/>
                                                         <outlet property="delegate" destination="Voe-Tx-rLC" id="UVM-Y8-aR7"/>
                                                     </connections>
                                                 </collectionView>
@@ -1012,7 +1013,7 @@
                     <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" alignment="right" title="Label" id="8IM-PF-GEY">
                         <numberFormatter key="formatter" formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="d1o-Rc-Wdz"/>
                         <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="keyboardFocusIndicatorColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>

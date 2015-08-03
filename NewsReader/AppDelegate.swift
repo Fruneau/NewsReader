@@ -16,9 +16,14 @@ enum Error : ErrorType {
     case NoMessage
 }
 
-class Article : NSObject, NSCollectionViewDataSource {
+protocol ArticleDelegate : class {
+    func articleUpdated(article: Article)
+}
+
+class Article : NSObject {
     private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
+    private weak var delegate : ArticleDelegate?
 
     var headers : MIMEHeaders
     dynamic var body : String?
@@ -121,6 +126,14 @@ class Article : NSObject, NSCollectionViewDataSource {
         return thread
     }
 
+    var lines : Int {
+        guard let body = self.body else {
+            return 0
+        }
+
+        return body.utf8.reduce(0, combine: { $1 == 0x0a ? $0 + 1 : $0 })
+    }
+
     private func loadNewsgroups() -> String? {
         guard let dest = self.headers["newsgroups"] else {
             return nil
@@ -179,7 +192,7 @@ class Article : NSObject, NSCollectionViewDataSource {
     }
 
     func load() {
-        if self.promise != nil {
+        if self.promise != nil || self.body != nil {
             return
         }
 
@@ -200,25 +213,12 @@ class Article : NSObject, NSCollectionViewDataSource {
             self.body = msg.body
             self.to = self.loadNewsgroups()
             self.loadRefs()
+            self.delegate?.articleUpdated(self)
         })
     }
 
     func cancelLoad() {
         self.promise?.cancel()
-    }
-
-    func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.thread.count
-    }
-
-    func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
-        let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
-
-        let thread = self.thread
-        let article = thread[indexPath.item]
-        item.representedObject = article
-        article.load()
-        return item
     }
 }
 
@@ -447,7 +447,7 @@ class ArticleFlowLayout : NSCollectionViewFlowLayout {
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate, NSCollectionViewDelegateFlowLayout {
+class AppDelegate: NSObject, NSApplicationDelegate {
 
     @IBOutlet weak var window: NSWindow!
 
@@ -468,8 +468,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate, NSCol
     }
 
     var threadSelection = NSIndexSet() {
+        willSet {
+            guard let thread = self.currentThread else {
+                return
+            }
+
+            for article in thread.thread {
+                article.delegate = nil
+            }
+        }
+
         didSet {
-            self.articleView.dataSource = self.currentThread
+            self.articleView.reloadData()
+
+            guard let thread = self.currentThread else {
+                return
+            }
+
+            for article in thread.thread {
+                article.delegate = self
+            }
         }
     }
     var currentThread : Article? {
@@ -532,17 +550,52 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSOutlineViewDelegate, NSCol
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
     }
+}
 
+extension AppDelegate : NSOutlineViewDelegate {
     func outlineView(outlineView: NSOutlineView, viewForTableColumn tableColumn: NSTableColumn?, item: AnyObject) -> NSView? {
         let node = item.representedObject as! GroupTree
 
         return outlineView.makeViewWithIdentifier(node.isRoot ? "HeaderCell" : "DataCell", owner: self)
     }
+}
+
+extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
+    func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
+        guard let thread = self.currentThread?.thread else {
+            return 0
+        }
+
+        return thread.count
+    }
+
+    func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
+        let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
+
+        guard let thread = self.currentThread?.thread else {
+            return item
+        }
+
+        let article = thread[indexPath.item]
+        item.representedObject = article
+        article.load()
+        return item
+    }
 
     func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
         let size = collectionView.frame.size
 
-        return NSSize(width: size.width, height: CGFloat(100 + indexPath.item * 100))
-    }
+        guard let article = self.currentThread?.thread[indexPath.item] else {
+            return NSSize(width: 0, height: 0)
+        }
 
+        let height = 120 + article.lines * 14
+        return NSSize(width: size.width, height: CGFloat(height))
+    }
+}
+
+extension AppDelegate : ArticleDelegate {
+    func articleUpdated(article: Article) {
+        self.articleView.reloadData()
+    }
 }
