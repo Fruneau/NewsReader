@@ -276,7 +276,14 @@ class GroupTree : NSObject {
                 return
             }
 
-            self.articles?[self.selection.firstIndex].load()
+            guard let thread = self.roots?[self.selection.firstIndex].thread else {
+                return
+            }
+
+            print("selected thread \"\(thread[0].subject)\": \(thread.count) messages")
+            for article in thread {
+                article.load()
+            }
         }
     }
 
@@ -342,6 +349,7 @@ class GroupTree : NSObject {
 
             self.articles = articles
             self.roots = roots
+            print("added \(roots.count) roots")
         }).otherwise({
             (error) in
 
@@ -374,9 +382,10 @@ class UserBadgeView : NSImageView {
         super.init(coder: coder)
         self.wantsLayer = true
 
-        self.layer!.borderWidth = 0
-        self.layer!.cornerRadius = self.bounds.size.width / 2
-        self.layer!.masksToBounds = true
+
+        self.layer?.borderWidth = 0
+        self.layer?.cornerRadius = self.bounds.size.width / 2
+        self.layer?.masksToBounds = true
     }
 }
 
