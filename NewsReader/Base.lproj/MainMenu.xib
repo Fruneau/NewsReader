@@ -693,7 +693,7 @@
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <outlineView allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="dUc-yG-wLJ" id="4OP-Rn-hna">
-                                                    <rect key="frame" x="0.0" y="0.0" width="400" height="595"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="400" height="0.0"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
                                                     <size key="intercellSpacing" width="3" height="0.0"/>
@@ -985,7 +985,7 @@
                 <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gHG-PF-T1T">
                     <rect key="frame" x="11" y="5" width="321" height="16"/>
                     <animations/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Subject" id="nog-7b-4WC">
+                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Subject" id="nog-7b-4WC">
                         <font key="font" metaFont="cellTitle"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1007,7 +1007,7 @@
                         <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.date" id="rcM-AZ-0ec"/>
                     </connections>
                 </textField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eTn-aO-otg">
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="eTn-aO-otg">
                     <rect key="frame" x="333" y="7" width="33" height="14"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" alignment="right" title="Label" id="8IM-PF-GEY">
@@ -1037,6 +1037,9 @@
                 <constraint firstItem="nUq-xe-Bwj" firstAttribute="top" secondItem="bCw-MF-nit" secondAttribute="top" id="lS0-0Y-Ivm"/>
             </constraints>
             <animations/>
+            <connections>
+                <binding destination="fCD-bO-1dq" name="toolTip" keyPath="representedObject.subject" id="5VH-h8-QrQ"/>
+            </connections>
             <point key="canvasLocation" x="-699.5" y="139.5"/>
         </view>
         <collectionViewItem id="fCD-bO-1dq" userLabel="Thread View Item" customClass="SelectableCollectionViewItem" customModule="NewsReader" customModuleProvider="target">
