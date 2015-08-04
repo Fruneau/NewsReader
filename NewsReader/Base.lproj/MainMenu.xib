@@ -745,13 +745,13 @@
                                                                     <rect key="frame" x="1" y="17" width="397" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
-                                                                        <imageView translatesAutoresizingMaskIntoConstraints="NO" id="6pZ-ng-LiI">
+                                                                        <imageView horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="6pZ-ng-LiI">
                                                                             <rect key="frame" x="3" y="0.0" width="14" height="17"/>
                                                                             <animations/>
                                                                             <imageCell key="cell" refusesFirstResponder="YES" imageScaling="proportionallyDown" image="NSActionTemplate" id="ceY-H0-8I6"/>
                                                                         </imageView>
-                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hdU-0D-MSc">
-                                                                            <rect key="frame" x="22" y="0.0" width="374" height="17"/>
+                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hdU-0D-MSc">
+                                                                            <rect key="frame" x="22" y="0.0" width="323" height="17"/>
                                                                             <animations/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="EcW-xC-RUW">
                                                                                 <font key="font" metaFont="system"/>
@@ -763,11 +763,10 @@
                                                                                 <binding destination="UJX-Cb-sBh" name="toolTip" keyPath="objectValue.shortDesc" id="aB8-Qg-ZD3"/>
                                                                             </connections>
                                                                         </textField>
-                                                                        <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8V4-bk-0LJ">
+                                                                        <button verticalHuggingPriority="750" horizontalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="8V4-bk-0LJ">
                                                                             <rect key="frame" x="351" y="-1" width="46" height="17"/>
                                                                             <constraints>
                                                                                 <constraint firstAttribute="height" constant="16" id="1iO-8d-1bO"/>
-                                                                                <constraint firstAttribute="width" constant="46" id="wcc-28-8qs"/>
                                                                             </constraints>
                                                                             <animations/>
                                                                             <buttonCell key="cell" type="inline" title="Count" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="CCg-g5-wsk">
@@ -793,8 +792,8 @@
                                                                         <constraint firstItem="hdU-0D-MSc" firstAttribute="top" secondItem="UJX-Cb-sBh" secondAttribute="top" id="Jsd-s3-zhv"/>
                                                                         <constraint firstAttribute="bottom" secondItem="6pZ-ng-LiI" secondAttribute="bottom" id="c7x-Ab-tW3"/>
                                                                         <constraint firstAttribute="trailing" secondItem="8V4-bk-0LJ" secondAttribute="trailing" id="enf-Pe-HoN"/>
-                                                                        <constraint firstAttribute="trailing" secondItem="hdU-0D-MSc" secondAttribute="trailing" constant="3" id="wJz-oc-hev"/>
                                                                         <constraint firstAttribute="bottom" secondItem="hdU-0D-MSc" secondAttribute="bottom" id="wfd-48-XJy"/>
+                                                                        <constraint firstItem="8V4-bk-0LJ" firstAttribute="leading" secondItem="hdU-0D-MSc" secondAttribute="trailing" constant="3" id="xmo-w0-FnL"/>
                                                                     </constraints>
                                                                     <animations/>
                                                                     <connections>
