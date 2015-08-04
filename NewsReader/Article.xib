@@ -222,6 +222,12 @@
         </customView>
         <collectionViewItem id="ojD-sA-dGM" userLabel="Article" customClass="ArticleViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
+                <outlet property="bodyView" destination="VAU-cY-XlL" id="b5F-Yt-QIp"/>
+                <outlet property="contactPictureView" destination="ZAn-dN-wjh" id="T6k-KE-tO2"/>
+                <outlet property="dateView" destination="ivL-TL-EAP" id="308-3L-UbZ"/>
+                <outlet property="fromView" destination="iIf-4K-Nvq" id="kpL-zk-rhm"/>
+                <outlet property="subjectView" destination="60R-w7-M2C" id="dCt-tj-9mz"/>
+                <outlet property="toView" destination="qKH-5K-Ror" id="hU9-yp-ALB"/>
                 <outlet property="view" destination="c22-O7-iKe" id="EpG-KY-mAD"/>
             </connections>
         </collectionViewItem>

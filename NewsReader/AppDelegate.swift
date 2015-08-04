@@ -573,10 +573,31 @@ extension AppDelegate : NSOutlineViewDelegate {
 }
 
 class ArticleViewItem : NSCollectionViewItem {
+    @IBOutlet weak var fromView: NSTextField!
+    @IBOutlet weak var toView: NSTextField!
+    @IBOutlet weak var subjectView: NSTextField!
+    @IBOutlet weak var dateView: NSTextField!
+    @IBOutlet weak var contactPictureView: UserBadgeView!
+    @IBOutlet var bodyView: NSTextView!
+
     override dynamic var representedObject : AnyObject? {
         didSet {
             (oldValue as? Article)?.cancelLoad()
-            (self.representedObject as? Article)?.load()
+
+            let article = self.representedObject as? Article
+
+            article?.load()
+            self.fromView.objectValue = article?.from
+            self.toView.objectValue = article?.to
+            self.subjectView.objectValue = article?.subject
+            self.dateView.objectValue = article?.date
+            self.contactPictureView.objectValue = article?.contactPicture
+
+            if let body = article?.body {
+                self.bodyView.string = body
+            } else {
+                self.bodyView.string = "\nloading article content..."
+            }
         }
     }
 }
