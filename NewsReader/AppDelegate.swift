@@ -470,16 +470,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     var threadSelection = NSIndexSet() {
-        willSet {
-            guard let thread = self.currentThread else {
-                return
-            }
-
-            for article in thread.thread {
-                article.delegate = nil
-            }
-        }
-
         didSet {
             if self.threadSelection.count == 0 {
                 self.currentThread = nil
@@ -488,7 +478,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
-
     var currentThread : Article? {
         didSet {
             var oldPaths = Set<NSIndexPath>()
@@ -617,7 +606,7 @@ extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewData
         let article = self.articleForIndexPath(indexPath)
 
         item.representedObject = article
-        article.load()
+        article?.load()
         return item
     }
 
