@@ -583,7 +583,7 @@ class ArticleViewItem : NSCollectionViewItem {
 
 extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
     private func articleForIndexPath(indexPath: NSIndexPath) -> Article? {
-        guard indexPath.section != 0 else {
+        guard indexPath.section == 0 else {
             return nil
         }
 
@@ -612,7 +612,6 @@ extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewData
 
     func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
         let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
-        let article = self.articleForIndexPath(indexPath)
 
         item.representedObject = self.articleForIndexPath(indexPath)
         return item
