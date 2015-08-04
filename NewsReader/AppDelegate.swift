@@ -448,10 +448,6 @@ class ShortDateFormatter : NSFormatter {
     }
 }
 
-class ArticleFlowLayout : NSCollectionViewFlowLayout {
-
-}
-
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -485,25 +481,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         didSet {
-            self.articleView.reloadData()
+            if self.threadSelection.count == 0 {
+                self.currentThread = nil
+            } else {
+                self.currentThread = self.currentGroup?.roots?[self.threadSelection.firstIndex]
+            }
+        }
+    }
 
-            guard let thread = self.currentThread else {
+    var currentThread : Article? {
+        didSet {
+            var oldPaths = Set<NSIndexPath>()
+            if let thread = oldValue?.thread {
+                for i in 0..<thread.count {
+                    thread[i].delegate = nil
+                    oldPaths.insert(NSIndexPath(forItem: i, inSection: 0))
+                }
+            }
+
+            var newPaths = Set<NSIndexPath>()
+            if let thread = self.currentThread?.thread {
+                for i in 0..<thread.count {
+                    thread[i].delegate = self
+                    newPaths.insert(NSIndexPath(forItem: i, inSection: 0))
+                }
+            }
+
+            if oldPaths.count == 0 && newPaths.count == 0 {
                 return
             }
 
-            for article in thread.thread {
-                article.delegate = self
-            }
+            self.articleView.performBatchUpdates({
+                if oldPaths.count > 0 {
+                    self.articleView.deleteItemsAtIndexPaths(oldPaths)
+                }
+                if newPaths.count > 0 {
+                    self.articleView.insertItemsAtIndexPaths(newPaths)
+                }
+            }, completionHandler: { (_) in () })
         }
     }
-    var currentThread : Article? {
-        if self.threadSelection.count == 0 {
-            return nil
-        }
-
-        return self.currentGroup?.roots?[self.threadSelection.firstIndex]
-    }
-
 
     /* Thread view */
     @IBOutlet weak var threadView: NSCollectionView!
@@ -567,6 +584,26 @@ extension AppDelegate : NSOutlineViewDelegate {
 }
 
 extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
+    private func articleForIndexPath(indexPath: NSIndexPath) -> Article? {
+        guard indexPath.section != 0 else {
+            return nil
+        }
+
+        guard let thread = self.currentThread?.thread else {
+            return nil
+        }
+
+        return thread[indexPath.item]
+    }
+
+    private func indexPathForArticle(article: Article) -> NSIndexPath? {
+        guard let idx = self.currentThread?.thread.indexOf(article) else {
+            return nil
+        }
+
+        return NSIndexPath(forItem: idx, inSection: 0)
+    }
+
     func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let thread = self.currentThread?.thread else {
             return 0
@@ -577,12 +614,8 @@ extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewData
 
     func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
         let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
+        let article = self.articleForIndexPath(indexPath)
 
-        guard let thread = self.currentThread?.thread else {
-            return item
-        }
-
-        let article = thread[indexPath.item]
         item.representedObject = article
         article.load()
         return item
@@ -591,7 +624,7 @@ extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewData
     func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
         let size = collectionView.frame.size
 
-        guard let article = self.currentThread?.thread[indexPath.item] else {
+        guard let article = self.articleForIndexPath(indexPath) else {
             return NSSize(width: 0, height: 0)
         }
 
@@ -602,6 +635,10 @@ extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewData
 
 extension AppDelegate : ArticleDelegate {
     func articleUpdated(article: Article) {
-        self.articleView.reloadData()
+        guard let indexPath = self.indexPathForArticle(article) else {
+            return
+        }
+
+        self.articleView.reloadItemsAtIndexPaths([indexPath])
     }
 }
