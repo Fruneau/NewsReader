@@ -23,7 +23,7 @@ protocol ArticleDelegate : class {
 class Article : NSObject {
     private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
-    private weak var delegate : ArticleDelegate?
+    weak var delegate : ArticleDelegate?
 
     var headers : MIMEHeaders
     dynamic var body : String?
@@ -368,13 +368,6 @@ class GroupTree : NSObject {
     }
 }
 
-class BackgroundView : NSView {
-    override func drawRect(dirtyRect: NSRect) {
-        NSColor.whiteColor().set()
-        NSRectFill(dirtyRect)
-    }
-}
-
 class UserBadgeView : NSImageView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -407,12 +400,6 @@ class SelectableCollectionViewItem : NSCollectionViewItem {
         didSet {
             (self.view as? SelectableView)?.selected = selected
         }
-    }
-}
-
-class UnscrollableScrollView : NSScrollView {
-    override func scrollWheel(theEvent: NSEvent) {
-        self.superview?.scrollWheel(theEvent)
     }
 }
 
@@ -453,6 +440,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @IBOutlet weak var window: NSWindow!
 
+    @IBOutlet weak var articleViewController: ArticleViewController!
     /* Groups view */
     @IBOutlet weak var groupTreeController: NSTreeController!
     dynamic var groupRoots = [GroupTree(root: "Groups")]
@@ -472,48 +460,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var threadSelection = NSIndexSet() {
         didSet {
             if self.threadSelection.count == 0 {
-                self.currentThread = nil
+                self.articleViewController.currentThread = nil
             } else {
-                self.currentThread = self.currentGroup?.roots?[self.threadSelection.firstIndex]
+                self.articleViewController.currentThread = self.currentGroup?.roots?[self.threadSelection.firstIndex]
             }
-        }
-    }
-    var currentThread : Article? {
-        didSet {
-            var oldPaths = Set<NSIndexPath>()
-            if let thread = oldValue?.thread {
-                for i in 0..<thread.count {
-                    thread[i].delegate = nil
-                    oldPaths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
-
-            var newPaths = Set<NSIndexPath>()
-            if let thread = self.currentThread?.thread {
-                for i in 0..<thread.count {
-                    thread[i].delegate = self
-                    newPaths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
-
-            if oldPaths.count == 0 && newPaths.count == 0 {
-                return
-            }
-
-            self.articleView.performBatchUpdates({
-                if oldPaths.count > 0 {
-                    self.articleView.deleteItemsAtIndexPaths(oldPaths)
-                }
-                if newPaths.count > 0 {
-                    self.articleView.insertItemsAtIndexPaths(newPaths)
-                }
-            }, completionHandler: { (_) in () })
         }
     }
 
     /* Thread view */
     @IBOutlet weak var threadView: NSCollectionView!
-    @IBOutlet weak var articleView: NSCollectionView!
 
     /* Model handling */
     var nntp : NNTPClient?
@@ -558,10 +513,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         })
     }
-
-    func applicationWillTerminate(aNotification: NSNotification) {
-        // Insert code here to tear down your application
-    }
 }
 
 extension AppDelegate : NSOutlineViewDelegate {
@@ -569,93 +520,5 @@ extension AppDelegate : NSOutlineViewDelegate {
         let node = item.representedObject as! GroupTree
 
         return outlineView.makeViewWithIdentifier(node.isRoot ? "HeaderCell" : "DataCell", owner: self)
-    }
-}
-
-class ArticleViewItem : NSCollectionViewItem {
-    @IBOutlet weak var fromView: NSTextField!
-    @IBOutlet weak var toView: NSTextField!
-    @IBOutlet weak var subjectView: NSTextField!
-    @IBOutlet weak var dateView: NSTextField!
-    @IBOutlet weak var contactPictureView: UserBadgeView!
-    @IBOutlet var bodyView: NSTextView!
-
-    override dynamic var representedObject : AnyObject? {
-        didSet {
-            (oldValue as? Article)?.cancelLoad()
-
-            let article = self.representedObject as? Article
-
-            article?.load()
-            self.fromView.objectValue = article?.from
-            self.toView.objectValue = article?.to
-            self.subjectView.objectValue = article?.subject
-            self.dateView.objectValue = article?.date
-            self.contactPictureView.objectValue = article?.contactPicture
-
-            if let body = article?.body {
-                self.bodyView.string = body
-            } else {
-                self.bodyView.string = "\nloading article content..."
-            }
-        }
-    }
-}
-
-extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
-    private func articleForIndexPath(indexPath: NSIndexPath) -> Article? {
-        guard indexPath.section == 0 else {
-            return nil
-        }
-
-        guard let thread = self.currentThread?.thread else {
-            return nil
-        }
-
-        return thread[indexPath.item]
-    }
-
-    private func indexPathForArticle(article: Article) -> NSIndexPath? {
-        guard let idx = self.currentThread?.thread.indexOf(article) else {
-            return nil
-        }
-
-        return NSIndexPath(forItem: idx, inSection: 0)
-    }
-
-    func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let thread = self.currentThread?.thread else {
-            return 0
-        }
-
-        return thread.count
-    }
-
-    func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
-        let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
-
-        item.representedObject = self.articleForIndexPath(indexPath)
-        return item
-    }
-
-    func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
-        let size = collectionView.frame.size
-
-        guard let article = self.articleForIndexPath(indexPath) else {
-            return NSSize(width: 0, height: 0)
-        }
-
-        let height = 120 + article.lines * 14
-        return NSSize(width: size.width, height: CGFloat(height))
-    }
-}
-
-extension AppDelegate : ArticleDelegate {
-    func articleUpdated(article: Article) {
-        guard let indexPath = self.indexPathForArticle(article) else {
-            return
-        }
-
-        self.articleView.reloadItemsAtIndexPaths([indexPath])
     }
 }

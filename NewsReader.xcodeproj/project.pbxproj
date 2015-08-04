@@ -39,6 +39,7 @@
 		B45A820C1B652B89005323EC /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820B1B652B89005323EC /* String.swift */; };
 		B45A820E1B652D0C005323EC /* StringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820D1B652D0C005323EC /* StringTests.swift */; };
 		B496839D1B6FE94100982CF0 /* Article.xib in Resources */ = {isa = PBXBuildFile; fileRef = B496839C1B6FE94100982CF0 /* Article.xib */; };
+		B4F5646A1B714E2E00AD054B /* ArticleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F564691B714E2E00AD054B /* ArticleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -153,6 +154,7 @@
 		B4E047541B5667DA001C8BFF /* Buffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Buffer.swift; sourceTree = "<group>"; };
 		B4E047561B56E3E4001C8BFF /* NSRunLoop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSRunLoop.swift; sourceTree = "<group>"; };
 		B4E047581B56E68E001C8BFF /* NNTPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NNTPTests.swift; sourceTree = "<group>"; };
+		B4F564691B714E2E00AD054B /* ArticleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArticleView.swift; sourceTree = "<group>"; };
 		B4FF60731B5AB504006D17DA /* Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
 		B4FF60751B5ADA6B006D17DA /* PromiseTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PromiseTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -249,6 +251,7 @@
 				B442B93C1B5519E60088FA0F /* AppDelegate.swift */,
 				B442B93E1B5519E60088FA0F /* Assets.xcassets */,
 				B442B9401B5519E60088FA0F /* MainMenu.xib */,
+				B4F564691B714E2E00AD054B /* ArticleView.swift */,
 				B496839C1B6FE94100982CF0 /* Article.xib */,
 				B442B9431B5519E60088FA0F /* Info.plist */,
 			);
@@ -597,6 +600,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */,
+				B4F5646A1B714E2E00AD054B /* ArticleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -15,12 +15,18 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="NewsReader" customModuleProvider="target">
             <connections>
                 <outlet property="articleView" destination="WZf-XB-Zue" id="DzS-wR-YWx"/>
+                <outlet property="articleViewController" destination="rK8-gZ-dry" id="Ykw-Il-VZp"/>
                 <outlet property="groupTreeController" destination="oQ9-zf-5Dh" id="wDZ-xO-cAe"/>
                 <outlet property="threadView" destination="65F-xb-gPj" id="4V2-O0-hfu"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
+        <customObject id="rK8-gZ-dry" customClass="ArticleViewController" customModule="NewsReader" customModuleProvider="target">
+            <connections>
+                <outlet property="articleView" destination="WZf-XB-Zue" id="P5h-Pa-ovV"/>
+            </connections>
+        </customObject>
         <menu title="Main Menu" systemMenu="main" id="AYu-sK-qS6">
             <items>
                 <menuItem title="NewsReader" id="1Xt-HY-uBw">
@@ -907,8 +913,8 @@
                                                     </collectionViewFlowLayout>
                                                     <color key="primaryBackgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     <connections>
-                                                        <outlet property="dataSource" destination="Voe-Tx-rLC" id="h4G-9r-lua"/>
-                                                        <outlet property="delegate" destination="Voe-Tx-rLC" id="UVM-Y8-aR7"/>
+                                                        <outlet property="dataSource" destination="rK8-gZ-dry" id="HjI-hs-AsY"/>
+                                                        <outlet property="delegate" destination="rK8-gZ-dry" id="mUQ-Mj-emV"/>
                                                     </connections>
                                                 </collectionView>
                                             </subviews>
