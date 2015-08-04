@@ -572,6 +572,15 @@ extension AppDelegate : NSOutlineViewDelegate {
     }
 }
 
+class ArticleViewItem : NSCollectionViewItem {
+    override dynamic var representedObject : AnyObject? {
+        didSet {
+            (oldValue as? Article)?.cancelLoad()
+            (self.representedObject as? Article)?.load()
+        }
+    }
+}
+
 extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
     private func articleForIndexPath(indexPath: NSIndexPath) -> Article? {
         guard indexPath.section != 0 else {
@@ -605,8 +614,7 @@ extension AppDelegate : NSCollectionViewDelegateFlowLayout, NSCollectionViewData
         let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
         let article = self.articleForIndexPath(indexPath)
 
-        item.representedObject = article
-        article?.load()
+        item.representedObject = self.articleForIndexPath(indexPath)
         return item
     }
 

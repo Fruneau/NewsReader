@@ -220,7 +220,7 @@
             <animations/>
             <point key="canvasLocation" x="319.5" y="128.5"/>
         </customView>
-        <collectionViewItem id="ojD-sA-dGM" userLabel="Article">
+        <collectionViewItem id="ojD-sA-dGM" userLabel="Article" customClass="ArticleViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
                 <outlet property="view" destination="c22-O7-iKe" id="EpG-KY-mAD"/>
             </connections>
