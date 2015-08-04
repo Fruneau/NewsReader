@@ -103,9 +103,9 @@
                                             <rect key="frame" x="442" y="16" width="16" height="16"/>
                                             <animations/>
                                             <connections>
-                                                <binding destination="ojD-sA-dGM" name="animate" keyPath="representedObject.body" id="wEy-cd-EQa">
+                                                <binding destination="ojD-sA-dGM" name="animate" keyPath="representedObject.body" id="BNc-5g-Kgp">
                                                     <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSIsNotNil</string>
+                                                        <string key="NSValueTransformerName">NSIsNil</string>
                                                     </dictionary>
                                                 </binding>
                                                 <binding destination="ojD-sA-dGM" name="hidden" keyPath="representedObject.body" id="zef-tN-d0b">
