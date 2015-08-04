@@ -30,24 +30,44 @@ class ArticleViewItem : NSCollectionViewItem {
     @IBOutlet var bodyView: NSTextView!
 
     override dynamic var representedObject : AnyObject? {
+        willSet {
+            self.article?.delegate = nil
+            self.article?.cancelLoad()
+        }
+
         didSet {
-            (oldValue as? Article)?.cancelLoad()
+            self.article?.delegate = self
+            self.article?.load()
 
-            let article = self.representedObject as? Article
+            self.fromView.objectValue = self.article?.from
+            self.toView.objectValue = self.article?.to
+            self.subjectView.objectValue = self.article?.subject
+            self.dateView.objectValue = self.article?.date
+            self.contactPictureView.objectValue = self.article?.contactPicture
 
-            article?.load()
-            self.fromView.objectValue = article?.from
-            self.toView.objectValue = article?.to
-            self.subjectView.objectValue = article?.subject
-            self.dateView.objectValue = article?.date
-            self.contactPictureView.objectValue = article?.contactPicture
-
-            if let body = article?.body {
+            if let body = self.article?.body {
                 self.bodyView.string = body
             } else {
                 self.bodyView.string = "\nloading article content..."
             }
         }
+    }
+    var article : Article? {
+        return self.representedObject as? Article
+    }
+}
+
+extension ArticleViewItem : ArticleDelegate {
+    func articleUpdated(article: Article) {
+        guard article === self.article else {
+            return
+        }
+
+        guard let indexPath = self.collectionView.indexPathForItem(self) else {
+            return
+        }
+
+        self.collectionView.reloadItemsAtIndexPaths([indexPath])
     }
 }
 
@@ -56,35 +76,38 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
     @IBOutlet weak var articleView: NSCollectionView!
 
     var currentThread : Article? {
-        didSet {
-            var oldPaths = Set<NSIndexPath>()
-            if let thread = oldValue?.thread {
-                for i in 0..<thread.count {
-                    thread[i].delegate = nil
-                    oldPaths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
-
-            var newPaths = Set<NSIndexPath>()
-            if let thread = self.currentThread?.thread {
-                for i in 0..<thread.count {
-                    thread[i].delegate = self
-                    newPaths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
-
-            if oldPaths.count == 0 && newPaths.count == 0 {
+        willSet {
+            guard let thread = self.currentThread?.thread else {
                 return
             }
 
-            self.articleView.performBatchUpdates({
-                if oldPaths.count > 0 {
-                    self.articleView.deleteItemsAtIndexPaths(oldPaths)
-                }
-                if newPaths.count > 0 {
-                    self.articleView.insertItemsAtIndexPaths(newPaths)
-                }
-                }, completionHandler: { (_) in () })
+            if thread.count == 0 {
+                return
+            }
+
+            var paths = Set<NSIndexPath>()
+            for i in 0..<thread.count {
+                paths.insert(NSIndexPath(forItem: i, inSection: 0))
+            }
+
+            self.articleView.deleteItemsAtIndexPaths(paths)
+        }
+
+        didSet {
+            guard let thread = self.currentThread?.thread else {
+                return
+            }
+
+            if thread.count == 0 {
+                return
+            }
+
+            var paths = Set<NSIndexPath>()
+            for i in 0..<thread.count {
+                paths.insert(NSIndexPath(forItem: i, inSection: 0))
+            }
+
+            self.articleView.insertItemsAtIndexPaths(paths)
         }
     }
 
@@ -132,15 +155,5 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
 
         let height = 120 + article.lines * 14
         return NSSize(width: size.width, height: CGFloat(height))
-    }
-}
-
-extension ArticleViewController : ArticleDelegate {
-    func articleUpdated(article: Article) {
-        guard let indexPath = self.indexPathForArticle(article) else {
-            return
-        }
-        
-        self.articleView.reloadItemsAtIndexPaths([indexPath])
     }
 }
