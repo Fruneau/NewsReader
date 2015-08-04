@@ -14,7 +14,6 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="NewsReader" customModuleProvider="target">
             <connections>
-                <outlet property="articleView" destination="WZf-XB-Zue" id="DzS-wR-YWx"/>
                 <outlet property="articleViewController" destination="rK8-gZ-dry" id="Ykw-Il-VZp"/>
                 <outlet property="groupTreeController" destination="oQ9-zf-5Dh" id="wDZ-xO-cAe"/>
                 <outlet property="threadView" destination="65F-xb-gPj" id="4V2-O0-hfu"/>
@@ -756,8 +755,8 @@
                                                                             <animations/>
                                                                             <imageCell key="cell" refusesFirstResponder="YES" imageScaling="proportionallyDown" image="NSActionTemplate" id="ceY-H0-8I6"/>
                                                                         </imageView>
-                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hdU-0D-MSc">
-                                                                            <rect key="frame" x="22" y="0.0" width="323" height="17"/>
+                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="hdU-0D-MSc">
+                                                                            <rect key="frame" x="22" y="0.0" width="328" height="17"/>
                                                                             <animations/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="EcW-xC-RUW">
                                                                                 <font key="font" metaFont="system"/>
@@ -853,15 +852,17 @@
                                             <rect key="frame" x="0.0" y="0.0" width="251" height="595"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <collectionView selectable="YES" maxNumberOfColumns="1" id="65F-xb-gPj">
+                                                <collectionView selectable="YES" id="65F-xb-gPj">
                                                     <rect key="frame" x="0.0" y="0.0" width="251" height="595"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <animations/>
+                                                    <collectionViewFlowLayout key="collectionViewLayout" id="sp5-Ay-mva">
+                                                        <size key="itemSize" width="50" height="50"/>
+                                                    </collectionViewFlowLayout>
                                                     <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <connections>
-                                                        <binding destination="WIB-Kw-PB8" name="content" keyPath="arrangedObjects" id="eo9-fR-45q"/>
-                                                        <binding destination="WIB-Kw-PB8" name="selectionIndexes" keyPath="selectionIndexes" previousBinding="eo9-fR-45q" id="elX-Vh-rwk"/>
-                                                        <outlet property="itemPrototype" destination="fCD-bO-1dq" id="yeT-HP-TSc"/>
+                                                        <outlet property="dataSource" destination="Voe-Tx-rLC" id="BwA-Nb-886"/>
+                                                        <outlet property="delegate" destination="Voe-Tx-rLC" id="VHP-kP-39D"/>
                                                     </connections>
                                                 </collectionView>
                                             </subviews>
@@ -961,114 +962,6 @@
             </view>
             <point key="canvasLocation" x="-2436.5" y="25.5"/>
         </window>
-        <view id="bCw-MF-nit" userLabel="Thread View" customClass="SelectableView" customModule="NewsReader" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="367" height="37"/>
-            <autoresizingMask key="autoresizingMask"/>
-            <subviews>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="01a-kR-SqC">
-                    <rect key="frame" x="11" y="21" width="350" height="16"/>
-                    <animations/>
-                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="8C7-HR-uF6">
-                        <font key="font" metaFont="systemBold" size="12"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        <connections>
-                            <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.msgid" id="dty-vX-DtE"/>
-                        </connections>
-                    </textFieldCell>
-                    <connections>
-                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.from" id="94h-SE-la7"/>
-                    </connections>
-                </textField>
-                <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="Bht-WZ-SQz">
-                    <rect key="frame" x="13" y="-2" width="354" height="5"/>
-                    <animations/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
-                </box>
-                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gHG-PF-T1T">
-                    <rect key="frame" x="11" y="5" width="321" height="16"/>
-                    <animations/>
-                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Subject" id="nog-7b-4WC">
-                        <font key="font" metaFont="cellTitle"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                    <connections>
-                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.subject" id="hTv-Xt-gEq"/>
-                    </connections>
-                </textField>
-                <textField horizontalHuggingPriority="500" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nUq-xe-Bwj" userLabel="Date">
-                    <rect key="frame" x="362" y="21" width="4" height="16"/>
-                    <animations/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" id="zRu-Tf-rLp" userLabel="Date">
-                        <customFormatter key="formatter" id="pct-py-Q1Y" customClass="ShortDateFormatter" customModule="NewsReader" customModuleProvider="target"/>
-                        <font key="font" metaFont="cellTitle"/>
-                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                    <connections>
-                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.date" id="rcM-AZ-0ec"/>
-                    </connections>
-                </textField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="eTn-aO-otg">
-                    <rect key="frame" x="333" y="7" width="33" height="14"/>
-                    <animations/>
-                    <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" alignment="right" title="Label" id="8IM-PF-GEY">
-                        <numberFormatter key="formatter" formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="d1o-Rc-Wdz"/>
-                        <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="keyboardFocusIndicatorColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                    <connections>
-                        <binding destination="fCD-bO-1dq" name="value" keyPath="representedObject.threadCount" id="sFt-L1-2do"/>
-                    </connections>
-                </textField>
-            </subviews>
-            <constraints>
-                <constraint firstItem="01a-kR-SqC" firstAttribute="leading" secondItem="bCw-MF-nit" secondAttribute="leading" constant="13" id="1rD-AE-eDs"/>
-                <constraint firstItem="eTn-aO-otg" firstAttribute="top" secondItem="gHG-PF-T1T" secondAttribute="top" id="74d-AL-gGC"/>
-                <constraint firstItem="gHG-PF-T1T" firstAttribute="top" secondItem="01a-kR-SqC" secondAttribute="bottom" id="9rc-UI-zoA"/>
-                <constraint firstAttribute="trailing" secondItem="Bht-WZ-SQz" secondAttribute="trailing" id="Em4-jy-It7"/>
-                <constraint firstItem="nUq-xe-Bwj" firstAttribute="trailing" secondItem="eTn-aO-otg" secondAttribute="trailing" id="Epc-V5-kHe"/>
-                <constraint firstItem="Bht-WZ-SQz" firstAttribute="leading" secondItem="bCw-MF-nit" secondAttribute="leading" constant="13" id="Gbj-RT-MLL"/>
-                <constraint firstAttribute="bottom" secondItem="Bht-WZ-SQz" secondAttribute="bottom" id="IpJ-wJ-b46"/>
-                <constraint firstItem="eTn-aO-otg" firstAttribute="leading" secondItem="gHG-PF-T1T" secondAttribute="trailing" constant="5" id="Iyo-5x-r8L"/>
-                <constraint firstAttribute="trailing" secondItem="nUq-xe-Bwj" secondAttribute="trailing" constant="3" id="Vl3-mB-rPG"/>
-                <constraint firstItem="nUq-xe-Bwj" firstAttribute="leading" secondItem="01a-kR-SqC" secondAttribute="trailing" constant="5" id="aKf-2s-Q72"/>
-                <constraint firstItem="gHG-PF-T1T" firstAttribute="leading" secondItem="bCw-MF-nit" secondAttribute="leading" constant="13" id="bAq-Lb-pq4"/>
-                <constraint firstItem="01a-kR-SqC" firstAttribute="top" secondItem="bCw-MF-nit" secondAttribute="top" id="fZJ-vm-pJt"/>
-                <constraint firstItem="nUq-xe-Bwj" firstAttribute="top" secondItem="bCw-MF-nit" secondAttribute="top" id="lS0-0Y-Ivm"/>
-            </constraints>
-            <animations/>
-            <connections>
-                <binding destination="fCD-bO-1dq" name="toolTip" keyPath="representedObject.subject" id="5VH-h8-QrQ"/>
-            </connections>
-            <point key="canvasLocation" x="-699.5" y="139.5"/>
-        </view>
-        <collectionViewItem id="fCD-bO-1dq" userLabel="Thread View Item" customClass="SelectableCollectionViewItem" customModule="NewsReader" customModuleProvider="target">
-            <connections>
-                <outlet property="view" destination="bCw-MF-nit" id="iWg-U3-Qnd"/>
-            </connections>
-        </collectionViewItem>
-        <arrayController objectClassName="Article" editable="NO" selectsInsertedObjects="NO" avoidsEmptySelection="NO" id="WIB-Kw-PB8" userLabel="Thread Array Controller">
-            <declaredKeys>
-                <string>msgid</string>
-                <string>num</string>
-                <string>from</string>
-                <string>to</string>
-                <string>date</string>
-                <string>body</string>
-                <string>contactPicture</string>
-                <string>threadCount</string>
-                <string>thread</string>
-            </declaredKeys>
-            <connections>
-                <binding destination="oQ9-zf-5Dh" name="contentArray" keyPath="selection.roots" id="OhI-XJ-4EG"/>
-                <binding destination="Voe-Tx-rLC" name="selectionIndexes" keyPath="threadSelection" id="MuA-VT-sPA"/>
-            </connections>
-        </arrayController>
         <treeController objectClassName="GroupTree" editable="NO" childrenKeyPath="children" leafKeyPath="isLeaf" avoidsEmptySelection="NO" selectsInsertedObjects="NO" id="oQ9-zf-5Dh" userLabel="Group Tree Controller">
             <declaredKeys>
                 <string>name</string>
