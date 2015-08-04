@@ -623,7 +623,6 @@ extension AppDelegate : NSCollectionViewDataSource, NSCollectionViewDelegate {
         }
     }
 
-    /*
     func collectionView(collectionView: NSCollectionView, didSelectItemsAtIndexPaths indexPaths: Set<NSIndexPath>) {
         self.updateCurrentThread()
     }
@@ -631,7 +630,6 @@ extension AppDelegate : NSCollectionViewDataSource, NSCollectionViewDelegate {
     func collectionView(collectionView: NSCollectionView, didDeselectItemsAtIndexPaths indexPaths: Set<NSIndexPath>) {
         self.updateCurrentThread()
     }
-    */
 }
 
 extension AppDelegate : GroupTreeDelegate {
