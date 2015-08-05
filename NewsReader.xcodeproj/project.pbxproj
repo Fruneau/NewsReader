@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B42CA8301B71EE4200B7465A /* ThreadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42CA82F1B71EE4200B7465A /* ThreadView.swift */; };
 		B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B442B93C1B5519E60088FA0F /* AppDelegate.swift */; };
 		B442B93F1B5519E60088FA0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B442B93E1B5519E60088FA0F /* Assets.xcassets */; };
 		B442B9421B5519E60088FA0F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B442B9401B5519E60088FA0F /* MainMenu.xib */; };
@@ -120,6 +121,7 @@
 /* Begin PBXFileReference section */
 		B42372701B59951C0046B987 /* NNTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NNTP.swift; path = News/NNTP.swift; sourceTree = SOURCE_ROOT; };
 		B423727F1B5A6A600046B987 /* NSData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSData.swift; sourceTree = "<group>"; };
+		B42CA82F1B71EE4200B7465A /* ThreadView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreadView.swift; sourceTree = "<group>"; };
 		B442B9391B5519E60088FA0F /* NewsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NewsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B442B93C1B5519E60088FA0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B442B93E1B5519E60088FA0F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -255,6 +257,7 @@
 				B442B9401B5519E60088FA0F /* MainMenu.xib */,
 				B4F564691B714E2E00AD054B /* ArticleView.swift */,
 				B496839C1B6FE94100982CF0 /* Article.xib */,
+				B42CA82F1B71EE4200B7465A /* ThreadView.swift */,
 				B4F5646B1B71522500AD054B /* Thread.xib */,
 				B442B9431B5519E60088FA0F /* Info.plist */,
 			);
@@ -603,6 +606,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B42CA8301B71EE4200B7465A /* ThreadView.swift in Sources */,
 				B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */,
 				B4F5646A1B714E2E00AD054B /* ArticleView.swift in Sources */,
 			);

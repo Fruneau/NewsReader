@@ -16,7 +16,7 @@
             <connections>
                 <outlet property="articleViewController" destination="rK8-gZ-dry" id="Ykw-Il-VZp"/>
                 <outlet property="groupTreeController" destination="oQ9-zf-5Dh" id="wDZ-xO-cAe"/>
-                <outlet property="threadView" destination="65F-xb-gPj" id="4V2-O0-hfu"/>
+                <outlet property="threadViewController" destination="fxK-mP-o32" id="Dvp-EM-4Fg"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
@@ -24,6 +24,12 @@
         <customObject id="rK8-gZ-dry" customClass="ArticleViewController" customModule="NewsReader" customModuleProvider="target">
             <connections>
                 <outlet property="articleView" destination="WZf-XB-Zue" id="P5h-Pa-ovV"/>
+            </connections>
+        </customObject>
+        <customObject id="fxK-mP-o32" userLabel="Thread View Controller" customClass="ThreadViewController" customModule="NewsReader" customModuleProvider="target">
+            <connections>
+                <outlet property="articleViewController" destination="rK8-gZ-dry" id="uq3-ut-mpN"/>
+                <outlet property="threadView" destination="65F-xb-gPj" id="aJ9-nI-ahf"/>
             </connections>
         </customObject>
         <menu title="Main Menu" systemMenu="main" id="AYu-sK-qS6">
@@ -861,8 +867,8 @@
                                                     </collectionViewFlowLayout>
                                                     <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <connections>
-                                                        <outlet property="dataSource" destination="Voe-Tx-rLC" id="BwA-Nb-886"/>
-                                                        <outlet property="delegate" destination="Voe-Tx-rLC" id="VHP-kP-39D"/>
+                                                        <outlet property="dataSource" destination="fxK-mP-o32" id="sjt-t4-wQw"/>
+                                                        <outlet property="delegate" destination="fxK-mP-o32" id="k7V-25-57B"/>
                                                     </connections>
                                                 </collectionView>
                                             </subviews>
