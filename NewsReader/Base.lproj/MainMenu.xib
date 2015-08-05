@@ -14,7 +14,6 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="NewsReader" customModuleProvider="target">
             <connections>
-                <outlet property="articleViewController" destination="rK8-gZ-dry" id="Ykw-Il-VZp"/>
                 <outlet property="groupTreeController" destination="oQ9-zf-5Dh" id="wDZ-xO-cAe"/>
                 <outlet property="threadViewController" destination="fxK-mP-o32" id="Dvp-EM-4Fg"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
