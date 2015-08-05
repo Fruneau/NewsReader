@@ -31,40 +31,48 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     @IBOutlet weak var articleViewController: ArticleViewController!
 
     var currentGroup : GroupTree? {
+        /*
+        willSet {
+            if newValue === self.currentGroup {
+                return
+            }
+
+            self.currentGroup?.delegate = nil
+            var paths = Set<NSIndexPath>()
+            if let roots = self.currentGroup?.roots {
+                for i in 0..<roots.count {
+                    paths.insert(NSIndexPath(forItem: i, inSection: 0))
+                }
+            }
+
+            if paths.count > 0 {
+                self.threadView.deleteItemsAtIndexPaths(paths)
+            }
+        }
+        */
+
         didSet {
             if oldValue === self.currentGroup {
                 return
             }
 
-            oldValue?.delegate = nil
-            var oldPaths = Set<NSIndexPath>()
-            if let roots = oldValue?.roots {
-                for i in 0..<roots.count {
-                    oldPaths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
-
-            var newPaths = Set<NSIndexPath>()
-            if let roots = self.currentGroup?.roots {
-                for i in 0..<roots.count {
-                    newPaths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
+            print("set to \(self.currentGroup) from \(oldValue)")
             self.currentGroup?.delegate = self
             self.currentGroup?.load()
+            self.threadView.reloadData()
 
-            if newPaths.count == 0 && oldPaths.count == 0 {
-                return
+            /*
+            var paths = Set<NSIndexPath>()
+            if let roots = self.currentGroup?.roots {
+                for i in 0..<roots.count {
+                    paths.insert(NSIndexPath(forItem: i, inSection: 0))
+                }
             }
 
-            self.threadView.performBatchUpdates({
-                if oldPaths.count > 0 {
-                    self.threadView.deleteItemsAtIndexPaths(oldPaths)
-                }
-                if newPaths.count > 0 {
-                    self.threadView.insertItemsAtIndexPaths(newPaths)
-                }
-                }, completionHandler: { (_) in () })
+            if paths.count > 0 {
+                self.threadView.insertItemsAtIndexPaths(paths)
+            }
+            */
         }
     }
 
@@ -138,7 +146,8 @@ extension ThreadViewController : GroupTreeDelegate {
         }
 
         if indexPaths.count > 0 {
-            self.threadView.insertItemsAtIndexPaths(indexPaths)
+            self.threadView.reloadData()
+            //self.threadView.insertItemsAtIndexPaths(indexPaths)
         }
     }
 }

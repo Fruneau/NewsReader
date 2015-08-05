@@ -67,7 +67,8 @@ extension ArticleViewItem : ArticleDelegate {
             return
         }
 
-        self.collectionView.reloadItemsAtIndexPaths([indexPath])
+        self.collectionView.reloadData()
+        //self.collectionView.reloadItemsAtIndexPaths([indexPath])
     }
 }
 
@@ -76,7 +77,12 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
     @IBOutlet weak var articleView: NSCollectionView!
 
     var currentThread : Article? {
+        /*
         willSet {
+            if newValue === self.currentThread {
+                return
+            }
+
             guard let thread = self.currentThread?.thread else {
                 return
             }
@@ -92,8 +98,16 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
 
             self.articleView.deleteItemsAtIndexPaths(paths)
         }
+        */
 
         didSet {
+            if oldValue === self.currentThread {
+                return
+            }
+
+            self.articleView.reloadData()
+
+            /*
             guard let thread = self.currentThread?.thread else {
                 return
             }
@@ -108,6 +122,7 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
             }
 
             self.articleView.insertItemsAtIndexPaths(paths)
+            */
         }
     }
 
