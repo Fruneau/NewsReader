@@ -9,220 +9,208 @@
         <customObject id="-2" userLabel="File's Owner"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <customView id="c22-O7-iKe" userLabel="Article">
-            <rect key="frame" x="0.0" y="0.0" width="553" height="595"/>
+        <customView id="c22-O7-iKe" userLabel="Article" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="543" height="595"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <customView translatesAutoresizingMaskIntoConstraints="NO" id="VLU-3E-CCM" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
-                    <rect key="frame" x="0.0" y="0.0" width="553" height="595"/>
+                <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qK4-dS-KD4">
+                    <rect key="frame" x="10" y="0.0" width="533" height="595"/>
                     <subviews>
-                        <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qK4-dS-KD4">
-                            <rect key="frame" x="20" y="0.0" width="533" height="595"/>
+                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="Xo2-6q-hOl" userLabel="Header View">
+                            <rect key="frame" x="0.0" y="512" width="533" height="83"/>
                             <subviews>
-                                <customView translatesAutoresizingMaskIntoConstraints="NO" id="Xo2-6q-hOl" userLabel="Header View">
-                                    <rect key="frame" x="0.0" y="512" width="533" height="83"/>
-                                    <subviews>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iIf-4K-Nvq">
-                                            <rect key="frame" x="0.0" y="58" width="425" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="hI1-Mv-4Bg">
-                                                <font key="font" metaFont="systemBold"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.from" id="9M1-kv-djd"/>
-                                            </connections>
-                                        </textField>
-                                        <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c6o-cm-MoD">
-                                            <rect key="frame" x="0.0" y="37" width="88" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Newsgroups: " id="hiV-XU-WcN">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qKH-5K-Ror">
-                                            <rect key="frame" x="88" y="37" width="37" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="Ram-as-bQe">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.to" id="UuV-7r-VWa"/>
-                                            </connections>
-                                        </textField>
-                                        <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="60R-w7-M2C">
-                                            <rect key="frame" x="0.0" y="16" width="51" height="17"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Subject" id="be3-FA-B40">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.subject" id="xBt-JG-tYg"/>
-                                            </connections>
-                                        </textField>
-                                        <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ivL-TL-EAP">
-                                            <rect key="frame" x="429" y="59" width="31" height="16"/>
-                                            <animations/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Date" id="06b-cm-n2p">
-                                                <dateFormatter key="formatter" dateStyle="long" timeStyle="short" doesRelativeDateFormatting="YES" id="TGa-Wd-fCR"/>
-                                                <font key="font" metaFont="cellTitle"/>
-                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <connections>
-                                                <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.date" id="KJW-AN-ynJ"/>
-                                            </connections>
-                                        </textField>
-                                        <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="6nE-an-pfc">
-                                            <rect key="frame" x="0.0" y="-2" width="533" height="5"/>
-                                            <animations/>
-                                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                                            <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                            <font key="titleFont" metaFont="system"/>
-                                        </box>
-                                        <imageView focusRingType="none" horizontalHuggingPriority="1000" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZAn-dN-wjh" customClass="UserBadgeView" customModule="NewsReader" customModuleProvider="target">
-                                            <rect key="frame" x="460" y="16" width="59" height="59"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="59" id="97V-P1-upO"/>
-                                                <constraint firstAttribute="width" constant="59" id="xEu-w2-BxS"/>
-                                            </constraints>
-                                            <animations/>
-                                            <imageCell key="cell" refusesFirstResponder="YES" focusRingType="none" alignment="left" imageScaling="proportionallyDown" image="NSUserGuest" id="mlj-A7-2y1"/>
-                                            <connections>
-                                                <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.contactPicture" id="z4w-bD-xML"/>
-                                            </connections>
-                                        </imageView>
-                                        <progressIndicator wantsLayer="YES" horizontalHuggingPriority="1000" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="fM8-hh-h5f">
-                                            <rect key="frame" x="442" y="16" width="16" height="16"/>
-                                            <animations/>
-                                            <connections>
-                                                <binding destination="ojD-sA-dGM" name="animate" keyPath="representedObject.body" id="BNc-5g-Kgp">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSIsNil</string>
-                                                    </dictionary>
-                                                </binding>
-                                                <binding destination="ojD-sA-dGM" name="hidden" keyPath="representedObject.body" id="zef-tN-d0b">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSIsNotNil</string>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </progressIndicator>
-                                    </subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iIf-4K-Nvq">
+                                    <rect key="frame" x="0.0" y="58" width="425" height="17"/>
+                                    <animations/>
+                                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="hI1-Mv-4Bg">
+                                        <font key="font" metaFont="systemBold"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.from" id="9M1-kv-djd"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c6o-cm-MoD">
+                                    <rect key="frame" x="0.0" y="37" width="88" height="17"/>
+                                    <animations/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Newsgroups: " id="hiV-XU-WcN">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qKH-5K-Ror">
+                                    <rect key="frame" x="88" y="37" width="37" height="17"/>
+                                    <animations/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="Ram-as-bQe">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.to" id="UuV-7r-VWa"/>
+                                    </connections>
+                                </textField>
+                                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="60R-w7-M2C">
+                                    <rect key="frame" x="0.0" y="16" width="51" height="17"/>
+                                    <animations/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Subject" id="be3-FA-B40">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.subject" id="xBt-JG-tYg"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ivL-TL-EAP">
+                                    <rect key="frame" x="429" y="59" width="31" height="16"/>
+                                    <animations/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Date" id="06b-cm-n2p">
+                                        <dateFormatter key="formatter" dateStyle="long" timeStyle="short" doesRelativeDateFormatting="YES" id="TGa-Wd-fCR"/>
+                                        <font key="font" metaFont="cellTitle"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.date" id="KJW-AN-ynJ"/>
+                                    </connections>
+                                </textField>
+                                <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="6nE-an-pfc">
+                                    <rect key="frame" x="0.0" y="-2" width="533" height="5"/>
+                                    <animations/>
+                                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                    <font key="titleFont" metaFont="system"/>
+                                </box>
+                                <imageView focusRingType="none" horizontalHuggingPriority="1000" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZAn-dN-wjh" customClass="UserBadgeView" customModule="NewsReader" customModuleProvider="target">
+                                    <rect key="frame" x="460" y="16" width="59" height="59"/>
                                     <constraints>
-                                        <constraint firstItem="c6o-cm-MoD" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="leading" id="04D-AN-QPI"/>
-                                        <constraint firstItem="60R-w7-M2C" firstAttribute="top" secondItem="qKH-5K-Ror" secondAttribute="bottom" constant="4" id="1Ue-kM-Otb"/>
-                                        <constraint firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" constant="16" id="2Hp-ma-pZs"/>
-                                        <constraint firstItem="6nE-an-pfc" firstAttribute="leading" secondItem="Xo2-6q-hOl" secondAttribute="leading" id="Bem-M5-dAK"/>
-                                        <constraint firstItem="ivL-TL-EAP" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="trailing" constant="8" id="BtQ-T1-Utq"/>
-                                        <constraint firstItem="iIf-4K-Nvq" firstAttribute="top" secondItem="Xo2-6q-hOl" secondAttribute="top" constant="8" id="Djv-W8-WGe"/>
-                                        <constraint firstItem="iIf-4K-Nvq" firstAttribute="top" secondItem="Xo2-6q-hOl" secondAttribute="top" constant="8" id="ECw-tQ-9s7"/>
-                                        <constraint firstItem="ZAn-dN-wjh" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="top" id="Mtr-ck-2uu"/>
-                                        <constraint firstAttribute="bottom" secondItem="6nE-an-pfc" secondAttribute="bottom" id="RdF-cB-Gfd"/>
-                                        <constraint firstItem="qKH-5K-Ror" firstAttribute="top" secondItem="c6o-cm-MoD" secondAttribute="top" id="Red-Qd-vUu"/>
-                                        <constraint firstItem="fM8-hh-h5f" firstAttribute="trailing" secondItem="ivL-TL-EAP" secondAttribute="trailing" id="ZqO-DW-Ufk"/>
-                                        <constraint firstItem="ZAn-dN-wjh" firstAttribute="leading" secondItem="ivL-TL-EAP" secondAttribute="trailing" constant="2" id="b1J-5L-xka"/>
-                                        <constraint firstAttribute="trailing" secondItem="6nE-an-pfc" secondAttribute="trailing" id="c1c-NG-qpL"/>
-                                        <constraint firstItem="fM8-hh-h5f" firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" id="cCg-PF-1Ig"/>
-                                        <constraint firstItem="60R-w7-M2C" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="leading" id="ctT-83-mxd"/>
-                                        <constraint firstItem="qKH-5K-Ror" firstAttribute="leading" secondItem="c6o-cm-MoD" secondAttribute="trailing" constant="4" id="cwY-cG-5g9"/>
-                                        <constraint firstItem="iIf-4K-Nvq" firstAttribute="leading" secondItem="Xo2-6q-hOl" secondAttribute="leading" constant="2" id="d7n-Fi-OYF"/>
-                                        <constraint firstItem="ivL-TL-EAP" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="top" id="dOK-MN-kPx"/>
-                                        <constraint firstItem="ZAn-dN-wjh" firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" id="o76-GI-Gg1"/>
-                                        <constraint firstAttribute="trailing" secondItem="ZAn-dN-wjh" secondAttribute="trailing" constant="14" id="r3P-yp-al8"/>
-                                        <constraint firstItem="c6o-cm-MoD" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="bottom" constant="4" id="zsR-3F-hMX"/>
+                                        <constraint firstAttribute="height" constant="59" id="97V-P1-upO"/>
+                                        <constraint firstAttribute="width" constant="59" id="xEu-w2-BxS"/>
                                     </constraints>
                                     <animations/>
-                                </customView>
-                                <scrollView horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" verticalScrollElasticity="allowed" translatesAutoresizingMaskIntoConstraints="NO" id="7V9-EW-8l3" customClass="UnscrollableScrollView" customModule="NewsReader" customModuleProvider="target">
-                                    <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
-                                    <clipView key="contentView" copiesOnScroll="NO" id="okK-cx-IIg">
+                                    <imageCell key="cell" refusesFirstResponder="YES" focusRingType="none" alignment="left" imageScaling="proportionallyDown" image="NSUserGuest" id="mlj-A7-2y1"/>
+                                    <connections>
+                                        <binding destination="ojD-sA-dGM" name="value" keyPath="representedObject.contactPicture" id="z4w-bD-xML"/>
+                                    </connections>
+                                </imageView>
+                                <progressIndicator wantsLayer="YES" horizontalHuggingPriority="1000" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="fM8-hh-h5f">
+                                    <rect key="frame" x="442" y="16" width="16" height="16"/>
+                                    <animations/>
+                                    <connections>
+                                        <binding destination="ojD-sA-dGM" name="animate" keyPath="representedObject.body" id="BNc-5g-Kgp">
+                                            <dictionary key="options">
+                                                <string key="NSValueTransformerName">NSIsNil</string>
+                                            </dictionary>
+                                        </binding>
+                                        <binding destination="ojD-sA-dGM" name="hidden" keyPath="representedObject.body" id="zef-tN-d0b">
+                                            <dictionary key="options">
+                                                <string key="NSValueTransformerName">NSIsNotNil</string>
+                                            </dictionary>
+                                        </binding>
+                                    </connections>
+                                </progressIndicator>
+                            </subviews>
+                            <constraints>
+                                <constraint firstItem="c6o-cm-MoD" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="leading" id="04D-AN-QPI"/>
+                                <constraint firstItem="60R-w7-M2C" firstAttribute="top" secondItem="qKH-5K-Ror" secondAttribute="bottom" constant="4" id="1Ue-kM-Otb"/>
+                                <constraint firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" constant="16" id="2Hp-ma-pZs"/>
+                                <constraint firstItem="6nE-an-pfc" firstAttribute="leading" secondItem="Xo2-6q-hOl" secondAttribute="leading" id="Bem-M5-dAK"/>
+                                <constraint firstItem="ivL-TL-EAP" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="trailing" constant="8" id="BtQ-T1-Utq"/>
+                                <constraint firstItem="iIf-4K-Nvq" firstAttribute="top" secondItem="Xo2-6q-hOl" secondAttribute="top" constant="8" id="Djv-W8-WGe"/>
+                                <constraint firstItem="iIf-4K-Nvq" firstAttribute="top" secondItem="Xo2-6q-hOl" secondAttribute="top" constant="8" id="ECw-tQ-9s7"/>
+                                <constraint firstItem="ZAn-dN-wjh" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="top" id="Mtr-ck-2uu"/>
+                                <constraint firstAttribute="bottom" secondItem="6nE-an-pfc" secondAttribute="bottom" id="RdF-cB-Gfd"/>
+                                <constraint firstItem="qKH-5K-Ror" firstAttribute="top" secondItem="c6o-cm-MoD" secondAttribute="top" id="Red-Qd-vUu"/>
+                                <constraint firstItem="fM8-hh-h5f" firstAttribute="trailing" secondItem="ivL-TL-EAP" secondAttribute="trailing" id="ZqO-DW-Ufk"/>
+                                <constraint firstItem="ZAn-dN-wjh" firstAttribute="leading" secondItem="ivL-TL-EAP" secondAttribute="trailing" constant="2" id="b1J-5L-xka"/>
+                                <constraint firstAttribute="trailing" secondItem="6nE-an-pfc" secondAttribute="trailing" id="c1c-NG-qpL"/>
+                                <constraint firstItem="fM8-hh-h5f" firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" id="cCg-PF-1Ig"/>
+                                <constraint firstItem="60R-w7-M2C" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="leading" id="ctT-83-mxd"/>
+                                <constraint firstItem="qKH-5K-Ror" firstAttribute="leading" secondItem="c6o-cm-MoD" secondAttribute="trailing" constant="4" id="cwY-cG-5g9"/>
+                                <constraint firstItem="iIf-4K-Nvq" firstAttribute="leading" secondItem="Xo2-6q-hOl" secondAttribute="leading" constant="2" id="d7n-Fi-OYF"/>
+                                <constraint firstItem="ivL-TL-EAP" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="top" id="dOK-MN-kPx"/>
+                                <constraint firstItem="ZAn-dN-wjh" firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" id="o76-GI-Gg1"/>
+                                <constraint firstAttribute="trailing" secondItem="ZAn-dN-wjh" secondAttribute="trailing" constant="14" id="r3P-yp-al8"/>
+                                <constraint firstItem="c6o-cm-MoD" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="bottom" constant="4" id="zsR-3F-hMX"/>
+                            </constraints>
+                            <animations/>
+                        </customView>
+                        <scrollView horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" verticalScrollElasticity="allowed" translatesAutoresizingMaskIntoConstraints="NO" id="7V9-EW-8l3" customClass="UnscrollableScrollView" customModule="NewsReader" customModuleProvider="target">
+                            <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
+                            <clipView key="contentView" copiesOnScroll="NO" id="okK-cx-IIg">
+                                <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <textView editable="NO" importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="VAU-cY-XlL">
                                         <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <subviews>
-                                            <textView editable="NO" importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="VAU-cY-XlL">
-                                                <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <animations/>
-                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <size key="minSize" width="533" height="512"/>
-                                                <size key="maxSize" width="4030" height="10000000"/>
-                                                <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                <size key="minSize" width="533" height="512"/>
-                                                <size key="maxSize" width="4030" height="10000000"/>
-                                                <connections>
-                                                    <binding destination="ojD-sA-dGM" name="attributedString" keyPath="representedObject.body" id="Ulm-G0-gqx">
-                                                        <dictionary key="options">
-                                                            <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
-                                                            <bool key="NSConditionallySetsEditable" value="NO"/>
-                                                        </dictionary>
-                                                    </binding>
-                                                </connections>
-                                            </textView>
-                                        </subviews>
                                         <animations/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                    </clipView>
-                                    <animations/>
-                                    <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="htJ-8K-li7">
-                                        <rect key="frame" x="-100" y="-100" width="87" height="18"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <animations/>
-                                    </scroller>
-                                    <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="0qs-tv-uam">
-                                        <rect key="frame" x="-100" y="-100" width="16" height="512"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <animations/>
-                                    </scroller>
-                                </scrollView>
-                            </subviews>
+                                        <size key="minSize" width="533" height="512"/>
+                                        <size key="maxSize" width="4030" height="10000000"/>
+                                        <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                        <size key="minSize" width="533" height="512"/>
+                                        <size key="maxSize" width="4030" height="10000000"/>
+                                        <connections>
+                                            <binding destination="ojD-sA-dGM" name="attributedString" keyPath="representedObject.body" id="Ulm-G0-gqx">
+                                                <dictionary key="options">
+                                                    <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
+                                                    <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                </dictionary>
+                                            </binding>
+                                        </connections>
+                                    </textView>
+                                </subviews>
+                                <animations/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </clipView>
                             <animations/>
-                            <constraints>
-                                <constraint firstAttribute="trailing" secondItem="7V9-EW-8l3" secondAttribute="trailing" id="90h-Cy-Pxw"/>
-                                <constraint firstAttribute="trailing" secondItem="Xo2-6q-hOl" secondAttribute="trailing" id="RrS-aX-zpa"/>
-                                <constraint firstItem="Xo2-6q-hOl" firstAttribute="leading" secondItem="qK4-dS-KD4" secondAttribute="leading" id="Rv1-Te-AoM"/>
-                                <constraint firstAttribute="bottom" secondItem="7V9-EW-8l3" secondAttribute="bottom" id="buJ-Zr-PcS"/>
-                                <constraint firstItem="Xo2-6q-hOl" firstAttribute="top" secondItem="qK4-dS-KD4" secondAttribute="top" id="kVv-8V-G5U"/>
-                                <constraint firstItem="7V9-EW-8l3" firstAttribute="leading" secondItem="qK4-dS-KD4" secondAttribute="leading" id="lKZ-6D-yLZ"/>
-                            </constraints>
-                            <visibilityPriorities>
-                                <integer value="1000"/>
-                                <integer value="1000"/>
-                            </visibilityPriorities>
-                            <customSpacing>
-                                <real value="3.4028234663852886e+38"/>
-                                <real value="3.4028234663852886e+38"/>
-                            </customSpacing>
-                        </stackView>
+                            <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="htJ-8K-li7">
+                                <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <animations/>
+                            </scroller>
+                            <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="0qs-tv-uam">
+                                <rect key="frame" x="-100" y="-100" width="16" height="512"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <animations/>
+                            </scroller>
+                        </scrollView>
                     </subviews>
-                    <constraints>
-                        <constraint firstItem="qK4-dS-KD4" firstAttribute="top" secondItem="VLU-3E-CCM" secondAttribute="top" id="2ih-Ha-QhS"/>
-                        <constraint firstAttribute="bottom" secondItem="qK4-dS-KD4" secondAttribute="bottom" id="HS7-36-tGJ"/>
-                        <constraint firstItem="qK4-dS-KD4" firstAttribute="leading" secondItem="VLU-3E-CCM" secondAttribute="leading" constant="20" id="RCr-hw-wzq"/>
-                        <constraint firstAttribute="trailing" secondItem="qK4-dS-KD4" secondAttribute="trailing" id="UnE-Q8-5Dj"/>
-                    </constraints>
                     <animations/>
-                    <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
-                            <color key="value" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </userDefinedRuntimeAttribute>
-                    </userDefinedRuntimeAttributes>
-                </customView>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="7V9-EW-8l3" secondAttribute="trailing" id="90h-Cy-Pxw"/>
+                        <constraint firstAttribute="trailing" secondItem="Xo2-6q-hOl" secondAttribute="trailing" id="RrS-aX-zpa"/>
+                        <constraint firstItem="Xo2-6q-hOl" firstAttribute="leading" secondItem="qK4-dS-KD4" secondAttribute="leading" id="Rv1-Te-AoM"/>
+                        <constraint firstAttribute="bottom" secondItem="7V9-EW-8l3" secondAttribute="bottom" id="buJ-Zr-PcS"/>
+                        <constraint firstItem="Xo2-6q-hOl" firstAttribute="top" secondItem="qK4-dS-KD4" secondAttribute="top" id="kVv-8V-G5U"/>
+                        <constraint firstItem="7V9-EW-8l3" firstAttribute="leading" secondItem="qK4-dS-KD4" secondAttribute="leading" id="lKZ-6D-yLZ"/>
+                    </constraints>
+                    <visibilityPriorities>
+                        <integer value="1000"/>
+                        <integer value="1000"/>
+                    </visibilityPriorities>
+                    <customSpacing>
+                        <real value="3.4028234663852886e+38"/>
+                        <real value="3.4028234663852886e+38"/>
+                    </customSpacing>
+                </stackView>
             </subviews>
             <constraints>
-                <constraint firstAttribute="bottom" secondItem="VLU-3E-CCM" secondAttribute="bottom" id="5u3-de-3n5"/>
-                <constraint firstItem="VLU-3E-CCM" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" id="gui-dA-hnd"/>
-                <constraint firstItem="VLU-3E-CCM" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" id="hGW-2R-R9D"/>
-                <constraint firstAttribute="trailing" secondItem="VLU-3E-CCM" secondAttribute="trailing" id="zQF-FB-mTl"/>
+                <constraint firstAttribute="trailing" secondItem="qK4-dS-KD4" secondAttribute="trailing" id="AeR-FS-ADy"/>
+                <constraint firstAttribute="bottom" secondItem="qK4-dS-KD4" secondAttribute="bottom" id="As8-Jl-xLz"/>
+                <constraint firstItem="qK4-dS-KD4" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" id="Jkg-pO-zKg"/>
+                <constraint firstItem="qK4-dS-KD4" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="10" id="dpY-3G-89i"/>
             </constraints>
             <animations/>
+            <userDefinedRuntimeAttributes>
+                <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
+                    <color key="value" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
             <point key="canvasLocation" x="319.5" y="128.5"/>
         </customView>
         <collectionViewItem id="ojD-sA-dGM" userLabel="Article" customClass="ArticleViewItem" customModule="NewsReader" customModuleProvider="target">
