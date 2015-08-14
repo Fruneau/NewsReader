@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8164.2" systemVersion="15A234d" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8164.2" systemVersion="15A243d" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8164.2"/>
@@ -8,7 +8,7 @@
         <customObject id="-2" userLabel="File's Owner"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <view id="n7b-Dz-1CF" userLabel="Thread View" customClass="SelectableView" customModule="NewsReader" customModuleProvider="target">
+        <view id="n7b-Dz-1CF" userLabel="Thread View" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="367" height="37"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
@@ -32,7 +32,7 @@
                     <font key="titleFont" metaFont="system"/>
                 </box>
                 <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JCw-Zv-VQf">
-                    <rect key="frame" x="11" y="5" width="321" height="16"/>
+                    <rect key="frame" x="11" y="5" width="309" height="16"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Subject" id="SJg-mb-8RF">
                         <font key="font" metaFont="cellTitle"/>
@@ -57,17 +57,26 @@
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="u8S-0m-dDu">
-                    <rect key="frame" x="333" y="7" width="33" height="14"/>
+                    <rect key="frame" x="321" y="7" width="33" height="14"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" alignment="right" title="Label" id="tf8-Nt-2Me">
                         <numberFormatter key="formatter" formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="FMM-df-ZIS"/>
                         <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="keyboardFocusIndicatorColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" red="0.24675623652611733" green="0.65001356104794983" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
                         <binding destination="xJv-tv-U3k" name="value" keyPath="representedObject.threadCount" id="S3D-h5-9l5"/>
                     </connections>
+                </textField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fXI-e8-LZe">
+                    <rect key="frame" x="352" y="5" width="14" height="19"/>
+                    <animations/>
+                    <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" alignment="right" title="»" id="nEL-CO-1fi">
+                        <font key="font" metaFont="system" size="15"/>
+                        <color key="textColor" red="0.24705882352941178" green="0.65098039215686276" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
                 </textField>
             </subviews>
             <constraints>
@@ -77,23 +86,37 @@
                 <constraint firstItem="u8S-0m-dDu" firstAttribute="top" secondItem="JCw-Zv-VQf" secondAttribute="top" id="Or1-CM-pdA"/>
                 <constraint firstItem="3H7-xS-Nhz" firstAttribute="leading" secondItem="n7b-Dz-1CF" secondAttribute="leading" constant="13" id="RiK-oA-Vss"/>
                 <constraint firstAttribute="trailing" secondItem="VyJ-g5-UI8" secondAttribute="trailing" constant="3" id="VfS-XP-WAu"/>
+                <constraint firstItem="fXI-e8-LZe" firstAttribute="bottom" secondItem="u8S-0m-dDu" secondAttribute="bottom" constant="2" id="XUJ-ym-D1z"/>
                 <constraint firstAttribute="bottom" secondItem="QTO-b1-Wk0" secondAttribute="bottom" id="eK9-t0-ir2"/>
+                <constraint firstItem="fXI-e8-LZe" firstAttribute="leading" secondItem="u8S-0m-dDu" secondAttribute="trailing" constant="2" id="f9Q-ot-lk7"/>
                 <constraint firstItem="VyJ-g5-UI8" firstAttribute="leading" secondItem="3H7-xS-Nhz" secondAttribute="trailing" constant="5" id="ic0-fX-xhs"/>
-                <constraint firstItem="VyJ-g5-UI8" firstAttribute="trailing" secondItem="u8S-0m-dDu" secondAttribute="trailing" id="kDf-ZA-D38"/>
+                <constraint firstItem="VyJ-g5-UI8" firstAttribute="trailing" secondItem="fXI-e8-LZe" secondAttribute="trailing" id="jxs-E7-ORk"/>
                 <constraint firstItem="VyJ-g5-UI8" firstAttribute="top" secondItem="n7b-Dz-1CF" secondAttribute="top" id="kEL-6A-GrA"/>
                 <constraint firstItem="QTO-b1-Wk0" firstAttribute="leading" secondItem="n7b-Dz-1CF" secondAttribute="leading" constant="13" id="ogW-eX-GUX"/>
                 <constraint firstItem="JCw-Zv-VQf" firstAttribute="leading" secondItem="n7b-Dz-1CF" secondAttribute="leading" constant="13" id="qbJ-cz-Imc"/>
                 <constraint firstItem="JCw-Zv-VQf" firstAttribute="top" secondItem="3H7-xS-Nhz" secondAttribute="bottom" id="wyE-ri-mbJ"/>
             </constraints>
             <animations/>
+            <userDefinedRuntimeAttributes>
+                <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
+                    <color key="value" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
             <point key="canvasLocation" x="-699.5" y="139.5"/>
         </view>
         <collectionViewItem id="xJv-tv-U3k" userLabel="Thread" customClass="ThreadViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
+                <outlet property="arrowCell" destination="nEL-CO-1fi" id="gx5-XK-brP"/>
+                <outlet property="arrowView" destination="fXI-e8-LZe" id="2Y8-7L-AIn"/>
+                <outlet property="dateCell" destination="pYd-cH-V96" id="VSF-ZP-WWy"/>
                 <outlet property="dateView" destination="VyJ-g5-UI8" id="Il4-Lu-mIY"/>
+                <outlet property="fromCell" destination="R0B-Gr-eRO" id="stc-p9-72m"/>
                 <outlet property="fromView" destination="3H7-xS-Nhz" id="Sll-k5-0SH"/>
+                <outlet property="subjectCell" destination="SJg-mb-8RF" id="EY4-vf-gIV"/>
                 <outlet property="subjectView" destination="JCw-Zv-VQf" id="Bjf-zl-0iY"/>
+                <outlet property="threadCountCell" destination="tf8-Nt-2Me" id="HNT-iN-xkj"/>
                 <outlet property="threadCountView" destination="u8S-0m-dDu" id="A2p-cn-8CL"/>
+                <outlet property="threadView" destination="n7b-Dz-1CF" id="DEE-PI-Bm2"/>
                 <outlet property="view" destination="n7b-Dz-1CF" id="jng-lQ-kgp"/>
             </connections>
         </collectionViewItem>

@@ -8,11 +8,18 @@
 
 import Cocoa
 
-class ThreadViewItem : SelectableCollectionViewItem {
+class ThreadViewItem : NSCollectionViewItem {
+    @IBOutlet weak var threadView: BackgroundView!
     @IBOutlet weak var fromView: NSTextField!
+    @IBOutlet weak var fromCell: NSTextFieldCell!
     @IBOutlet weak var dateView: NSTextField!
+    @IBOutlet weak var dateCell: NSTextFieldCell!
     @IBOutlet weak var subjectView: NSTextField!
+    @IBOutlet weak var subjectCell: NSTextFieldCell!
     @IBOutlet weak var threadCountView: NSTextField!
+    @IBOutlet weak var threadCountCell: NSTextFieldCell!
+    @IBOutlet weak var arrowView: NSTextField!
+    @IBOutlet weak var arrowCell: NSTextFieldCell!
 
     override var representedObject : AnyObject? {
         didSet {
@@ -22,6 +29,43 @@ class ThreadViewItem : SelectableCollectionViewItem {
             self.dateView.objectValue = article?.date
             self.subjectView.objectValue = article?.subject
             self.threadCountView.objectValue = article?.threadCount
+
+            if article?.threadCount == 1 {
+                self.threadCountView.hidden = true
+                self.arrowView.hidden = true
+            } else {
+                self.threadCountView.hidden = false
+                self.arrowView.hidden = false
+            }
+        }
+    }
+
+    private var threadCountColor : NSColor?
+    override func awakeFromNib() {
+        self.threadCountColor = self.threadCountCell.textColor
+    }
+
+    override var selected : Bool {
+        didSet {
+            if oldValue == self.selected {
+                return
+            }
+
+            if self.selected {
+                self.threadView.backgroundColor = NSColor.alternateSelectedControlColor()
+                self.fromCell.textColor = NSColor.alternateSelectedControlTextColor()
+                self.dateCell.textColor = NSColor.alternateSelectedControlTextColor()
+                self.subjectCell.textColor = NSColor.alternateSelectedControlTextColor()
+                self.threadCountCell.textColor = NSColor.alternateSelectedControlTextColor()
+                self.arrowCell.textColor = NSColor.alternateSelectedControlTextColor()
+            } else {
+                self.threadView.backgroundColor = NSColor.whiteColor()
+                self.fromCell.textColor = NSColor.labelColor()
+                self.dateCell.textColor = NSColor.secondaryLabelColor()
+                self.subjectCell.textColor = NSColor.labelColor()
+                self.threadCountCell.textColor = self.threadCountColor
+                self.arrowCell.textColor = self.threadCountColor
+            }
         }
     }
 }

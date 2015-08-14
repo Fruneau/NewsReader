@@ -14,13 +14,6 @@ class UnscrollableScrollView : NSScrollView {
     }
 }
 
-class BackgroundView : NSView {
-    override func drawRect(dirtyRect: NSRect) {
-        NSColor.whiteColor().set()
-        NSRectFill(dirtyRect)
-    }
-}
-
 class ArticleViewItem : NSCollectionViewItem {
     @IBOutlet weak var fromView: NSTextField!
     @IBOutlet weak var toView: NSTextField!
@@ -63,7 +56,7 @@ extension ArticleViewItem : ArticleDelegate {
             return
         }
 
-        guard let indexPath = self.collectionView.indexPathForItem(self) else {
+        guard let _ = self.collectionView.indexPathForItem(self) else {
             return
         }
 

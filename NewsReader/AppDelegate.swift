@@ -374,6 +374,21 @@ class GroupTree : NSObject {
     }
 }
 
+class BackgroundView : NSView {
+    @IBInspectable var backgroundColor : NSColor? {
+        didSet {
+            self.needsDisplay = true
+        }
+    }
+
+    override func drawRect(dirtyRect: NSRect) {
+        if let background = self.backgroundColor {
+            background.set()
+            NSRectFill(dirtyRect)
+        }
+    }
+}
+
 class UserBadgeView : NSImageView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -383,29 +398,6 @@ class UserBadgeView : NSImageView {
         self.layer?.borderWidth = 0
         self.layer?.cornerRadius = self.bounds.size.width / 2
         self.layer?.masksToBounds = true
-    }
-}
-
-class SelectableView : NSView {
-    var selected = false {
-        didSet {
-            self.needsDisplay = true
-        }
-    }
-
-    override func drawRect(dirtyRect: NSRect) {
-        if selected {
-            NSColor.alternateSelectedControlColor().set()
-            NSRectFill(self.bounds)
-        }
-    }
-}
-
-class SelectableCollectionViewItem : NSCollectionViewItem {
-    override var selected : Bool {
-        didSet {
-            (self.view as? SelectableView)?.selected = selected
-        }
     }
 }
 
