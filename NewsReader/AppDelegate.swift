@@ -436,10 +436,16 @@ class ShortDateFormatter : NSFormatter {
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-    @IBOutlet weak var browserWindowController: BrowserWindowController!
+    var browserWindowController: BrowserWindowController?
 
     /* Model handling */
     var nntp : NNTPClient?
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.browserWindowController = BrowserWindowController(windowNibName: "BrowserWindow")
+        self.browserWindowController?.appDelegate = self
+    }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         guard var rcContent = NSData(contentsOfFile: ("~/.newsreaderrc" as NSString).stringByStandardizingPath)?.utf8String else {
@@ -458,6 +464,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.nntp?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
         self.nntp?.connect()
 
+        self.browserWindowController?.showWindow(self)
+
         self.nntp?.sendCommand(.ListNewsgroups(nil)).then({
             (payload) in
 
@@ -470,7 +478,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
                 group.fullName = groupName
                 group.shortDesc = shortDesc
-                self.browserWindowController.groupRoots.append(group)
+                self.browserWindowController?.groupRoots.append(group)
                 group.refreshCount()
             }
         })

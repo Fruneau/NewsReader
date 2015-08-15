@@ -9,7 +9,7 @@
 import Cocoa
 
 class BrowserWindowController : NSWindowController {
-    @IBOutlet weak var appDelegate: AppDelegate!
+    weak var appDelegate: AppDelegate?
 
     @IBOutlet weak var threadViewController: ThreadViewController!
 
