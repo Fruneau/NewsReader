@@ -436,23 +436,7 @@ class ShortDateFormatter : NSFormatter {
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-
-    @IBOutlet weak var window: NSWindow!
-
-    @IBOutlet weak var threadViewController: ThreadViewController!
-
-    /* Groups view */
-    @IBOutlet weak var groupTreeController: NSTreeController!
-    dynamic var groupRoots = [GroupTree(root: "Groups")]
-    var groupIndexes : [NSIndexPath] = [] {
-        didSet {
-            if self.groupIndexes.count == 0 {
-                self.threadViewController.currentGroup = nil
-            } else {
-                self.threadViewController.currentGroup = self.groupTreeController.selectedObjects[0] as? GroupTree
-            }
-        }
-    }
+    @IBOutlet weak var browserWindowController: BrowserWindowController!
 
     /* Model handling */
     var nntp : NNTPClient?
@@ -486,17 +470,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
                 group.fullName = groupName
                 group.shortDesc = shortDesc
-                self.groupRoots.append(group)
+                self.browserWindowController.groupRoots.append(group)
                 group.refreshCount()
             }
         })
-    }
-}
-
-extension AppDelegate : NSOutlineViewDelegate {
-    func outlineView(outlineView: NSOutlineView, viewForTableColumn tableColumn: NSTableColumn?, item: AnyObject) -> NSView? {
-        let node = item.representedObject as! GroupTree
-
-        return outlineView.makeViewWithIdentifier(node.isRoot ? "HeaderCell" : "DataCell", owner: self)
     }
 }

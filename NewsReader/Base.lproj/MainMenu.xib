@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8164.2" systemVersion="15A234d" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8173.3" systemVersion="15A243d" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8164.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8173.3"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -14,9 +14,15 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="NewsReader" customModuleProvider="target">
             <connections>
-                <outlet property="groupTreeController" destination="oQ9-zf-5Dh" id="wDZ-xO-cAe"/>
-                <outlet property="threadViewController" destination="fxK-mP-o32" id="Dvp-EM-4Fg"/>
-                <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
+                <outlet property="browserWindowController" destination="ZP2-SU-dMw" id="dC5-No-McN"/>
+            </connections>
+        </customObject>
+        <customObject id="ZP2-SU-dMw" userLabel="Window Controller" customClass="BrowserWindowController" customModule="NewsReader" customModuleProvider="target">
+            <connections>
+                <outlet property="appDelegate" destination="Voe-Tx-rLC" id="kJC-Ww-LkL"/>
+                <outlet property="groupTreeController" destination="oQ9-zf-5Dh" id="SCJ-gC-Hqh"/>
+                <outlet property="threadViewController" destination="fxK-mP-o32" id="ZAJ-2c-x02"/>
+                <outlet property="window" destination="QvC-M9-y7g" id="jkr-OT-pVw"/>
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
@@ -817,7 +823,7 @@
                                                     <connections>
                                                         <binding destination="oQ9-zf-5Dh" name="content" keyPath="arrangedObjects" id="njr-Kg-pQP"/>
                                                         <binding destination="oQ9-zf-5Dh" name="selectionIndexPaths" keyPath="selectionIndexPaths" previousBinding="njr-Kg-pQP" id="0iA-aT-OEb"/>
-                                                        <outlet property="delegate" destination="Voe-Tx-rLC" id="vwE-oG-6TU"/>
+                                                        <outlet property="delegate" destination="ZP2-SU-dMw" id="UYC-HC-3Z0"/>
                                                     </connections>
                                                 </outlineView>
                                             </subviews>
@@ -976,8 +982,8 @@
                 <string>roots</string>
             </declaredKeys>
             <connections>
-                <binding destination="Voe-Tx-rLC" name="selectionIndexPaths" keyPath="groupIndexes" id="yLk-Th-BMV"/>
-                <binding destination="Voe-Tx-rLC" name="contentArray" keyPath="groupRoots" id="TG2-CW-LXh"/>
+                <binding destination="ZP2-SU-dMw" name="contentArray" keyPath="groupRoots" id="ccv-Kv-Kis"/>
+                <binding destination="ZP2-SU-dMw" name="selectionIndexPaths" keyPath="groupIndexes" id="j1Q-gU-Xfm"/>
             </connections>
         </treeController>
     </objects>
