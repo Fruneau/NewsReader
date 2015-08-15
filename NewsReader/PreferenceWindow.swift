@@ -9,6 +9,24 @@
 import Foundation
 import Cocoa
 
+class AccountItem : NSCollectionViewItem {
+    override var selected : Bool {
+        didSet {
+            guard let accountView = self.view as? BackgroundView else {
+                return
+            }
+
+            if self.selected {
+                accountView.backgroundColor = NSColor.alternateSelectedControlColor()
+                //self.accountNameCell?.textColor = NSColor.alternateSelectedControlTextColor()
+            } else {
+                accountView.backgroundColor = NSColor.whiteColor()
+                //self.accountNameCell?.textColor = NSColor.labelColor()
+            }
+        }
+    }
+}
+
 class PreferenceWindowController : NSWindowController, NSWindowDelegate {
     func windowShouldClose(sender: AnyObject) -> Bool {
         let defaults = NSUserDefaultsController.sharedUserDefaultsController()
@@ -35,4 +53,29 @@ class PreferenceWindowController : NSWindowController, NSWindowDelegate {
         return true
     }
 
+    @IBOutlet var accountListController: NSArrayController!
+    @IBOutlet weak var newAccountSheet: NSPanel!
+    @IBOutlet weak var newAccountNameCell: NSTextFieldCell!
+
+    @IBAction func addAccount(sender: AnyObject) {
+        self.newAccountNameCell.objectValue = nil
+
+        self.window?.beginSheet(self.newAccountSheet, completionHandler: nil)
+    }
+
+    @IBAction func createAccount(sender: AnyObject) {
+        let name = self.newAccountNameCell.stringValue
+        self.accountListController.addObject(NSMutableDictionary(dictionary: [
+            "name": name,
+            "enabled": true,
+            "port": 465,
+            "useSSL": false
+        ]))
+
+        self.window?.endSheet(self.newAccountSheet)
+    }
+
+    @IBAction func cancelAccountCreation(sender: AnyObject) {
+        self.window?.endSheet(self.newAccountSheet)
+    }
 }

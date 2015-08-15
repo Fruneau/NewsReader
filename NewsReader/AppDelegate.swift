@@ -441,6 +441,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         NSUserDefaultsController.sharedUserDefaultsController().appliesImmediately = false
+        NSUserDefaults.standardUserDefaults().registerDefaults([
+            "accounts": [[String: AnyObject]]()
+        ])
 
         guard var rcContent = NSData(contentsOfFile: ("~/.newsreaderrc" as NSString).stringByStandardizingPath)?.utf8String else {
             return
