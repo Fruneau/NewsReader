@@ -221,14 +221,14 @@ public enum MIMEHeader {
             headers.append(.Address(name: lower, address: MIMEAddress.parse(content)))
 
         case "cc", "to":
-            for slice in split(content.characters, isSeparator: { $0 == "," }) {
+            for slice in content.characters.split(",") {
                 let addr = String(slice).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
 
                 headers.append(.Address(name: lower, address: MIMEAddress.parse(addr)))
             }
 
         case "newsgroups", "followup-to":
-            for slice in split(content.characters, isSeparator: { $0 == "," }) {
+            for slice in content.characters.split(",") {
                 let group = String(slice).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
 
                 headers.append(.Newsgroup(name: lower, group: group))
@@ -260,7 +260,7 @@ public enum MIMEHeader {
             headers.append(.Date(date))
 
         case "xref":
-            let slices = split(content.characters){ $0 == " " }
+            let slices = content.characters.split(" ")
 
             for slice in slices[1..<slices.count] {
                 let scanner = NSScanner(string: String(slice))
@@ -302,9 +302,9 @@ public enum MIMEHeader {
                     try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
                 }
 
-                let vals = split(line.characters, maxSplit: 1, allowEmptySlices: true){ $0 == ":" }.map(String.init)
+                let vals = line.characters.split(":").map(String.init)
 
-                if vals.count != 2 {
+                if vals.count < 2 {
                     throw Error.MalformedHeader(line)
                 }
 
@@ -312,7 +312,7 @@ public enum MIMEHeader {
                     throw Error.MalformedHeaderName(vals[0])
                 }
 
-                line = vals[1].stringByTrimmingCharactersInSet(cset)
+                line = ":".join(vals[1..<vals.count]).stringByTrimmingCharactersInSet(cset)
                 currentValue = line
                 currentHeader = vals[0]
             }

@@ -269,7 +269,7 @@ class GroupTree : NSObject {
     func addGroup(fullName: String, shortDesc: String?) {
         var node = self
 
-        for tok in split(fullName.characters, isSeparator: { $0 == "." }) {
+        for tok in fullName.characters.split(".") {
             let str = String(tok)
 
             if let child = node.children[str] {
@@ -389,6 +389,7 @@ class BackgroundView : NSView {
     }
 }
 
+@IBDesignable
 class UserBadgeView : NSImageView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -457,7 +458,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var nntp : NNTPClient?
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
-        guard var rcContent = NSData(contentsOfFile: "~/.newsreaderrc".stringByStandardizingPath)?.utf8String else {
+        guard var rcContent = NSData(contentsOfFile: ("~/.newsreaderrc" as NSString).stringByStandardizingPath)?.utf8String else {
             return
         }
 

@@ -894,7 +894,7 @@ private class NNTPOperation {
             var headers : [String] = []
 
             for line in payload! {
-                let tokens = split(line.characters, maxSplit: 100, allowEmptySlices: true){ $0 == "\t" }.map(String.init)
+                let tokens = line.characters.split("\t", maxSplit: 100, allowEmptySlices: true).map(String.init)
 
                 if tokens.count < 8 {
                     throw NNTPError.MalformedOverviewLine(line)
