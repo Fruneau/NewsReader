@@ -431,12 +431,87 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var preferenceWindowController : PreferenceWindowController?
 
     /* Model handling */
-    var nntp : NNTPClient?
+    var accounts : [String: NNTPClient] = [:]
 
     override func awakeFromNib() {
         super.awakeFromNib()
         self.browserWindowController = BrowserWindowController(windowNibName: "BrowserWindow")
         self.browserWindowController?.appDelegate = self
+    }
+
+    func loadAccount(account: [String: AnyObject]) -> NNTPClient {
+        let host = account["hostname"] as! String
+        let port = account["port"] as! Int
+        let useSSL = account["useSSL"] as! Bool
+        let login = account["login"] as? String
+        let password = account["password"] as? String
+
+        let client = NNTPClient(host: host, port: port, ssl: useSSL)
+        if login != nil && !login!.isEmpty {
+            client.setCredentials(login, password: password)
+        }
+
+        client.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+        client.connect()
+
+        client.sendCommand(.ListNewsgroups(nil)).then({
+            (payload) in
+
+            guard case .GroupList(let list) = payload else {
+                throw NNTPError.ServerProtocolError
+            }
+
+            for (groupName, shortDesc) in list {
+                let group = GroupTree(nntp: client, node: groupName)
+
+                group.fullName = groupName
+                group.shortDesc = shortDesc
+                self.browserWindowController?.groupRoots.append(group)
+                group.refreshCount()
+            }
+        }).otherwise({ (e) in debugPrint(e) })
+
+        return client
+    }
+
+    func reloadAccounts() {
+        guard let accounts = NSUserDefaults.standardUserDefaults().arrayForKey("accounts") as? [[String: AnyObject]] else {
+            return
+        }
+
+        var oldAccounts = self.accounts
+        var newAccounts : [String: NNTPClient] = [:]
+
+        for account in accounts {
+            guard let name = account["name"] as? String else {
+                continue
+            }
+
+            if let old = oldAccounts.removeValueForKey(name) {
+                /* TODO: handle configuration value changes */
+                newAccounts[name] = old
+            } else {
+                let client = self.loadAccount(account)
+                newAccounts[name] = client
+            }
+        }
+
+        for account in oldAccounts {
+            account.1.disconnect()
+        }
+
+        self.accounts = newAccounts
+    }
+
+    private var accountUpdateContext = 0
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        switch context {
+        case &self.accountUpdateContext:
+            self.reloadAccounts()
+
+        default:
+            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+        }
     }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
@@ -445,40 +520,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             "accounts": [[String: AnyObject]]()
         ])
 
-        guard var rcContent = NSData(contentsOfFile: ("~/.newsreaderrc" as NSString).stringByStandardizingPath)?.utf8String else {
-            return
-        }
-
-        if let idx = rcContent.characters.indexOf("\n") {
-            rcContent = rcContent.substringToIndex(idx)
-        }
-
-        guard let url = NSURL(string: rcContent) else {
-            return
-        }
-        self.nntp = NNTPClient(url: url)
-
-        self.nntp?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-        self.nntp?.connect()
-
+        NSUserDefaults.standardUserDefaults().addObserver(self, forKeyPath: "accounts",
+            options: NSKeyValueObservingOptions.New, context: &self.accountUpdateContext)
+        self.reloadAccounts()
         self.browserWindowController?.showWindow(self)
+    }
 
-        self.nntp?.sendCommand(.ListNewsgroups(nil)).then({
-            (payload) in
-
-            guard case .GroupList(let list) = payload else {
-                throw NNTPError.ServerProtocolError
-            }
-
-            for (groupName, shortDesc) in list {
-                let group = GroupTree(nntp: self.nntp, node: groupName)
-
-                group.fullName = groupName
-                group.shortDesc = shortDesc
-                self.browserWindowController?.groupRoots.append(group)
-                group.refreshCount()
-            }
-        })
+    func applicationWillTerminate(notification: NSNotification) {
+        for account in self.accounts {
+            account.1.disconnect()
+        }
     }
 
     @IBAction func openPreferences(sender: AnyObject) {
