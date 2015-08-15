@@ -225,12 +225,8 @@
 			isa = PBXGroup;
 			children = (
 				B442B93B1B5519E60088FA0F /* NewsReader */,
-				B442B94B1B5519E60088FA0F /* NewsReaderTests */,
-				B442B9561B5519E60088FA0F /* NewsReaderUITests */,
 				B45A81BD1B6502F5005323EC /* Lib */,
-				B45A81CB1B6502F5005323EC /* LibTests */,
 				B45A81E01B6503A4005323EC /* News */,
-				B45A81EE1B6503A4005323EC /* NewsTests */,
 				B442B93A1B5519E60088FA0F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -260,27 +256,30 @@
 				B42CA82F1B71EE4200B7465A /* ThreadView.swift */,
 				B4F5646B1B71522500AD054B /* Thread.xib */,
 				B442B9431B5519E60088FA0F /* Info.plist */,
+				B4CA69DE1B7F73D300DED623 /* Tests */,
 			);
 			path = NewsReader;
 			sourceTree = "<group>";
 		};
-		B442B94B1B5519E60088FA0F /* NewsReaderTests */ = {
+		B442B94B1B5519E60088FA0F /* Unit */ = {
 			isa = PBXGroup;
 			children = (
 				B442B94C1B5519E60088FA0F /* NewsReaderTests.swift */,
 				B442B94E1B5519E60088FA0F /* Info.plist */,
 			);
+			name = Unit;
 			path = NewsReaderTests;
-			sourceTree = "<group>";
+			sourceTree = SOURCE_ROOT;
 		};
-		B442B9561B5519E60088FA0F /* NewsReaderUITests */ = {
+		B442B9561B5519E60088FA0F /* UI */ = {
 			isa = PBXGroup;
 			children = (
 				B442B9571B5519E60088FA0F /* NewsReaderUITests.swift */,
 				B442B9591B5519E60088FA0F /* Info.plist */,
 			);
+			name = UI;
 			path = NewsReaderUITests;
-			sourceTree = "<group>";
+			sourceTree = SOURCE_ROOT;
 		};
 		B45A81BD1B6502F5005323EC /* Lib */ = {
 			isa = PBXGroup;
@@ -295,11 +294,12 @@
 				B4FF60731B5AB504006D17DA /* Promise.swift */,
 				B45A820B1B652B89005323EC /* String.swift */,
 				B45A81C01B6502F5005323EC /* Info.plist */,
+				B45A81CB1B6502F5005323EC /* Tests */,
 			);
 			path = Lib;
 			sourceTree = "<group>";
 		};
-		B45A81CB1B6502F5005323EC /* LibTests */ = {
+		B45A81CB1B6502F5005323EC /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				B4FF60751B5ADA6B006D17DA /* PromiseTests.swift */,
@@ -308,8 +308,9 @@
 				B45A820D1B652D0C005323EC /* StringTests.swift */,
 				B45A81CE1B6502F5005323EC /* Info.plist */,
 			);
+			name = Tests;
 			path = LibTests;
-			sourceTree = "<group>";
+			sourceTree = SOURCE_ROOT;
 		};
 		B45A81E01B6503A4005323EC /* News */ = {
 			isa = PBXGroup;
@@ -319,18 +320,29 @@
 				B45A82091B6507B2005323EC /* MIME.swift */,
 				B449CE391B6D55E3005C02FC /* NewsRC.swift */,
 				B45A81E31B6503A4005323EC /* Info.plist */,
+				B45A81EE1B6503A4005323EC /* Tests */,
 			);
 			path = News;
 			sourceTree = "<group>";
 		};
-		B45A81EE1B6503A4005323EC /* NewsTests */ = {
+		B45A81EE1B6503A4005323EC /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				B4E047581B56E68E001C8BFF /* NNTPTests.swift */,
 				B449CE3B1B6D644D005C02FC /* NewsRCTests.swift */,
 				B45A81F11B6503A4005323EC /* Info.plist */,
 			);
+			name = Tests;
 			path = NewsTests;
+			sourceTree = SOURCE_ROOT;
+		};
+		B4CA69DE1B7F73D300DED623 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B442B9561B5519E60088FA0F /* UI */,
+				B442B94B1B5519E60088FA0F /* Unit */,
+			);
+			name = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
