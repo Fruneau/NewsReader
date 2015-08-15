@@ -16,14 +16,9 @@ enum Error : ErrorType {
     case NoMessage
 }
 
-protocol ArticleDelegate : class {
-    func articleUpdated(article: Article)
-}
-
 class Article : NSObject {
     private weak var nntp : NNTPClient?
     private weak var promise : Promise<NNTPPayload>?
-    weak var delegate : ArticleDelegate?
 
     var headers : MIMEHeaders
     dynamic var body : String?
@@ -191,9 +186,9 @@ class Article : NSObject {
         self.loadRefs()
     }
 
-    func load() {
+    func load() -> Promise<NNTPPayload>? {
         if self.promise != nil || self.body != nil {
-            return
+            return self.promise
         }
 
         if let msgid = self.msgid  {
@@ -213,12 +208,8 @@ class Article : NSObject {
             self.body = msg.body
             self.to = self.loadNewsgroups()
             self.loadRefs()
-            self.delegate?.articleUpdated(self)
         })
-    }
-
-    func cancelLoad() {
-        self.promise?.cancel()
+        return self.promise
     }
 }
 

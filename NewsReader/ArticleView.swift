@@ -7,6 +7,8 @@
 //
 
 import Cocoa
+import Lib
+import News
 
 class UnscrollableScrollView : NSScrollView {
     override func scrollWheel(theEvent: NSEvent) {
@@ -22,15 +24,27 @@ class ArticleViewItem : NSCollectionViewItem {
     @IBOutlet weak var contactPictureView: UserBadgeView!
     @IBOutlet var bodyView: NSTextView!
 
+    private var articlePromise : Promise<NNTPPayload>?
+
     override dynamic var representedObject : AnyObject? {
         willSet {
-            self.article?.delegate = nil
-            self.article?.cancelLoad()
+            self.articlePromise?.cancel()
+            self.articlePromise = nil
         }
 
         didSet {
-            self.article?.delegate = self
-            self.article?.load()
+            self.articlePromise = self.article?.load()
+            self.articlePromise?.then {
+                (_) in
+
+                self.articlePromise = nil
+                guard let _ = self.collectionView.indexPathForItem(self) else {
+                    return
+                }
+
+                self.collectionView.reloadData()
+                //self.collectionView.reloadItemsAtIndexPaths([indexPath])
+            }
 
             self.fromView.objectValue = self.article?.from
             self.toView.objectValue = self.article?.to
@@ -47,21 +61,6 @@ class ArticleViewItem : NSCollectionViewItem {
     }
     var article : Article? {
         return self.representedObject as? Article
-    }
-}
-
-extension ArticleViewItem : ArticleDelegate {
-    func articleUpdated(article: Article) {
-        guard article === self.article else {
-            return
-        }
-
-        guard let _ = self.collectionView.indexPathForItem(self) else {
-            return
-        }
-
-        self.collectionView.reloadData()
-        //self.collectionView.reloadItemsAtIndexPaths([indexPath])
     }
 }
 
