@@ -428,6 +428,7 @@ class ShortDateFormatter : NSFormatter {
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     var browserWindowController: BrowserWindowController?
+    var preferenceWindowController : PreferenceWindowController?
 
     /* Model handling */
     var nntp : NNTPClient?
@@ -439,6 +440,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
+        NSUserDefaultsController.sharedUserDefaultsController().appliesImmediately = false
+
         guard var rcContent = NSData(contentsOfFile: ("~/.newsreaderrc" as NSString).stringByStandardizingPath)?.utf8String else {
             return
         }
@@ -473,5 +476,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 group.refreshCount()
             }
         })
+    }
+
+    @IBAction func openPreferences(sender: AnyObject) {
+        if self.preferenceWindowController == nil {
+            self.preferenceWindowController = PreferenceWindowController(windowNibName: "PreferenceWindow")
+        }
+
+        self.preferenceWindowController?.showWindow(self)
     }
 }
