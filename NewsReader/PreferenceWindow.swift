@@ -18,10 +18,10 @@ class AccountItem : NSCollectionViewItem {
 
             if self.selected {
                 accountView.backgroundColor = NSColor.alternateSelectedControlColor()
-                //self.accountNameCell?.textColor = NSColor.alternateSelectedControlTextColor()
+                (self.textField?.cell as? NSTextFieldCell)?.textColor = NSColor.alternateSelectedControlTextColor()
             } else {
                 accountView.backgroundColor = NSColor.whiteColor()
-                //self.accountNameCell?.textColor = NSColor.labelColor()
+                (self.textField?.cell as? NSTextFieldCell)?.textColor = NSColor.labelColor()
             }
         }
     }

@@ -389,6 +389,7 @@
         <userDefaultsController representsSharedInstance="YES" id="PSQ-TL-Avs"/>
         <collectionViewItem id="nO3-Gr-5Py" customClass="AccountItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
+                <outlet property="textField" destination="bEd-tT-SO6" id="gV2-Wy-1Jb"/>
                 <outlet property="view" destination="AMb-a5-f35" id="v61-KV-ukq"/>
             </connections>
         </collectionViewItem>
