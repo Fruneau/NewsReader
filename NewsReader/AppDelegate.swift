@@ -444,11 +444,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let port = account["port"] as! Int
         let useSSL = account["useSSL"] as! Bool
         let login = account["login"] as? String
-        let password = account["password"] as? String
 
         let client = NNTPClient(host: host, port: port, ssl: useSSL)
         if login != nil && !login!.isEmpty {
-            client.setCredentials(login, password: password)
+            do {
+                let password = try Keychain.findGenericPassowrd("NewsReader", accountName: "\(login!)@\(host):\(port)").0
+
+                client.setCredentials(login, password: password)
+            } catch {
+            }
         }
 
         client.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)

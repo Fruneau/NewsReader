@@ -11,6 +11,7 @@
                 <outlet property="accountListController" destination="Ne0-ih-qYs" id="FSY-Tu-37H"/>
                 <outlet property="newAccountNameCell" destination="Kwv-Od-CNy" id="yOW-vP-lb1"/>
                 <outlet property="newAccountSheet" destination="d7B-Me-ayb" id="oxp-bH-G4K"/>
+                <outlet property="passwordCell" destination="9DL-g5-D08" id="Efr-b1-1Ah"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="Nim-Jm-KM4"/>
             </connections>
         </customObject>
@@ -234,11 +235,8 @@
                                         </allowedInputSourceLocales>
                                     </secureTextFieldCell>
                                     <connections>
-                                        <binding destination="Ne0-ih-qYs" name="value" keyPath="selection.password" id="9On-2P-kt9">
-                                            <dictionary key="options">
-                                                <bool key="NSConditionallySetsEnabled" value="YES"/>
-                                            </dictionary>
-                                        </binding>
+                                        <action selector="passwordChanged:" target="-2" id="phJ-Po-v9D"/>
+                                        <binding destination="Ne0-ih-qYs" name="enabled" keyPath="selection.login" id="eA7-E5-2JQ"/>
                                     </connections>
                                 </secureTextField>
                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="DPY-W6-FyN">

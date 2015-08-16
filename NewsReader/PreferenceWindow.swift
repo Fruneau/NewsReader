@@ -8,6 +8,7 @@
 
 import Foundation
 import Cocoa
+import Lib
 
 class AccountItem : NSCollectionViewItem {
     override var selected : Bool {
@@ -27,7 +28,121 @@ class AccountItem : NSCollectionViewItem {
     }
 }
 
-class PreferenceWindowController : NSWindowController, NSWindowDelegate {
+class PreferenceWindowController : NSWindowController {
+    @IBOutlet var accountListController: NSArrayController!
+    @IBOutlet weak var newAccountSheet: NSPanel!
+    @IBOutlet weak var newAccountNameCell: NSTextFieldCell!
+
+    private func loadStoredPassword(account: AnyObject) -> String? {
+        guard let login = account.valueForKey("login") as? String else {
+            return nil
+        }
+        guard let hostname = account.valueForKey("hostname") as? String else {
+            return nil
+        }
+        guard let port = account.valueForKey("port") as? Int else {
+            return nil
+        }
+
+        do {
+            return try Keychain.findGenericPassowrd("NewsReader", accountName: "\(login)@\(hostname):\(port)").0
+        } catch {
+            return nil
+        }
+    }
+
+    private func storePassword(account: AnyObject) {
+        guard let login = account.valueForKey("login") as? String else {
+            return
+        }
+        guard let hostname = account.valueForKey("hostname") as? String else {
+            return
+        }
+        guard let port = account.valueForKey("port") as? Int else {
+            return
+        }
+
+        let password = account.valueForKey("password") as? String
+        if password == self.loadStoredPassword(account) {
+            return
+        }
+
+        do {
+            try Keychain.addGenericPassword("NewsReader", accountName: "\(login)@\(hostname):\(port)", password: password == nil ? "" : password!)
+        } catch {
+            return
+        }
+    }
+
+    private func getCurrentPassword() -> String? {
+        let selection = self.accountListController.selection
+
+        if let password = selection.valueForKey("password") as? String {
+            if password != "" {
+                return password
+            }
+        }
+
+        return self.loadStoredPassword(selection)
+    }
+
+    private func reloadPasswordCell() {
+        if self.accountListController.selectionIndexes.count == 0 {
+            self.passwordCell.enabled = false
+        } else {
+            self.passwordCell.enabled = true
+            self.passwordCell.objectValue = self.getCurrentPassword()
+        }
+    }
+
+    private var arraySelectionContext = 0
+    @IBOutlet weak var passwordCell: NSSecureTextFieldCell!
+    override func windowDidLoad() {
+        self.accountListController.addObserver(self, forKeyPath: "selection", options: .New, context: &self.arraySelectionContext)
+        super.windowDidLoad()
+        self.reloadPasswordCell()
+    }
+
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        switch context {
+        case &self.arraySelectionContext:
+            self.reloadPasswordCell()
+
+        default:
+            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+        }
+    }
+
+    @IBAction func passwordChanged(sender: AnyObject?) {
+        let value = self.passwordCell.stringValue
+        let selection = self.accountListController.selection
+
+        if value == self.loadStoredPassword(selection) {
+            return
+        }
+
+        if value.isEmpty {
+            selection.setNilValueForKey("password")
+        } else {
+            selection.setValue(value, forKey: "password")
+        }
+    }
+}
+
+extension PreferenceWindowController : NSWindowDelegate {
+    func savePreferences() {
+        let defaults = NSUserDefaultsController.sharedUserDefaultsController()
+
+        if let accounts = defaults.values.valueForKey("accounts") as? [AnyObject] {
+            for i in 0..<accounts.count {
+                self.storePassword(accounts[i])
+                accounts[i].setValue("", forKey: "password")
+            }
+        }
+
+        defaults.save(self)
+    }
+
     func windowShouldClose(sender: AnyObject) -> Bool {
         let defaults = NSUserDefaultsController.sharedUserDefaultsController()
 
@@ -42,21 +157,17 @@ class PreferenceWindowController : NSWindowController, NSWindowDelegate {
 
             alert.beginSheetModalForWindow(self.window!) {
                 if $0 == NSAlertFirstButtonReturn {
-                    defaults.save(self)
+                    self.savePreferences()
                 } else {
                     defaults.discardEditing()
                 }
-                self.window?.close()
+                self.close()
             }
             return false
         }
         return true
     }
-
-    @IBOutlet var accountListController: NSArrayController!
-    @IBOutlet weak var newAccountSheet: NSPanel!
-    @IBOutlet weak var newAccountNameCell: NSTextFieldCell!
-
+    
     @IBAction func addAccount(sender: AnyObject) {
         self.newAccountNameCell.objectValue = nil
 
@@ -70,7 +181,7 @@ class PreferenceWindowController : NSWindowController, NSWindowDelegate {
             "enabled": true,
             "port": 465,
             "useSSL": false
-        ]))
+            ]))
 
         self.window?.endSheet(self.newAccountSheet)
     }
