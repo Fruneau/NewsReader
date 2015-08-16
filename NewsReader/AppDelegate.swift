@@ -75,7 +75,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var preferenceWindowController : PreferenceWindowController?
 
     /* Model handling */
-    var accounts : [String: NNTPClient] = [:]
+    var accounts : [String: Account] = [:]
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -83,26 +83,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.browserWindowController?.appDelegate = self
     }
 
-    func loadAccount(account: [String: AnyObject]) -> NNTPClient {
-        let host = account["hostname"] as! String
-        let port = account["port"] as! Int
-        let useSSL = account["useSSL"] as! Bool
-        let login = account["login"] as? String
-
-        let client = NNTPClient(host: host, port: port, ssl: useSSL)
-        if login != nil && !login!.isEmpty {
-            do {
-                let password = try Keychain.findGenericPassowrd("NewsReader", accountName: "\(login!)@\(host):\(port)").0
-
-                client.setCredentials(login, password: password)
-            } catch {
-            }
+    func loadAccount(account: AnyObject) -> Account? {
+        guard let enabled = account.valueForKey("enabled") as? Bool else {
+            return nil
+        }
+        if !enabled {
+            return nil
         }
 
-        client.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-        client.connect()
+        guard let a = Account(account: account) else {
+            return nil
+        }
 
-        client.sendCommand(.ListNewsgroups(nil)).then({
+        a.client?.sendCommand(.ListNewsgroups(nil)).then({
             (payload) in
 
             guard case .GroupList(let list) = payload else {
@@ -110,7 +103,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
             for (groupName, shortDesc) in list {
-                let group = GroupTree(nntp: client, node: groupName)
+                let group = GroupTree(nntp: a.client, node: groupName)
 
                 group.fullName = groupName
                 group.shortDesc = shortDesc
@@ -119,7 +112,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }).otherwise({ (e) in debugPrint(e) })
 
-        return client
+        return a
     }
 
     func reloadAccounts() {
@@ -128,7 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         var oldAccounts = self.accounts
-        var newAccounts : [String: NNTPClient] = [:]
+        var newAccounts : [String: Account] = [:]
 
         for account in accounts {
             guard let name = account["name"] as? String else {
@@ -139,13 +132,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 /* TODO: handle configuration value changes */
                 newAccounts[name] = old
             } else {
-                let client = self.loadAccount(account)
+                guard let client = self.loadAccount(account) else {
+                    continue
+                }
                 newAccounts[name] = client
             }
         }
 
         for account in oldAccounts {
-            account.1.disconnect()
+            account.1.client?.disconnect()
         }
 
         self.accounts = newAccounts
@@ -176,7 +171,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(notification: NSNotification) {
         for account in self.accounts {
-            account.1.disconnect()
+            account.1.client?.disconnect()
         }
     }
 
