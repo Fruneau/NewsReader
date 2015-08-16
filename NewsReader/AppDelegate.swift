@@ -129,7 +129,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
             if let old = oldAccounts.removeValueForKey(name) {
-                /* TODO: handle configuration value changes */
+                old.update(account)
                 newAccounts[name] = old
             } else {
                 guard let client = self.loadAccount(account) else {
