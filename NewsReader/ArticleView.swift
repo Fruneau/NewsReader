@@ -62,6 +62,12 @@ class ArticleViewItem : NSCollectionViewItem {
     var article : Article? {
         return self.representedObject as? Article
     }
+
+    override func viewDidAppear() {
+        if self.article?.body != nil {
+            self.article?.isRead = true
+        }
+    }
 }
 
 class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {

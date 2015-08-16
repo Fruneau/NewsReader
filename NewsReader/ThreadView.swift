@@ -20,6 +20,7 @@ class ThreadViewItem : NSCollectionViewItem {
     @IBOutlet weak var threadCountCell: NSTextFieldCell!
     @IBOutlet weak var arrowView: NSTextField!
     @IBOutlet weak var arrowCell: NSTextFieldCell!
+    @IBOutlet weak var unreadMark: NSImageView!
 
     override var representedObject : AnyObject? {
         didSet {
@@ -58,6 +59,8 @@ class ThreadViewItem : NSCollectionViewItem {
                 self.subjectCell.textColor = NSColor.alternateSelectedControlTextColor()
                 self.threadCountCell.textColor = NSColor.alternateSelectedControlTextColor()
                 self.arrowCell.textColor = NSColor.alternateSelectedControlTextColor()
+
+                self.unreadMark.image = NSImage(named: "unread-selected")
             } else {
                 self.threadView.backgroundColor = NSColor.whiteColor()
                 self.fromCell.textColor = NSColor.labelColor()
@@ -65,6 +68,8 @@ class ThreadViewItem : NSCollectionViewItem {
                 self.subjectCell.textColor = NSColor.labelColor()
                 self.threadCountCell.textColor = self.threadCountColor
                 self.arrowCell.textColor = self.threadCountColor
+
+                self.unreadMark.image = NSImage(named: "unread")
             }
         }
     }
@@ -158,7 +163,7 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
         let size = collectionView.frame.size
 
-        return NSSize(width: size.width, height: 37)
+        return NSSize(width: size.width, height: 64)
     }
 
     private func updateCurrentThread() {
