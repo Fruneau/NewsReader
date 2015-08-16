@@ -54,6 +54,7 @@
                                     <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <connections>
                                         <binding destination="Ne0-ih-qYs" name="content" keyPath="arrangedObjects" id="VNJ-Io-hXX"/>
+                                        <binding destination="Ne0-ih-qYs" name="selectionIndexes" keyPath="selectionIndexes" previousBinding="VNJ-Io-hXX" id="QOT-BR-ttC"/>
                                         <outlet property="itemPrototype" destination="nO3-Gr-5Py" id="jkj-uU-qUD"/>
                                     </connections>
                                 </collectionView>
@@ -437,7 +438,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="167" y="110" width="348" height="103"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1050"/>
             <view key="contentView" id="32a-F8-4fl">
                 <rect key="frame" x="0.0" y="0.0" width="348" height="103"/>
                 <autoresizingMask key="autoresizingMask"/>
