@@ -35,7 +35,7 @@
         <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="521" y="667" width="656" height="439"/>
+            <rect key="contentRect" x="521" y="391" width="656" height="439"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1050"/>
             <view key="contentView" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="656" height="439"/>
@@ -431,8 +431,8 @@
                                                                         <rect key="frame" x="123" y="1" width="17" height="17"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                         <subviews>
-                                                                            <button misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Vf-I0-XOA">
-                                                                                <rect key="frame" x="-3" y="-3" width="22" height="20"/>
+                                                                            <button translatesAutoresizingMaskIntoConstraints="NO" id="0Vf-I0-XOA">
+                                                                                <rect key="frame" x="-3" y="-3" width="22" height="18"/>
                                                                                 <animations/>
                                                                                 <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="left" controlSize="small" state="on" inset="2" id="dqe-zU-E4b">
                                                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
