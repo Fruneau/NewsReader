@@ -53,9 +53,9 @@
                                     </connections>
                                 </textField>
                                 <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="60R-w7-M2C">
-                                    <rect key="frame" x="0.0" y="16" width="51" height="17"/>
+                                    <rect key="frame" x="0.0" y="16" width="444" height="17"/>
                                     <animations/>
-                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Subject" id="be3-FA-B40">
+                                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Subject" id="be3-FA-B40">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -117,6 +117,7 @@
                                 <constraint firstItem="c6o-cm-MoD" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="leading" id="04D-AN-QPI"/>
                                 <constraint firstItem="60R-w7-M2C" firstAttribute="top" secondItem="qKH-5K-Ror" secondAttribute="bottom" constant="4" id="1Ue-kM-Otb"/>
                                 <constraint firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" constant="16" id="2Hp-ma-pZs"/>
+                                <constraint firstItem="fM8-hh-h5f" firstAttribute="leading" secondItem="60R-w7-M2C" secondAttribute="trailing" id="ATB-Kp-eNk"/>
                                 <constraint firstItem="6nE-an-pfc" firstAttribute="leading" secondItem="Xo2-6q-hOl" secondAttribute="leading" id="Bem-M5-dAK"/>
                                 <constraint firstItem="ivL-TL-EAP" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="trailing" constant="8" id="BtQ-T1-Utq"/>
                                 <constraint firstItem="iIf-4K-Nvq" firstAttribute="top" secondItem="Xo2-6q-hOl" secondAttribute="top" constant="8" id="Djv-W8-WGe"/>
