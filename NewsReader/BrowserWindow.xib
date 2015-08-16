@@ -141,14 +141,11 @@
                                                                             <buttonCell key="cell" type="inline" title="Count" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="pTi-qh-qbr">
                                                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                                 <font key="font" metaFont="smallSystemBold"/>
+                                                                                <numberFormatter key="formatter" formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="4k5-tO-fWZ"/>
                                                                             </buttonCell>
                                                                             <connections>
-                                                                                <binding destination="g2V-LE-5Po" name="hidden" keyPath="objectValue.unreadCountText" id="YbZ-XE-Drq">
-                                                                                    <dictionary key="options">
-                                                                                        <string key="NSValueTransformerName">NSIsNil</string>
-                                                                                    </dictionary>
-                                                                                </binding>
-                                                                                <binding destination="g2V-LE-5Po" name="title" keyPath="objectValue.unreadCountText" id="dNd-Og-ZWV"/>
+                                                                                <binding destination="g2V-LE-5Po" name="hidden" keyPath="objectValue.isRead" id="iSn-Rj-NN5"/>
+                                                                                <binding destination="g2V-LE-5Po" name="title" keyPath="objectValue.unreadCountText" id="nbK-Jh-85G"/>
                                                                             </connections>
                                                                         </button>
                                                                     </subviews>

@@ -12,7 +12,7 @@ import Lib
 import News
 
 class Article : NSObject {
-    private weak var nntp : NNTPClient?
+    private weak var account : Account?
     private weak var promise : Promise<NNTPPayload>?
 
     var headers : MIMEHeaders
@@ -165,8 +165,8 @@ class Article : NSObject {
         }
     }()
 
-    init(nntp : NNTPClient?, ref: (String, Int), headers: MIMEHeaders) {
-        self.nntp = nntp
+    init(account : Account?, ref: (String, Int), headers: MIMEHeaders) {
+        self.account = account
         self.refs = [ref]
         self.headers = headers
         super.init()
@@ -179,9 +179,9 @@ class Article : NSObject {
         }
 
         if let msgid = self.msgid  {
-            self.promise = self.nntp?.sendCommand(.ArticleByMsgid(msgid: msgid))
+            self.promise = self.account?.client?.sendCommand(.ArticleByMsgid(msgid: msgid))
         } else {
-            self.promise = self.nntp?.sendCommand(.Article(group: self.refs[0].0, article: self.refs[0].1))
+            self.promise = self.account?.client?.sendCommand(.Article(group: self.refs[0].0, article: self.refs[0].1))
         }
 
         self.promise?.then({
@@ -206,6 +206,19 @@ extension Article {
 
         for article in self.replies {
             count += article.threadCount
+        }
+        return count
+    }
+
+    var threadUnreadCount : Int {
+        var count = 0
+
+        for article in self.replies {
+            count += article.threadUnreadCount
+        }
+
+        if !self.isRead {
+            count++
         }
         return count
     }
@@ -247,7 +260,7 @@ protocol GroupTreeDelegate : class {
 }
 
 class GroupTree : NSObject {
-    private weak var nntp : NNTPClient?
+    private weak var account : Account?
     private weak var promise : Promise<NNTPPayload>?
     weak var delegate : GroupTreeDelegate?
 
@@ -255,16 +268,24 @@ class GroupTree : NSObject {
     var fullName : String?
     var shortDesc : String?
 
-    var unreadCount : Int? {
-        didSet {
-            if let count = self.unreadCount {
-                self.unreadCountText = "\(count)"
-            } else {
-                self.unreadCountText = nil
+    dynamic var unreadCount : Int {
+        var count = 0
+
+        if let roots = self.roots {
+            for thread in roots {
+                count += thread.threadUnreadCount
             }
         }
+        return count
     }
-    dynamic var unreadCountText : String?
+
+    dynamic var unreadCountText : String {
+        return "\(self.unreadCount)"
+    }
+
+    dynamic var isRead : Bool {
+        return self.unreadCount == 0
+    }
 
     let isRoot : Bool
     var children : [String: GroupTree] = [:]
@@ -279,10 +300,10 @@ class GroupTree : NSObject {
         super.init()
     }
 
-    init(nntp : NNTPClient?, node: String) {
+    init(account: Account?, node: String) {
         self.name = node
         self.isRoot = false
-        self.nntp = nntp
+        self.account = account
         super.init()
     }
 
@@ -295,7 +316,7 @@ class GroupTree : NSObject {
             if let child = node.children[str] {
                 node = child
             } else {
-                let child = GroupTree(nntp: self.nntp, node: str)
+                let child = GroupTree(account: self.account, node: str)
 
                 node.children[str] = child
                 node = child
@@ -315,10 +336,10 @@ class GroupTree : NSObject {
             return
         }
 
-        self.promise = self.nntp?.sendCommand(.Group(group: self.fullName!)).thenChain({
+        self.promise = self.account?.client?.sendCommand(.Group(group: self.fullName!)).thenChain({
             (payload) throws in
 
-            guard let nntp = self.nntp else {
+            guard let client = self.account?.client else {
                 throw NNTPError.ServerProtocolError
             }
 
@@ -328,8 +349,7 @@ class GroupTree : NSObject {
 
             let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
 
-            self.unreadCount = count
-            return nntp.sendCommand(.Over(group: self.fullName!, range: NNTPCommand.ArticleRange.From(from)))
+            return client.sendCommand(.Over(group: self.fullName!, range: NNTPCommand.ArticleRange.From(from)))
         })
         self.promise?.then({
             (payload) throws in
@@ -341,7 +361,7 @@ class GroupTree : NSObject {
             var articles : [Article] = []
             var roots : [Article] = []
             for msg in messages.reverse() {
-                let article = Article(nntp: self.nntp, ref: (self.fullName!, msg.num),
+                let article = Article(account: self.account, ref: (self.fullName!, msg.num),
                     headers: msg.headers)
 
                 articles.append(article)
@@ -370,26 +390,23 @@ class GroupTree : NSObject {
                 roots.append(article)
             }
 
+            self.willChangeValueForKey("unreadCount")
+            self.willChangeValueForKey("unreadCountText")
+            self.willChangeValueForKey("isRead")
+
+
             self.articles = articles
             self.roots = roots
+            self.didChangeValueForKey("unreadCount")
+            self.didChangeValueForKey("unreadCountText")
+            self.didChangeValueForKey("isRead")
+
+
             self.delegate?.groupTree(self, hasNewThreads: roots)
-            print("added \(roots.count) roots")
         }).otherwise({
             (error) in
             
-            print("\(error)")
-        })
-    }
-    
-    func refreshCount() {
-        self.nntp?.sendCommand(.Group(group: self.fullName!)).then({
-            (payload) throws in
-            
-            guard case .GroupContent(_, let count, _, _, _) = payload else {
-                return
-            }
-            
-            self.unreadCount = count
+            debugPrint("\(error)")
         })
     }
 }

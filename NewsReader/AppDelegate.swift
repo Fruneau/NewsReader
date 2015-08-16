@@ -133,12 +133,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         for account in self.accounts.values {
             for group in account.subscriptions {
-                let tree = GroupTree(nntp: account.client, node: group)
+                let tree = GroupTree(account: account, node: group)
 
                 tree.fullName = group
                 tree.shortDesc = group
                 self.browserWindowController?.groupRoots.append(tree)
-                tree.refreshCount()
             }
         }
     }
