@@ -30,6 +30,10 @@ class BackgroundView : NSView {
 class UserBadgeView : NSImageView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
         self.wantsLayer = true
 
         self.layer?.borderWidth = 0
