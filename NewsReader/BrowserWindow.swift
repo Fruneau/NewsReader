@@ -15,7 +15,7 @@ class BrowserWindowController : NSWindowController {
 
     /* Groups view */
     @IBOutlet weak var groupTreeController: NSTreeController!
-    dynamic var groupRoots = [GroupTree(root: "Groups")]
+    dynamic var groupRoots : [GroupTree] = []
     var groupIndexes : [NSIndexPath] = [] {
         didSet {
             if self.groupIndexes.count == 0 {

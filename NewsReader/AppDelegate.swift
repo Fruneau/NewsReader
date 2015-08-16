@@ -92,28 +92,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return nil
         }
 
-        guard let a = Account(account: account) else {
-            return nil
-        }
-
-        a.client?.sendCommand(.ListNewsgroups(nil)).then({
-            (payload) in
-
-            guard case .GroupList(let list) = payload else {
-                throw NNTPError.ServerProtocolError
-            }
-
-            for (groupName, shortDesc) in list {
-                let group = GroupTree(nntp: a.client, node: groupName)
-
-                group.fullName = groupName
-                group.shortDesc = shortDesc
-                self.browserWindowController?.groupRoots.append(group)
-                group.refreshCount()
-            }
-        }).otherwise({ (e) in debugPrint(e) })
-
-        return a
+        return Account(account: account)
     }
 
     func reloadAccounts() {
@@ -145,6 +124,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         self.accounts = newAccounts
+        self.browserWindowController?.groupRoots.removeAll()
+        self.browserWindowController?.groupRoots.append(GroupTree(root: "Subscriptions"))
+
+        for account in self.accounts.values {
+            for group in account.subscriptions {
+                let tree = GroupTree(nntp: account.client, node: group)
+
+                tree.fullName = group
+                tree.shortDesc = group
+                self.browserWindowController?.groupRoots.append(tree)
+                tree.refreshCount()
+            }
+        }
     }
 
     private var accountUpdateContext = 0
