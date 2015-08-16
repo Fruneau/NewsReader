@@ -17,8 +17,17 @@ class Article : NSObject {
 
     var headers : MIMEHeaders
     dynamic var body : String?
+
     var replies : [Article] = []
     weak var inReplyTo : Article?
+    var threadRoot : Article {
+        var article = self
+
+        while let parent = article.inReplyTo {
+            article = parent
+        }
+        return article
+    }
 
     lazy var msgid : String? = {
         if case .MessageId(name: _, msgid: let val)? = self.headers["message-id"]?.first {
@@ -89,39 +98,22 @@ class Article : NSObject {
         return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
     }()
 
-    var threadCount : Int {
-        var count = 1;
-
-        for article in self.replies {
-            count += article.threadCount
-        }
-        return count
-    }
-
-    var threadDepth : Int {
-        var depth = 0;
-
-        for article in self.replies {
-            depth = max(depth, article.threadDepth)
-        }
-        return depth + 1
-    }
-
-    var thread : [Article] {
-        var thread : [Article] = [self]
-
-        for article in self.replies {
-            thread.extend(article.thread)
-        }
-        return thread
-    }
-
     var lines : Int {
         guard let body = self.body else {
             return 0
         }
 
         return body.utf8.reduce(0, combine: { $1 == 0x0a ? $0 + 1 : $0 })
+    }
+
+    dynamic var isRead : Bool = false {
+        willSet {
+            self.threadRoot.willChangeValueForKey("threadIsRead")
+        }
+
+        didSet {
+            self.threadRoot.didChangeValueForKey("threadIsRead")
+        }
     }
 
     private func loadNewsgroups() -> String? {
@@ -171,7 +163,7 @@ class Article : NSObject {
         } else {
             return nil
         }
-        }()
+    }()
 
     init(nntp : NNTPClient?, ref: (String, Int), headers: MIMEHeaders) {
         self.nntp = nntp
@@ -205,6 +197,48 @@ class Article : NSObject {
             self.loadRefs()
         })
         return self.promise
+    }
+}
+
+extension Article {
+    var threadCount : Int {
+        var count = 1;
+
+        for article in self.replies {
+            count += article.threadCount
+        }
+        return count
+    }
+
+    var threadDepth : Int {
+        var depth = 0;
+
+        for article in self.replies {
+            depth = max(depth, article.threadDepth)
+        }
+        return depth + 1
+    }
+
+    var thread : [Article] {
+        var thread : [Article] = [self]
+
+        for article in self.replies {
+            thread.extend(article.thread)
+        }
+        return thread
+    }
+
+    var threadIsRead : Bool {
+        if !self.isRead {
+            return false
+        }
+
+        for article in self.replies {
+            if !article.threadIsRead {
+                return false
+            }
+        }
+        return true
     }
 }
 
