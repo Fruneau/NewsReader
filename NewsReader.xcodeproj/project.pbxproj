@@ -41,6 +41,7 @@
 		B45A820A1B6507B2005323EC /* MIME.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A82091B6507B2005323EC /* MIME.swift */; };
 		B45A820C1B652B89005323EC /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820B1B652B89005323EC /* String.swift */; };
 		B45A820E1B652D0C005323EC /* StringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820D1B652D0C005323EC /* StringTests.swift */; };
+		B47A75AD1B80A2CB008A35E6 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A75AC1B80A2CB008A35E6 /* Model.swift */; };
 		B496839D1B6FE94100982CF0 /* Article.xib in Resources */ = {isa = PBXBuildFile; fileRef = B496839C1B6FE94100982CF0 /* Article.xib */; };
 		B4CA69E31B7F7D8200DED623 /* BrowserWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4CA69E21B7F7D8200DED623 /* BrowserWindow.swift */; };
 		B4CA69E51B7F7E2200DED623 /* BrowserWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B4CA69E41B7F7E2200DED623 /* BrowserWindow.xib */; };
@@ -158,6 +159,7 @@
 		B45A82091B6507B2005323EC /* MIME.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MIME.swift; sourceTree = "<group>"; };
 		B45A820B1B652B89005323EC /* String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		B45A820D1B652D0C005323EC /* StringTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringTests.swift; sourceTree = "<group>"; };
+		B47A75AC1B80A2CB008A35E6 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		B496839C1B6FE94100982CF0 /* Article.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Article.xib; sourceTree = "<group>"; };
 		B4CA69E21B7F7D8200DED623 /* BrowserWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BrowserWindow.swift; sourceTree = "<group>"; };
 		B4CA69E41B7F7E2200DED623 /* BrowserWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BrowserWindow.xib; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 			isa = PBXGroup;
 			children = (
 				B442B93C1B5519E60088FA0F /* AppDelegate.swift */,
+				B47A75AC1B80A2CB008A35E6 /* Model.swift */,
 				B442B93E1B5519E60088FA0F /* Assets.xcassets */,
 				B442B9401B5519E60088FA0F /* MainMenu.xib */,
 				B442B9431B5519E60088FA0F /* Info.plist */,
@@ -654,6 +657,7 @@
 				B42CA8301B71EE4200B7465A /* ThreadView.swift in Sources */,
 				B454CAEF1B7FA1BA0041D910 /* PreferenceWindow.swift in Sources */,
 				B442B93D1B5519E60088FA0F /* AppDelegate.swift in Sources */,
+				B47A75AD1B80A2CB008A35E6 /* Model.swift in Sources */,
 				B4CA69E31B7F7D8200DED623 /* BrowserWindow.swift in Sources */,
 				B4F5646A1B714E2E00AD054B /* ArticleView.swift in Sources */,
 			);
