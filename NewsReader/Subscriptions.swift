@@ -36,6 +36,10 @@ class SubscriptionController : NSObject {
             return
         }
 
+        if self.accountListController.selection.valueForKey("subscriptions") == nil {
+            self.accountListController.selection.setValue(NSMutableArray(), forKey: "subscriptions")
+        }
+
         self.account = Account(account: self.accountListController.selection)
         self.promise = self.account?.client?.sendCommand(.ListNewsgroups(nil))
         self.promise?.then({
@@ -67,7 +71,7 @@ class SubscriptionController : NSObject {
 
                 leaf["fullname"] = groupName
                 leaf["description"] = shortDesc
-                leaf["subscribed"] = false
+                leaf["subscribed"] = self.account!.subscriptions.contains(groupName)
             }
             self.subscriptionView.reloadData()
         }).otherwise({ (e) in debugPrint(e) })
@@ -79,12 +83,12 @@ class SubscriptionController : NSObject {
         super.awakeFromNib()
 
         self.accountListController.addObserver(self, forKeyPath: "selection", options: .New, context: &self.accountListContext)
-        self.reloadAccount()
     }
 
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
         switch context {
         case &self.accountListContext:
+            print("reload because selection changed")
             self.reloadAccount()
 
         default:
@@ -95,6 +99,7 @@ class SubscriptionController : NSObject {
 
 extension SubscriptionController : NSTabViewDelegate {
     func tabView(tabView: NSTabView, didSelectTabViewItem tabViewItem: NSTabViewItem?) {
+        print("reload because tab changed")
         self.reloadAccount()
     }
 }
@@ -131,6 +136,43 @@ extension SubscriptionController : NSOutlineViewDataSource {
             return item
         } else {
             return nil
+        }
+    }
+}
+
+extension SubscriptionController : NSOutlineViewDelegate {
+    @IBAction func changeSubscription(sender: NSButton) {
+        guard let cell = sender.superview as? NSTableCellView else {
+            return
+        }
+
+        guard let dict = cell.objectValue as? NSDictionary else {
+            assert (false)
+        }
+
+        guard let fullname = dict["fullname"] as? String else {
+            assert (false)
+        }
+
+        guard let subscriptions = self.accountListController.selection.valueForKey("subscriptions") as? NSMutableArray else {
+            assert (false)
+        }
+
+        let pos = subscriptions.indexOfObject(fullname)
+
+        switch sender.state {
+        case NSOnState:
+            if pos == NSNotFound {
+                subscriptions.addObject(fullname)
+            }
+
+        case NSOffState:
+            if pos != NSNotFound {
+                subscriptions.removeObjectAtIndex(pos)
+            }
+
+        default:
+            assert (false)
         }
     }
 }

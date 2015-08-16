@@ -431,7 +431,7 @@
                                                                         <rect key="frame" x="123" y="1" width="17" height="17"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                         <subviews>
-                                                                            <button translatesAutoresizingMaskIntoConstraints="NO" id="0Vf-I0-XOA">
+                                                                            <button misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Vf-I0-XOA">
                                                                                 <rect key="frame" x="-3" y="-3" width="22" height="20"/>
                                                                                 <animations/>
                                                                                 <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="left" controlSize="small" state="on" inset="2" id="dqe-zU-E4b">
@@ -439,6 +439,7 @@
                                                                                     <font key="font" metaFont="smallSystem"/>
                                                                                 </buttonCell>
                                                                                 <connections>
+                                                                                    <action selector="changeSubscription:" target="wtJ-Dh-uw2" id="8XP-s4-wM6"/>
                                                                                     <binding destination="HGZ-cf-FYn" name="hidden" keyPath="objectValue" id="Q7F-1r-zxX">
                                                                                         <dictionary key="options">
                                                                                             <string key="NSValueTransformerName">NSIsNil</string>
@@ -449,9 +450,8 @@
                                                                             </button>
                                                                         </subviews>
                                                                         <constraints>
-                                                                            <constraint firstAttribute="bottom" secondItem="0Vf-I0-XOA" secondAttribute="bottom" id="57m-Uy-J0v"/>
                                                                             <constraint firstAttribute="trailing" secondItem="0Vf-I0-XOA" secondAttribute="trailing" id="8nS-gK-zpi"/>
-                                                                            <constraint firstItem="0Vf-I0-XOA" firstAttribute="top" secondItem="HGZ-cf-FYn" secondAttribute="top" constant="3" id="nOB-C6-aid"/>
+                                                                            <constraint firstAttribute="bottom" secondItem="0Vf-I0-XOA" secondAttribute="bottom" id="Vnt-PN-KRH"/>
                                                                             <constraint firstItem="0Vf-I0-XOA" firstAttribute="leading" secondItem="HGZ-cf-FYn" secondAttribute="leading" id="tyi-KG-1cy"/>
                                                                         </constraints>
                                                                         <animations/>
@@ -502,6 +502,7 @@
                                                         </tableColumns>
                                                         <connections>
                                                             <outlet property="dataSource" destination="wtJ-Dh-uw2" id="uXZ-TE-WrR"/>
+                                                            <outlet property="delegate" destination="wtJ-Dh-uw2" id="DJ4-ue-cU8"/>
                                                         </connections>
                                                     </outlineView>
                                                 </subviews>

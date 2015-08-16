@@ -10,6 +10,7 @@ import Cocoa
 import Lib
 import News
 
+@IBDesignable
 class BackgroundView : NSView {
     @IBInspectable var backgroundColor : NSColor? {
         didSet {

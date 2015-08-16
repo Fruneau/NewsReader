@@ -16,15 +16,17 @@ class Account {
     var useSSL : Bool
     var login : String?
     var password : String?
+    var subscriptions : Set<String>
 
     var client : NNTPClient?
 
-    init(host: String, port: Int, useSSL : Bool, login: String?, password: String?) {
+    init(host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
         self.host = host
         self.port = port
         self.useSSL = useSSL
         self.login = login
         self.password = password
+        self.subscriptions = subscriptions
 
         self.client = NNTPClient(host: host, port: port, ssl: useSSL)
         self.client?.setCredentials(login, password: password)
@@ -32,7 +34,7 @@ class Account {
         self.client?.connect()
     }
 
-    convenience init?(host: String, port: Int, useSSL : Bool, login: String?) {
+    convenience init?(host: String, port: Int, useSSL : Bool, login: String?, subscriptions: Set<String>) {
         var password : String?
 
         if let alogin = login {
@@ -42,7 +44,7 @@ class Account {
                 return nil
             }
         }
-        self.init(host: host, port: port, useSSL: useSSL, login: login, password: password)
+        self.init(host: host, port: port, useSSL: useSSL, login: login, password: password, subscriptions: subscriptions)
     }
 
     convenience init?(account: AnyObject) {
@@ -57,7 +59,14 @@ class Account {
         }
         let login = account.valueForKey("login") as? String
 
-        self.init(host: host, port: port, useSSL: useSSL, login: login)
+        var subscriptions : Set<String>
+        if let asubscriptions = account.valueForKey("subscriptions") as? NSArray {
+            subscriptions = Set<String>(asubscriptions.map { $0 as! String })
+        } else {
+            subscriptions = Set<String>()
+        }
+
+        self.init(host: host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
     }
 
     deinit {
@@ -65,7 +74,7 @@ class Account {
         self.client = nil
     }
 
-    func update(host: String, port: Int, useSSL : Bool, login: String?, password: String?) {
+    func update(host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
         if host == self.host && port == self.port && useSSL == self.useSSL && login == self.login && password == self.password {
             return
         }
@@ -83,7 +92,7 @@ class Account {
         self.client?.connect()
     }
 
-    func update(host: String, port: Int, useSSL : Bool, login: String?) {
+    func update(host: String, port: Int, useSSL : Bool, login: String?, subscriptions: Set<String>) {
         var password : String?
 
         if let alogin = login {
@@ -94,7 +103,7 @@ class Account {
             }
         }
 
-        self.update(host, port: port, useSSL: useSSL, login: login, password: password)
+        self.update(host, port: port, useSSL: useSSL, login: login, password: password, subscriptions: subscriptions)
     }
 
     func update(account: AnyObject) {
@@ -107,8 +116,16 @@ class Account {
         guard let useSSL = account.valueForKey("useSSL") as? Bool else {
             return
         }
+
         let login = account["login"] as? String
 
-        self.update(host, port: port, useSSL: useSSL, login: login)
+        var subscriptions : Set<String>
+        if let asubscriptions = account.valueForKey("subscriptions") as? NSArray {
+            subscriptions = Set<String>(asubscriptions.map { $0 as! String })
+        } else {
+            subscriptions = Set<String>()
+        }
+
+        self.update(host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
     }
 }
