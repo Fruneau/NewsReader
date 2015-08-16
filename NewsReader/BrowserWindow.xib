@@ -62,7 +62,7 @@
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <outlineView allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="Ttp-G5-L42" id="NU2-fY-9fJ">
-                                                    <rect key="frame" x="0.0" y="0.0" width="277" height="595"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="277" height="0.0"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
                                                     <size key="intercellSpacing" width="3" height="0.0"/>

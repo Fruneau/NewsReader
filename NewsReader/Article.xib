@@ -10,11 +10,11 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customView id="c22-O7-iKe" userLabel="Article" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="543" height="595"/>
+            <rect key="frame" x="0.0" y="0.0" width="553" height="595"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qK4-dS-KD4">
-                    <rect key="frame" x="10" y="0.0" width="533" height="595"/>
+                    <rect key="frame" x="20" y="0.0" width="533" height="595"/>
                     <subviews>
                         <customView translatesAutoresizingMaskIntoConstraints="NO" id="Xo2-6q-hOl" userLabel="Header View">
                             <rect key="frame" x="0.0" y="512" width="533" height="83"/>
@@ -199,12 +199,26 @@
                         <real value="3.4028234663852886e+38"/>
                     </customSpacing>
                 </stackView>
+                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="li3-Pd-GPc">
+                    <rect key="frame" x="2" y="571" width="16" height="16"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="16" id="BiL-66-7AU"/>
+                        <constraint firstAttribute="width" constant="16" id="sN1-CI-eL1"/>
+                    </constraints>
+                    <animations/>
+                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="unread" id="hu2-sE-Jlz"/>
+                    <connections>
+                        <binding destination="ojD-sA-dGM" name="hidden" keyPath="representedObject.isRead" id="XVB-16-hCt"/>
+                    </connections>
+                </imageView>
             </subviews>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="qK4-dS-KD4" secondAttribute="trailing" id="AeR-FS-ADy"/>
                 <constraint firstAttribute="bottom" secondItem="qK4-dS-KD4" secondAttribute="bottom" id="As8-Jl-xLz"/>
                 <constraint firstItem="qK4-dS-KD4" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" id="Jkg-pO-zKg"/>
-                <constraint firstItem="qK4-dS-KD4" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="10" id="dpY-3G-89i"/>
+                <constraint firstItem="qK4-dS-KD4" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" id="dpY-3G-89i"/>
+                <constraint firstItem="li3-Pd-GPc" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" constant="8" id="hY4-tg-bRL"/>
+                <constraint firstItem="li3-Pd-GPc" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="2" id="jhn-7q-gcv"/>
             </constraints>
             <animations/>
             <userDefinedRuntimeAttributes>
@@ -229,5 +243,6 @@
     </objects>
     <resources>
         <image name="NSUserGuest" width="32" height="32"/>
+        <image name="unread" width="16" height="16"/>
     </resources>
 </document>
