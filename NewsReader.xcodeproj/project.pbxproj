@@ -16,6 +16,7 @@
 		B449CE3A1B6D55E3005C02FC /* NewsRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = B449CE391B6D55E3005C02FC /* NewsRC.swift */; };
 		B449CE3C1B6D644D005C02FC /* NewsRCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B449CE3B1B6D644D005C02FC /* NewsRCTests.swift */; };
 		B454CAEF1B7FA1BA0041D910 /* PreferenceWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B454CAEE1B7FA1BA0041D910 /* PreferenceWindow.swift */; };
+		B454CAF11B8060630041D910 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B454CAF01B8060630041D910 /* Keychain.swift */; };
 		B45A81BF1B6502F5005323EC /* Lib.h in Headers */ = {isa = PBXBuildFile; fileRef = B45A81BE1B6502F5005323EC /* Lib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B45A81C61B6502F5005323EC /* Lib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B45A81BC1B6502F5005323EC /* Lib.framework */; };
 		B45A81D11B6502F5005323EC /* Lib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B45A81BC1B6502F5005323EC /* Lib.framework */; };
@@ -143,6 +144,7 @@
 		B449CE391B6D55E3005C02FC /* NewsRC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsRC.swift; sourceTree = "<group>"; };
 		B449CE3B1B6D644D005C02FC /* NewsRCTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsRCTests.swift; sourceTree = "<group>"; };
 		B454CAEE1B7FA1BA0041D910 /* PreferenceWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceWindow.swift; sourceTree = "<group>"; };
+		B454CAF01B8060630041D910 /* Keychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		B45A81BC1B6502F5005323EC /* Lib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Lib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B45A81BE1B6502F5005323EC /* Lib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Lib.h; sourceTree = "<group>"; };
 		B45A81C01B6502F5005323EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -299,6 +301,7 @@
 				B423727F1B5A6A600046B987 /* NSData.swift */,
 				B4FF60731B5AB504006D17DA /* Promise.swift */,
 				B45A820B1B652B89005323EC /* String.swift */,
+				B454CAF01B8060630041D910 /* Keychain.swift */,
 				B45A81C01B6502F5005323EC /* Info.plist */,
 				B45A81CB1B6502F5005323EC /* Tests */,
 			);
@@ -681,6 +684,7 @@
 				B45A81FE1B6504AD005323EC /* Buffer.swift in Sources */,
 				B45A81FF1B6504AD005323EC /* NSRunLoop.swift in Sources */,
 				B45A82001B6504AD005323EC /* FifoQueue.swift in Sources */,
+				B454CAF11B8060630041D910 /* Keychain.swift in Sources */,
 				B45A820C1B652B89005323EC /* String.swift in Sources */,
 				B45A82011B6504AD005323EC /* NSData.swift in Sources */,
 				B45A82021B6504AD005323EC /* Promise.swift in Sources */,
