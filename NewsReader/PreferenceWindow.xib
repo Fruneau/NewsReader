@@ -415,12 +415,27 @@
                         <binding destination="nO3-Gr-5Py" name="value" keyPath="representedObject.name" id="hAl-L9-hxM"/>
                     </connections>
                 </textField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5Fe-TC-yXb">
+                    <rect key="frame" x="18" y="3" width="194" height="14"/>
+                    <animations/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="vdB-cX-IkM">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                    <connections>
+                        <binding destination="nO3-Gr-5Py" name="value" keyPath="representedObject.hostname" id="daA-Eb-Wfk"/>
+                    </connections>
+                </textField>
             </subviews>
             <constraints>
                 <constraint firstItem="bEd-tT-SO6" firstAttribute="leading" secondItem="AMb-a5-f35" secondAttribute="leading" constant="20" id="Wxf-Qd-wjT"/>
+                <constraint firstItem="5Fe-TC-yXb" firstAttribute="top" secondItem="bEd-tT-SO6" secondAttribute="bottom" id="c3S-Sh-xrh"/>
+                <constraint firstItem="5Fe-TC-yXb" firstAttribute="leading" secondItem="bEd-tT-SO6" secondAttribute="leading" id="ccB-Im-AUt"/>
                 <constraint firstAttribute="trailing" secondItem="oNa-dR-XyT" secondAttribute="trailing" id="eCN-T8-lMs"/>
                 <constraint firstItem="oNa-dR-XyT" firstAttribute="leading" secondItem="AMb-a5-f35" secondAttribute="leading" constant="20" id="lqR-sd-XEe"/>
                 <constraint firstAttribute="trailing" secondItem="bEd-tT-SO6" secondAttribute="trailing" id="m1T-89-TXW"/>
+                <constraint firstItem="5Fe-TC-yXb" firstAttribute="trailing" secondItem="bEd-tT-SO6" secondAttribute="trailing" id="njW-yW-q6r"/>
                 <constraint firstAttribute="bottom" secondItem="oNa-dR-XyT" secondAttribute="bottom" id="wal-Lb-R4o"/>
                 <constraint firstItem="bEd-tT-SO6" firstAttribute="top" secondItem="AMb-a5-f35" secondAttribute="top" constant="3" id="yKS-oO-Zov"/>
             </constraints>
