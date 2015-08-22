@@ -129,11 +129,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         self.accounts = newAccounts
         self.browserWindowController?.groupRoots.removeAll()
-        self.browserWindowController?.groupRoots.append(GroupTree(root: "Subscriptions"))
+        self.browserWindowController?.groupRoots.append(Group(root: "Subscriptions"))
 
         for account in self.accounts.values {
             for group in account.subscriptions {
-                let tree = GroupTree(account: account, node: group)
+                let tree = Group(account: account, node: group)
 
                 tree.fullName = group
                 tree.shortDesc = group

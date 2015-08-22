@@ -15,13 +15,13 @@ class BrowserWindowController : NSWindowController {
 
     /* Groups view */
     @IBOutlet weak var groupTreeController: NSTreeController!
-    dynamic var groupRoots : [GroupTree] = []
+    dynamic var groupRoots : [Group] = []
     var groupIndexes : [NSIndexPath] = [] {
         didSet {
             if self.groupIndexes.count == 0 {
                 self.threadViewController.currentGroup = nil
             } else {
-                self.threadViewController.currentGroup = self.groupTreeController.selectedObjects[0] as? GroupTree
+                self.threadViewController.currentGroup = self.groupTreeController.selectedObjects[0] as? Group
             }
         }
     }
@@ -29,7 +29,7 @@ class BrowserWindowController : NSWindowController {
 
 extension BrowserWindowController : NSOutlineViewDelegate {
     func outlineView(outlineView: NSOutlineView, viewForTableColumn tableColumn: NSTableColumn?, item: AnyObject) -> NSView? {
-        let node = item.representedObject as! GroupTree
+        let node = item.representedObject as! Group
 
         return outlineView.makeViewWithIdentifier(node.isRoot ? "HeaderCell" : "DataCell", owner: self)
     }

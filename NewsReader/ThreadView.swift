@@ -79,7 +79,7 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     @IBOutlet weak var threadView: NSCollectionView!
     @IBOutlet weak var articleViewController: ArticleViewController!
 
-    var currentGroup : GroupTree? {
+    var currentGroup : Group? {
         /*
         willSet {
             if newValue === self.currentGroup {
@@ -185,8 +185,8 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     }
 }
 
-extension ThreadViewController : GroupTreeDelegate {
-    func groupTree(groupTree: GroupTree, hasNewThreads articles: [Article]) {
+extension ThreadViewController : GroupDelegate {
+    func groupTree(groupTree: Group, hasNewThreads articles: [Article]) {
         var indexPaths = Set<NSIndexPath>()
         for article in articles {
             if let indexPath = self.indexPathForThread(article) {

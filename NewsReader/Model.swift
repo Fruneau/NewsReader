@@ -255,14 +255,14 @@ extension Article {
     }
 }
 
-protocol GroupTreeDelegate : class {
-    func groupTree(groupTree: GroupTree, hasNewThreads: [Article])
+protocol GroupDelegate : class {
+    func groupTree(groupTree: Group, hasNewThreads: [Article])
 }
 
-class GroupTree : NSObject {
+class Group : NSObject {
     private weak var account : Account?
     private weak var promise : Promise<NNTPPayload>?
-    weak var delegate : GroupTreeDelegate?
+    weak var delegate : GroupDelegate?
 
     let name : String
     var fullName : String?
@@ -288,7 +288,7 @@ class GroupTree : NSObject {
     }
 
     let isRoot : Bool
-    var children : [String: GroupTree] = [:]
+    var children : [String: Group] = [:]
 
     var isLeaf : Bool {
         return self.fullName != nil || self.isRoot
@@ -316,7 +316,7 @@ class GroupTree : NSObject {
             if let child = node.children[str] {
                 node = child
             } else {
-                let child = GroupTree(account: self.account, node: str)
+                let child = Group(account: self.account, node: str)
 
                 node.children[str] = child
                 node = child
