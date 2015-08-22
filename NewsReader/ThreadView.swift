@@ -80,25 +80,24 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     @IBOutlet weak var articleViewController: ArticleViewController!
 
     var currentGroup : Group? {
-        /*
         willSet {
             if newValue === self.currentGroup {
                 return
             }
 
             self.currentGroup?.delegate = nil
-            var paths = Set<NSIndexPath>()
             if let roots = self.currentGroup?.roots {
+                var paths = Set<NSIndexPath>()
+
                 for i in 0..<roots.count {
                     paths.insert(NSIndexPath(forItem: i, inSection: 0))
                 }
-            }
 
-            if paths.count > 0 {
-                self.threadView.deleteItemsAtIndexPaths(paths)
+                if paths.count > 0 {
+                    self.threadView.deleteItemsAtIndexPaths(paths)
+                }
             }
         }
-        */
 
         didSet {
             if oldValue === self.currentGroup {
@@ -108,20 +107,19 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
             print("set to \(self.currentGroup) from \(oldValue)")
             self.currentGroup?.delegate = self
             self.currentGroup?.load()
-            self.threadView.reloadData()
+            //self.threadView.reloadData()
 
-            /*
-            var paths = Set<NSIndexPath>()
             if let roots = self.currentGroup?.roots {
+                var paths = Set<NSIndexPath>()
+
                 for i in 0..<roots.count {
                     paths.insert(NSIndexPath(forItem: i, inSection: 0))
                 }
-            }
 
-            if paths.count > 0 {
-                self.threadView.insertItemsAtIndexPaths(paths)
+                if paths.count > 0 {
+                    self.threadView.insertItemsAtIndexPaths(paths)
+                }
             }
-            */
         }
     }
 
