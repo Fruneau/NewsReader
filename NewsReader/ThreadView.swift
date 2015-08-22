@@ -105,7 +105,6 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
                 return
             }
 
-            print("set to \(self.currentGroup) from \(oldValue)")
             self.currentGroup?.delegate = self
             self.currentGroup?.load()
             self.threadView.reloadData()

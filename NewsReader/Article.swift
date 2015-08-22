@@ -179,6 +179,10 @@ class Article : NSObject {
         self.headers = headers
         super.init()
         self.loadRefs()
+
+        if let msgid = self.msgid {
+            self.account?.articleByMsgid[msgid] = self
+        }
     }
 
     func load() -> Promise<NNTPPayload>? {

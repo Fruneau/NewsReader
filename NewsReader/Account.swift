@@ -12,7 +12,6 @@ import News
 
 class Account : NSObject {
     let name : String
-
     var host : String
     var port : Int
     var useSSL : Bool
@@ -94,32 +93,46 @@ class Account : NSObject {
         self.client?.connect()
     }
 
-    init(name: String, host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
-        self.name = name
-        self.host = host
-        self.port = port
-        self.useSSL = useSSL
-        self.login = login
-        self.password = password
-
-        super.init()
-        self.connect()
-        self.refreshSubscriptions(subscriptions)
-    }
-
-    convenience init?(account: AnyObject) {
+    init(account: AnyObject) {
         guard let params = Account.getAccountParameters(account) else {
-            return nil
+            assert (false)
         }
 
-        self.init(name: params.name, host: params.host, port: params.port, useSSL: params.useSSL,
-            login: params.login, password: params.password,
-            subscriptions: params.subscriptions)
+        self.name = params.name
+        self.host = params.host
+        self.port = params.port
+        self.useSSL = params.useSSL
+        self.login = params.login
+        self.password = params.password
+        super.init()
+
+        self.connect()
+        self.refreshSubscriptions(params.subscriptions)
     }
 
     deinit {
         self.client?.disconnect()
         self.client = nil
+    }
+
+    func update(account: AnyObject) {
+        guard let params = Account.getAccountParameters(account) else {
+            return
+        }
+
+        if params.host != self.host || params.port != self.port || params.useSSL != self.useSSL
+            || params.login != self.login || params.password != self.password
+        {
+            self.client?.disconnect()
+            self.host = params.host
+            self.port = params.port
+            self.useSSL = params.useSSL
+            self.login = params.login
+            self.password = params.password
+            self.connect()
+        }
+
+        self.refreshSubscriptions(params.subscriptions)
     }
 
     func group(name: String) -> Group {
@@ -133,27 +146,18 @@ class Account : NSObject {
         }
     }
 
-    func update(host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
-        if host != self.host || port != self.port || useSSL != self.useSSL || login != self.login || password != self.password {
-            self.client?.disconnect()
-            self.host = host
-            self.port = port
-            self.useSSL = useSSL
-            self.login = login
-            self.password = password
-            self.connect()
+    func article(ref: (group: String, num: Int), headers: MIMEHeaders) -> Article {
+        guard case .MessageId(name: _, msgid: let msgid)? = headers["message-id"]?.first else {
+            return Article(account: self, ref: ref, headers: headers)
         }
 
-        self.refreshSubscriptions(subscriptions)
-    }
-
-    func update(account: AnyObject) {
-        guard let params = Account.getAccountParameters(account) else {
-            return
+        if let article = self.articleByMsgid[msgid] {
+            return article
         }
 
-        self.update(params.host, port: params.port, useSSL: params.useSSL,
-            login: params.login, password: params.password,
-            subscriptions: params.subscriptions)
+        let article = Article(account: self, ref: ref, headers: headers)
+
+        self.articleByMsgid[msgid] = article
+        return article
     }
 }

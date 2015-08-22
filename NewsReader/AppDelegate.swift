@@ -120,9 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     continue
                 }
                 newAccounts[name] = client
-                print("created account \(name)")
             }
-            print("done \(name)")
         }
 
         for account in oldAccounts {

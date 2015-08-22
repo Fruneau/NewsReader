@@ -15,7 +15,7 @@ protocol GroupDelegate : class {
 }
 
 class Group : NSObject {
-    private weak var account : Account?
+    private weak var account : Account!
     private weak var promise : Promise<NNTPPayload>?
     weak var delegate : GroupDelegate?
 
@@ -85,7 +85,7 @@ class Group : NSObject {
             return
         }
 
-        self.promise = self.account?.client?.sendCommand(.Group(group: self.fullName)).thenChain({
+        self.promise = self.account.client?.sendCommand(.Group(group: self.fullName)).thenChain({
             (payload) throws in
 
             guard let client = self.account?.client else {
@@ -107,26 +107,11 @@ class Group : NSObject {
                 throw NNTPError.ServerProtocolError
             }
 
-            var articles : [Article] = []
             var roots : [Article] = []
-            for msg in messages.reverse() {
-                guard case .MessageId(name: _, msgid: let msgid)? = msg.headers["message-id"]?.first else {
-                    let article = Article(account: self.account, ref: (self.fullName, msg.num),
-                        headers: msg.headers)
+            let articles = messages.reverse().map {
+                (msg) -> Article in
 
-                    articles.append(article)
-                    return
-                }
-
-                if let article = self.account?.articleByMsgid[msgid] {
-                    articles.append(article)
-                } else {
-                    let article = Article(account: self.account, ref: (self.fullName, msg.num),
-                        headers: msg.headers)
-
-                    articles.append(article)
-                    self.account?.articleByMsgid[msgid] = article
-                }
+                return self.account.article((group: self.fullName, msg.num), headers: msg.headers)
             }
 
             threads: for article in articles {
@@ -167,7 +152,7 @@ class Group : NSObject {
         }).otherwise({
             (error) in
             
-            debugPrint("\(error)")
+            debugPrint("loading of group \(self.fullName) failed: \(error)")
         })
     }
 }
