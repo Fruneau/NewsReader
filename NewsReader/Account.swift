@@ -33,6 +33,47 @@ class Account : NSObject {
 
     var articleByMsgid : [String: Article] = [:]
 
+    private static func getAccountParameters(account: AnyObject)
+        -> (name: String, host: String, port: Int, useSSL: Bool,
+            login: String?, password: String?,
+            subscriptions: Set<String>)?
+    {
+        guard let name = account.valueForKey("name") as? String else {
+            return nil
+        }
+        guard let host = account.valueForKey("hostname") as? String else {
+            return nil
+        }
+        guard let port = account.valueForKey("port") as? Int else {
+            return nil
+        }
+        guard let useSSL = account.valueForKey("useSSL") as? Bool else {
+            return nil
+        }
+
+        let login = account.valueForKey("login") as? String
+        var password : String? = nil
+
+        if let alogin = login {
+            do {
+                password = try Keychain.findGenericPassowrd("NewsReader", accountName: "\(alogin)@\(host):\(port)").0
+            } catch {
+                return nil
+            }
+        }
+
+        var subscriptions : Set<String>
+        if let asubscriptions = account.valueForKey("subscriptions") as? NSArray {
+            subscriptions = Set<String>(asubscriptions.map { $0 as! String })
+        } else {
+            subscriptions = Set<String>()
+        }
+
+        return (name: name, host: host, port: port, useSSL: useSSL,
+            login: login, password: password,
+            subscriptions: subscriptions)
+    }
+
     private func refreshSubscriptions(subscriptions: Set<String>) {
         self.subscriptions.forEach {
             $0.subscribed = false
@@ -41,6 +82,7 @@ class Account : NSObject {
             let group = self.group($0)
 
             group.subscribed = true
+            group.load()
             return group
         }
     }
@@ -61,46 +103,18 @@ class Account : NSObject {
         self.password = password
 
         super.init()
-        self.refreshSubscriptions(subscriptions)
         self.connect()
-    }
-
-    convenience init?(name: String, host: String, port: Int, useSSL : Bool, login: String?, subscriptions: Set<String>) {
-        var password : String?
-
-        if let alogin = login {
-            do {
-                password = try Keychain.findGenericPassowrd("NewsReader", accountName: "\(alogin)@\(host):\(port)").0
-            } catch {
-                return nil
-            }
-        }
-        self.init(name: name, host: host, port: port, useSSL: useSSL, login: login, password: password, subscriptions: subscriptions)
+        self.refreshSubscriptions(subscriptions)
     }
 
     convenience init?(account: AnyObject) {
-        guard let name = account.valueForKey("name") as? String else {
+        guard let params = Account.getAccountParameters(account) else {
             return nil
-        }
-        guard let host = account.valueForKey("hostname") as? String else {
-            return nil
-        }
-        guard let port = account.valueForKey("port") as? Int else {
-            return nil
-        }
-        guard let useSSL = account.valueForKey("useSSL") as? Bool else {
-            return nil
-        }
-        let login = account.valueForKey("login") as? String
-
-        var subscriptions : Set<String>
-        if let asubscriptions = account.valueForKey("subscriptions") as? NSArray {
-            subscriptions = Set<String>(asubscriptions.map { $0 as! String })
-        } else {
-            subscriptions = Set<String>()
         }
 
-        self.init(name: name, host: host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
+        self.init(name: params.name, host: params.host, port: params.port, useSSL: params.useSSL,
+            login: params.login, password: params.password,
+            subscriptions: params.subscriptions)
     }
 
     deinit {
@@ -120,55 +134,26 @@ class Account : NSObject {
     }
 
     func update(host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
-        if host == self.host && port == self.port && useSSL == self.useSSL && login == self.login && password == self.password {
-            return
+        if host != self.host || port != self.port || useSSL != self.useSSL || login != self.login || password != self.password {
+            self.client?.disconnect()
+            self.host = host
+            self.port = port
+            self.useSSL = useSSL
+            self.login = login
+            self.password = password
+            self.connect()
         }
-
-        self.client?.disconnect()
-        self.host = host
-        self.port = port
-        self.useSSL = useSSL
-        self.login = login
-        self.password = password
 
         self.refreshSubscriptions(subscriptions)
-        self.connect()
-    }
-
-    func update(host: String, port: Int, useSSL : Bool, login: String?, subscriptions: Set<String>) {
-        var password : String?
-
-        if let alogin = login {
-            do {
-                password = try Keychain.findGenericPassowrd("NewsReader", accountName: "\(alogin)@\(host):\(port)").0
-            } catch {
-                return
-            }
-        }
-
-        self.update(host, port: port, useSSL: useSSL, login: login, password: password, subscriptions: subscriptions)
     }
 
     func update(account: AnyObject) {
-        guard let host = account.valueForKey("hostname") as? String else {
-            return
-        }
-        guard let port = account.valueForKey("port") as? Int else {
-            return
-        }
-        guard let useSSL = account.valueForKey("useSSL") as? Bool else {
+        guard let params = Account.getAccountParameters(account) else {
             return
         }
 
-        let login = account["login"] as? String
-
-        var subscriptions : Set<String>
-        if let asubscriptions = account.valueForKey("subscriptions") as? NSArray {
-            subscriptions = Set<String>(asubscriptions.map { $0 as! String })
-        } else {
-            subscriptions = Set<String>()
-        }
-
-        self.update(host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
+        self.update(params.host, port: params.port, useSSL: params.useSSL,
+            login: params.login, password: params.password,
+            subscriptions: params.subscriptions)
     }
 }
