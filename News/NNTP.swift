@@ -1315,7 +1315,7 @@ public class NNTPClient {
     /// This convenience initializer build a client to an URL. The URL must
     /// use one of the following scheme:
     /// - `news://` or `nntp://` for simple connections to a server. In that
-    ///   case the port defaults to 465
+    ///   case the port defaults to 119
     /// - `nntps://` for SSL-wrapped connections to a server. In that case
     ///   the port defaults to 563
     ///
@@ -1330,7 +1330,7 @@ public class NNTPClient {
     ///    underlying sockets cannot be created.
     public convenience init?(url: NSURL) {
         var ssl = false
-        var port = 465
+        var port = 119
 
         switch (url.scheme) {
         case "news", "nntp":

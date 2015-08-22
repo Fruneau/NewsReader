@@ -179,7 +179,7 @@ extension PreferenceWindowController : NSWindowDelegate {
         self.accountListController.addObject(NSMutableDictionary(dictionary: [
             "name": name,
             "enabled": true,
-            "port": 465,
+            "port": 119,
             "useSSL": false,
             "subscriptions": NSMutableArray(),
             "groups": NSMutableDictionary()
