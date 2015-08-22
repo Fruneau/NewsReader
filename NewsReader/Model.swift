@@ -264,9 +264,16 @@ class Group : NSObject {
     private weak var promise : Promise<NNTPPayload>?
     weak var delegate : GroupDelegate?
 
-    let name : String
-    var fullName : String?
+    let children : [AnyObject] = []
+    let isLeaf : Bool = true
+
+    let fullName : String
     var shortDesc : String?
+    var subscribed : Bool = false
+
+    var name : String {
+        return fullName
+    }
 
     dynamic var unreadCount : Int {
         var count = 0
@@ -287,44 +294,11 @@ class Group : NSObject {
         return self.unreadCount == 0
     }
 
-    let isRoot : Bool
-    var children : [String: Group] = [:]
-
-    var isLeaf : Bool {
-        return self.fullName != nil || self.isRoot
-    }
-
-    init(root: String) {
-        self.name = root
-        self.isRoot = true
-        super.init()
-    }
-
-    init(account: Account?, node: String) {
-        self.name = node
-        self.isRoot = false
+    init(account: Account?, fullName: String, shortDesc: String?) {
         self.account = account
+        self.fullName = fullName
+        self.shortDesc = shortDesc
         super.init()
-    }
-
-    func addGroup(fullName: String, shortDesc: String?) {
-        var node = self
-
-        for tok in fullName.characters.split(".") {
-            let str = String(tok)
-
-            if let child = node.children[str] {
-                node = child
-            } else {
-                let child = Group(account: self.account, node: str)
-
-                node.children[str] = child
-                node = child
-            }
-        }
-
-        node.fullName = fullName
-        node.shortDesc = shortDesc
     }
 
     var articleByMsgid : [String: Article] = [:]
@@ -332,11 +306,11 @@ class Group : NSObject {
     dynamic var roots : [Article]?
 
     func load() {
-        if self.articles != nil || self.fullName == nil {
+        if self.articles != nil {
             return
         }
 
-        self.promise = self.account?.client?.sendCommand(.Group(group: self.fullName!)).thenChain({
+        self.promise = self.account?.client?.sendCommand(.Group(group: self.fullName)).thenChain({
             (payload) throws in
 
             guard let client = self.account?.client else {
@@ -349,7 +323,7 @@ class Group : NSObject {
 
             let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
 
-            return client.sendCommand(.Over(group: self.fullName!, range: NNTPCommand.ArticleRange.From(from)))
+            return client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.From(from)))
         })
         self.promise?.then({
             (payload) throws in
@@ -361,7 +335,7 @@ class Group : NSObject {
             var articles : [Article] = []
             var roots : [Article] = []
             for msg in messages.reverse() {
-                let article = Article(account: self.account, ref: (self.fullName!, msg.num),
+                let article = Article(account: self.account, ref: (self.fullName, msg.num),
                     headers: msg.headers)
 
                 articles.append(article)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8173.3" systemVersion="15A243d" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8173.3" systemVersion="15A262e" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8173.3"/>
@@ -181,12 +181,12 @@
                                             <nil key="backgroundColor"/>
                                         </clipView>
                                         <animations/>
-                                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="1zc-18-Bok">
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="1zc-18-Bok">
                                             <rect key="frame" x="1" y="119" width="238" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <animations/>
                                         </scroller>
-                                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="FaW-p5-Gez">
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="FaW-p5-Gez">
                                             <rect key="frame" x="224" y="17" width="15" height="102"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <animations/>
@@ -234,12 +234,12 @@
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="r6W-n7-8d3"/>
                                         </constraints>
                                         <animations/>
-                                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="xGN-3G-d5N">
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="xGN-3G-d5N">
                                             <rect key="frame" x="-100" y="-100" width="233" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <animations/>
                                         </scroller>
-                                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="iYA-5d-ou9">
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="iYA-5d-ou9">
                                             <rect key="frame" x="234" y="1" width="15" height="143"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <animations/>
@@ -283,7 +283,7 @@
                                             <animations/>
                                         </clipView>
                                         <animations/>
-                                        <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="lWD-Wm-dG8">
+                                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="lWD-Wm-dG8">
                                             <rect key="frame" x="0.0" y="579" width="424" height="16"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <animations/>

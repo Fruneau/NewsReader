@@ -10,15 +10,25 @@ import Foundation
 import Lib
 import News
 
-class Account {
+class Account : NSObject {
     var host : String
     var port : Int
     var useSSL : Bool
     var login : String?
     var password : String?
-    var subscriptions : Set<String>
 
     var client : NNTPClient?
+
+    var name : String {
+        return host
+    }
+
+    var shortDesc : String {
+        return "\(host):\(port)"
+    }
+
+    let children : [AnyObject] = []
+    let isLeaf : Bool = true
 
     init(host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
         self.host = host
@@ -26,7 +36,16 @@ class Account {
         self.useSSL = useSSL
         self.login = login
         self.password = password
-        self.subscriptions = subscriptions
+
+        super.init()
+
+        self.subscriptions = subscriptions.map {
+            let group = Group(account: self, fullName: $0, shortDesc: nil)
+
+            group.subscribed = true
+            self.groups[$0] = group
+            return group
+        }
 
         self.client = NNTPClient(host: host, port: port, ssl: useSSL)
         self.client?.setCredentials(login, password: password)
@@ -86,6 +105,22 @@ class Account {
         self.login = login
         self.password = password
 
+        self.subscriptions.forEach {
+            $0.subscribed = false
+        }
+        self.subscriptions = subscriptions.map {
+            if let group = self.groups[$0] {
+                group.subscribed = true
+                return group
+            } else {
+                let group = Group(account: self, fullName: $0, shortDesc: nil)
+
+                group.subscribed = true
+                self.groups[$0] = group
+                return group
+            }
+        }
+
         self.client = NNTPClient(host: host, port: port, ssl: useSSL)
         self.client?.setCredentials(login, password: password)
         self.client?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
@@ -128,4 +163,7 @@ class Account {
 
         self.update(host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
     }
+
+    var groups : [String: Group] = [:]
+    var subscriptions : [Group] = []
 }

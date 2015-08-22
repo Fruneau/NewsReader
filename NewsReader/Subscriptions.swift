@@ -71,7 +71,7 @@ class SubscriptionController : NSObject {
 
                 leaf["fullname"] = groupName
                 leaf["description"] = shortDesc
-                leaf["subscribed"] = self.account!.subscriptions.contains(groupName)
+                leaf["subscribed"] = self.account!.groups[groupName]?.subscribed
             }
             self.subscriptionView.reloadData()
         }).otherwise({ (e) in debugPrint(e) })

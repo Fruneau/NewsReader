@@ -120,7 +120,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     continue
                 }
                 newAccounts[name] = client
+                print("created account \(name)")
             }
+            print("done \(name)")
         }
 
         for account in oldAccounts {
@@ -129,15 +131,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         self.accounts = newAccounts
         self.browserWindowController?.groupRoots.removeAll()
-        self.browserWindowController?.groupRoots.append(Group(root: "Subscriptions"))
 
         for account in self.accounts.values {
+            self.browserWindowController?.groupRoots.append(account)
             for group in account.subscriptions {
-                let tree = Group(account: account, node: group)
-
-                tree.fullName = group
-                tree.shortDesc = group
-                self.browserWindowController?.groupRoots.append(tree)
+                self.browserWindowController?.groupRoots.append(group)
             }
         }
     }
