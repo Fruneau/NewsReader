@@ -36,11 +36,8 @@ class SubscriptionController : NSObject {
             return
         }
 
-        if self.accountListController.selection.valueForKey("subscriptions") == nil {
-            self.accountListController.selection.setValue(NSMutableArray(), forKey: "subscriptions")
-        }
-
-        self.account = Account(account: self.accountListController.selection)
+        self.account = Account(accountId: self.accountListController.selectionIndexes.firstIndex,
+                               account: self.accountListController.selection)
         self.promise = self.account?.client?.sendCommand(.ListNewsgroups(nil))
         self.promise?.then({
             (payload) in

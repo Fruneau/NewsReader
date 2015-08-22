@@ -23,8 +23,10 @@ class Group : NSObject {
     let isLeaf : Bool = true
 
     let fullName : String
+    let keyConfName : String
     var shortDesc : String?
     var subscribed : Bool = false
+    var readState : GroupReadState
 
     var name : String {
         return fullName
@@ -52,29 +54,49 @@ class Group : NSObject {
     init(account: Account?, fullName: String, shortDesc: String?) {
         self.account = account
         self.fullName = fullName
+
+        let normalizedGroup = fullName.stringByReplacingOccurrencesOfString(".", withString: "@")
+        self.keyConfName = "accounts[\(self.account.id)].groups.\(normalizedGroup)"
         self.shortDesc = shortDesc
+
+        let defaults = NSUserDefaults.standardUserDefaults()
+
+        if let line = defaults.objectAtPath("\(self.keyConfName).readState") as? String,
+               readState = GroupReadState(line: line) {
+            self.readState = readState
+        } else {
+            self.readState = GroupReadState()
+        }
         super.init()
     }
 
-    func markAsRead(num: Int) {
+    private func notifyUnreadCountChange(action: (() -> ())?) {
         self.willChangeValueForKey("unreadCount")
         self.willChangeValueForKey("unreadCountText")
         self.willChangeValueForKey("isRead")
 
+        action?()
 
         self.didChangeValueForKey("unreadCount")
         self.didChangeValueForKey("unreadCountText")
         self.didChangeValueForKey("isRead")
     }
 
-    func unmarkAsRead(num: Int) {
-        self.willChangeValueForKey("unreadCount")
-        self.willChangeValueForKey("unreadCountText")
-        self.willChangeValueForKey("isRead")
+    func markAsRead(num: Int) {
+        if self.readState.markAsRead(num) {
+            NSUserDefaults.standardUserDefaults().setObject(self.readState.description,
+                atPath: "\(self.keyConfName).readState")
 
-        self.didChangeValueForKey("unreadCount")
-        self.didChangeValueForKey("unreadCountText")
-        self.didChangeValueForKey("isRead")
+            self.notifyUnreadCountChange(nil)
+        }
+    }
+
+    func unmarkAsRead(num: Int) {
+        if self.readState.unmarkAsRead(num) {
+            NSUserDefaults.standardUserDefaults().setObject(self.readState.description,
+                atPath: "\(self.keyConfName).readState")
+            self.notifyUnreadCountChange(nil)
+        }
     }
 
     dynamic var articles : [Article]?
@@ -137,17 +159,10 @@ class Group : NSObject {
                 roots.append(article)
             }
 
-            self.willChangeValueForKey("unreadCount")
-            self.willChangeValueForKey("unreadCountText")
-            self.willChangeValueForKey("isRead")
-
-            self.articles = articles
-            self.roots = roots
-
-            self.didChangeValueForKey("unreadCount")
-            self.didChangeValueForKey("unreadCountText")
-            self.didChangeValueForKey("isRead")
-            
+            self.notifyUnreadCountChange {
+                self.articles = articles
+                self.roots = roots
+            }
             self.delegate?.groupTree(self, hasNewThreads: roots)
         }).otherwise({
             (error) in

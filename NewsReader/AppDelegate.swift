@@ -88,7 +88,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.browserWindowController?.appDelegate = self
     }
 
-    func loadAccount(account: AnyObject) -> Account? {
+    func loadAccount(accountId: Int, account: AnyObject) -> Account? {
         guard let enabled = account.valueForKey("enabled") as? Bool else {
             return nil
         }
@@ -96,7 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return nil
         }
 
-        return Account(account: account)
+        return Account(accountId: accountId, account: account)
     }
 
     func reloadAccounts() {
@@ -106,34 +106,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         var oldAccounts = self.accounts
         var newAccounts : [String: Account] = [:]
+        var hasChanges = false
 
-        for account in accounts {
+        for id in 0..<accounts.count {
+            let account = accounts[id]
             guard let name = account["name"] as? String else {
                 continue
             }
 
             if let old = oldAccounts.removeValueForKey(name) {
-                old.update(account)
+                hasChanges = hasChanges || old.update(id, account: account)
                 newAccounts[name] = old
             } else {
-                guard let client = self.loadAccount(account) else {
+                guard let client = self.loadAccount(id, account: account) else {
                     continue
                 }
                 newAccounts[name] = client
+                hasChanges = true
             }
         }
 
         for account in oldAccounts {
+            hasChanges = true
             account.1.client?.disconnect()
         }
 
         self.accounts = newAccounts
-        self.browserWindowController?.groupRoots.removeAll()
 
-        for account in self.accounts.values {
-            self.browserWindowController?.groupRoots.append(account)
-            for group in account.subscriptions {
-                self.browserWindowController?.groupRoots.append(group)
+        if hasChanges {
+            self.browserWindowController?.groupRoots.removeAll()
+
+            for account in self.accounts.values {
+                self.browserWindowController?.groupRoots.append(account)
+                for group in account.subscriptions {
+                    self.browserWindowController?.groupRoots.append(group)
+                }
             }
         }
     }

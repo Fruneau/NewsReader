@@ -181,7 +181,8 @@ extension PreferenceWindowController : NSWindowDelegate {
             "enabled": true,
             "port": 465,
             "useSSL": false,
-            "subscriptions": NSMutableArray()
+            "subscriptions": NSMutableArray(),
+            "groups": NSMutableDictionary()
         ]))
 
         self.window?.endSheet(self.newAccountSheet)

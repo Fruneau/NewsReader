@@ -11,8 +11,13 @@ import AddressBook
 import Lib
 import News
 
+private struct ArticleRef {
+    weak var group : Group!
+    let num : Int
+}
+
 class Article : NSObject {
-    private weak var account : Account?
+    private weak var account : Account!
     private weak var promise : Promise<NNTPPayload>?
 
     var headers : MIMEHeaders
@@ -116,9 +121,9 @@ class Article : NSObject {
 
             for ref in self.refs {
                 if self.isRead {
-                    self.account?.group(ref.0).markAsRead(ref.1)
+                    ref.group.markAsRead(ref.num)
                 } else {
-                    self.account?.group(ref.0).unmarkAsRead(ref.1)
+                    ref.group.unmarkAsRead(ref.num)
                 }
             }
         }
@@ -141,10 +146,27 @@ class Article : NSObject {
             return
         }
 
-        var refs : [(String, Int)] = []
-        for case .NewsgroupRef(group: let group, number: let num) in dest {
-            refs.append((group, num))
+        var refs : [ArticleRef] = []
+        for case .NewsgroupRef(group: let name, number: let num) in dest {
+            let group = self.account.group(name)
+
+            if group.readState.isMarkedAsRead(num) {
+                self.isRead = true
+            }
+
+            refs.append(ArticleRef(group: group, num: num))
         }
+
+        if self.isRead {
+            for ref in self.refs {
+                ref.group.markAsRead(ref.num)
+            }
+        } else {
+            for ref in self.refs {
+                ref.group.unmarkAsRead(ref.num)
+            }
+        }
+
         self.refs = refs
     }
 
@@ -162,7 +184,7 @@ class Article : NSObject {
         return nil
     }
 
-    var refs : [(String, Int)]
+    private var refs : [ArticleRef]
     dynamic lazy var to : String? = self.loadNewsgroups()
 
     lazy var contactPicture : NSImage? = {
@@ -173,9 +195,9 @@ class Article : NSObject {
         }
     }()
 
-    init(account : Account?, ref: (String, Int), headers: MIMEHeaders) {
+    init(account : Account, ref: (group: String, num: Int), headers: MIMEHeaders) {
         self.account = account
-        self.refs = [ref]
+        self.refs = [ArticleRef(group: self.account.group(ref.group), num: ref.num)]
         self.headers = headers
         super.init()
         self.loadRefs()
@@ -193,7 +215,7 @@ class Article : NSObject {
         if let msgid = self.msgid  {
             self.promise = self.account?.client?.sendCommand(.ArticleByMsgid(msgid: msgid))
         } else {
-            self.promise = self.account?.client?.sendCommand(.Article(group: self.refs[0].0, article: self.refs[0].1))
+            self.promise = self.account?.client?.sendCommand(.Article(group: self.refs[0].group.fullName, article: self.refs[0].num))
         }
 
         self.promise?.then({

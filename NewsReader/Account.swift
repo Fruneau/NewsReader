@@ -11,6 +11,7 @@ import Lib
 import News
 
 class Account : NSObject {
+    var id : Int
     let name : String
     var host : String
     var port : Int
@@ -93,11 +94,12 @@ class Account : NSObject {
         self.client?.connect()
     }
 
-    init(account: AnyObject) {
+    init(accountId: Int, account: AnyObject) {
         guard let params = Account.getAccountParameters(account) else {
             assert (false)
         }
 
+        self.id = accountId
         self.name = params.name
         self.host = params.host
         self.port = params.port
@@ -115,9 +117,11 @@ class Account : NSObject {
         self.client = nil
     }
 
-    func update(account: AnyObject) {
+    func update(accountId: Int, account: AnyObject) -> Bool {
+        self.id = accountId
+
         guard let params = Account.getAccountParameters(account) else {
-            return
+            return false
         }
 
         if params.host != self.host || params.port != self.port || params.useSSL != self.useSSL
@@ -132,7 +136,12 @@ class Account : NSObject {
             self.connect()
         }
 
-        self.refreshSubscriptions(params.subscriptions)
+        let oldSubs = Set<String>(self.subscriptions.map { $0.fullName })
+        if oldSubs != params.subscriptions {
+            self.refreshSubscriptions(params.subscriptions)
+            return true
+        }
+        return false
     }
 
     func group(name: String) -> Group {
