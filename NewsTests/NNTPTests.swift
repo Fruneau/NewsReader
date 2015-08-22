@@ -17,7 +17,7 @@ class NNTPTests : XCTestCase {
         super.setUp()
 
         self.nntp = nil
-        if var rcContent = NSData(contentsOfFile: "~/.newsreaderrc".stringByStandardizingPath)?.utf8String {
+        if var rcContent = NSData(contentsOfFile: ("~/.newsreaderrc" as NSString).stringByStandardizingPath)?.utf8String {
             if let idx = rcContent.characters.indexOf("\n") {
                 rcContent = rcContent.substringToIndex(idx)
             }

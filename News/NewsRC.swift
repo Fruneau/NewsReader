@@ -14,13 +14,7 @@ import Foundation
 /// the subscription state and the list of read messages.
 ///
 /// It maps to the content of a `.newsrc` file 
-public struct GroupSubscription : CustomStringConvertible {
-    /// Full name of the group.
-    public let name : String
-
-    /// Subscription state for the group.
-    public var subscribed : Bool
-
+public struct GroupReadState : CustomStringConvertible {
     /// Sorted list of range of read articles.
     ///
     /// This member stores the list of article numbers that are marked as
@@ -30,26 +24,63 @@ public struct GroupSubscription : CustomStringConvertible {
     /// We do guarantee that `NSMaxRange(read[i]) < read[i + 1].location`
     /// which means that entries are sorted and that two successive entries
     /// are merged if they immediately follow each other.
-    private var read : [NSRange]
+    private var ranges : [NSRange]
 
     /// Build a group for testing purpose.
     ///
     /// The created group has no read articles and is not subscribed.
+    public init() {
+        self.ranges = []
+    }
+
+    /// Build a group status from a textual version
     ///
-    /// - parameter name: the name of the group
-    internal init(name: String) {
-        self.name = name
-        self.subscribed = false
-        self.read = []
+    /// - parameter line: the textual representation of the read state
+    public init?(line: String) {
+        let scanner = NSScanner(string: line)
+        var ranges : [NSRange] = []
+
+        scanner.charactersToBeSkipped = nil
+        while !scanner.atEnd {
+            var start : Int = 0
+
+            if !scanner.scanInteger(&start) {
+                return nil
+            }
+
+            if scanner.skipString("-") {
+                var end : Int = 0
+
+                if !scanner.scanInteger(&end) {
+                    return nil
+                }
+
+                if end <= start {
+                    return nil
+                }
+
+                ranges.append(NSMakeRange(start, end - start + 1))
+            } else {
+                ranges.append(NSMakeRange(start, 1))
+            }
+
+            if !scanner.atEnd {
+                if !scanner.skipString(",") {
+                    return nil
+                }
+            }
+        }
+
+        self.ranges = ranges
     }
 
     /// Check that the read list is properly optimized.
     internal func checkOptimized() -> Bool {
-        if self.read.count == 0 {
+        if self.ranges.count == 0 {
             return true
         }
-        for i in 1..<self.read.count {
-            if NSMaxRange(self.read[i - 1]) >= self.read[i].location {
+        for i in 1..<self.ranges.count {
+            if NSMaxRange(self.ranges[i - 1]) >= self.ranges[i].location {
                 return false
             }
         }
@@ -63,15 +94,15 @@ public struct GroupSubscription : CustomStringConvertible {
     ///
     /// - parameter pos: the index to try to merge in the next one
     private mutating func optimizeAt(pos: Int) {
-        if pos < 0 || pos >= self.read.count - 1 {
+        if pos < 0 || pos >= self.ranges.count - 1 {
             return
         }
 
-        let first = self.read[pos]
-        let second = self.read[pos + 1]
+        let first = self.ranges[pos]
+        let second = self.ranges[pos + 1]
         if NSMaxRange(first) == second.location {
-            self.read[pos] = NSUnionRange(first, second)
-            self.read.removeAtIndex(pos + 1)
+            self.ranges[pos] = NSUnionRange(first, second)
+            self.ranges.removeAtIndex(pos + 1)
         }
     }
 
@@ -83,15 +114,15 @@ public struct GroupSubscription : CustomStringConvertible {
     /// - parameter num: The article number to mark
     /// - returns: The previous state for the article
     public mutating func markAsRead(num: Int) -> Bool {
-        for var i = 0; i < self.read.count; i++ {
-            let range = self.read[i]
+        for var i = 0; i < self.ranges.count; i++ {
+            let range = self.ranges[i]
 
             switch num {
             case _ where NSMaxRange(range) < num:
                 continue
 
             case NSMaxRange(range):
-                self.read[i] = NSMakeRange(range.location, range.length + 1)
+                self.ranges[i] = NSMakeRange(range.location, range.length + 1)
                 self.optimizeAt(i)
                 return false
 
@@ -99,18 +130,18 @@ public struct GroupSubscription : CustomStringConvertible {
                 return true
 
             case range.location - 1:
-                self.read[i] = NSMakeRange(range.location - 1, range.length + 1)
+                self.ranges[i] = NSMakeRange(range.location - 1, range.length + 1)
                 self.optimizeAt(i - 1)
                 return false
 
             default:
-                self.read.insert(NSMakeRange(num, 1), atIndex: i)
+                self.ranges.insert(NSMakeRange(num, 1), atIndex: i)
                 self.optimizeAt(i)
                 return false
             }
         }
 
-        self.read.append(NSMakeRange(num, 1))
+        self.ranges.append(NSMakeRange(num, 1))
         return false
     }
 
@@ -140,8 +171,8 @@ public struct GroupSubscription : CustomStringConvertible {
     /// - parameter num: The article number to unmark
     /// - returns: The previous state of the article
     public mutating func unmarkAsRead(num: Int) -> Bool {
-        for var i = 0; i < self.read.count; i++ {
-            let range = self.read[i]
+        for var i = 0; i < self.ranges.count; i++ {
+            let range = self.ranges[i]
 
             switch (num) {
             case _ where NSMaxRange(range) <= num:
@@ -149,19 +180,19 @@ public struct GroupSubscription : CustomStringConvertible {
 
             case NSMaxRange(range) - 1:
                 if range.length == 1 {
-                    self.read.removeAtIndex(i)
+                    self.ranges.removeAtIndex(i)
                     return true
                 }
-                self.read[i] = NSMakeRange(range.location, range.length - 1)
+                self.ranges[i] = NSMakeRange(range.location, range.length - 1)
                 return true
 
             case range.location:
-                self.read[i] = NSMakeRange(range.location + 1, range.length - 1)
+                self.ranges[i] = NSMakeRange(range.location + 1, range.length - 1)
                 return true
 
             case _ where NSLocationInRange(num, range):
-                self.read[i] = NSMakeRange(range.location, num - range.location)
-                self.read.insert(NSMakeRange(num + 1, NSMaxRange(range) - (num + 1)), atIndex: i + 1)
+                self.ranges[i] = NSMakeRange(range.location, num - range.location)
+                self.ranges.insert(NSMakeRange(num + 1, NSMaxRange(range) - (num + 1)), atIndex: i + 1)
                 return true
 
             default:
@@ -194,7 +225,7 @@ public struct GroupSubscription : CustomStringConvertible {
     /// - parameter num: The article number to check
     /// - returns: A flag indicating if the article is marked as read.
     public func isMarkedAsRead(num: Int) -> Bool {
-        for range in self.read {
+        for range in self.ranges {
             if NSLocationInRange(num, range) {
                 return true
             }
@@ -204,12 +235,10 @@ public struct GroupSubscription : CustomStringConvertible {
 
     /// Representation of the subscription in .newsrc format
     public var description : String {
-        var buffer = self.name
+        var buffer = ""
 
-        buffer += self.subscribed ? ": " : "! "
-
-        for i in 0..<self.read.count {
-            let range = self.read[i]
+        for i in 0..<self.ranges.count {
+            let range = self.ranges[i]
 
             if i != 0 {
                 buffer += ","

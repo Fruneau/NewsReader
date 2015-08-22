@@ -13,7 +13,7 @@ import XCTest
 
 class NewsRCTests : XCTestCase {
     func testMarkAsRead() {
-        var group = GroupSubscription(name: "toto")
+        var group = GroupReadState()
 
         for i in 0..<10 {
             XCTAssertFalse(group.isMarkedAsRead(i))
@@ -110,7 +110,7 @@ class NewsRCTests : XCTestCase {
     }
 
     func testMarkAsUnread() {
-        var group = GroupSubscription(name: "toto")
+        var group = GroupReadState()
 
         XCTAssertFalse(group.markAsRead(1))
         XCTAssertEqual(group.markRangeAsRead(NSMakeRange(3, 3)), 3)
