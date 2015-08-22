@@ -99,6 +99,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return Account(accountId: accountId, account: account)
     }
 
+    private func refreshApplicationUnreadCount() {
+        var unreadCount = 0
+
+        for account in self.accounts.values {
+            unreadCount += account.unreadCount
+        }
+
+        if unreadCount == 0 {
+            NSApp.dockTile.badgeLabel = nil
+        } else {
+            NSApp.dockTile.badgeLabel = String(unreadCount)
+        }
+    }
+
     func reloadAccounts() {
         guard let accounts = NSUserDefaults.standardUserDefaults().arrayForKey("accounts") as? [[String: AnyObject]] else {
             return
@@ -121,6 +135,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let client = self.loadAccount(id, account: account) else {
                     continue
                 }
+                client.addObserver(self, forKeyPath: "unreadCount", options: .New, context: &self.accountUnreadCountChangeContext)
                 newAccounts[name] = client
                 hasChanges = true
             }
@@ -129,11 +144,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         for account in oldAccounts {
             hasChanges = true
             account.1.client?.disconnect()
+            account.1.removeObserver(self, forKeyPath: "unreadCount")
         }
 
-        self.accounts = newAccounts
 
         if hasChanges {
+            self.accounts = newAccounts
             self.browserWindowController?.groupRoots.removeAll()
 
             for account in self.accounts.values {
@@ -142,14 +158,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.browserWindowController?.groupRoots.append(group)
                 }
             }
+            self.refreshApplicationUnreadCount()
         }
     }
 
+    private var accountUnreadCountChangeContext = 0
     private var accountUpdateContext = 0
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
         switch context {
         case &self.accountUpdateContext:
             self.reloadAccounts()
+
+        case &self.accountUnreadCountChangeContext:
+            self.refreshApplicationUnreadCount()
 
         default:
             super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)

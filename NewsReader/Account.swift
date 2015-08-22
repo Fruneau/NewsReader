@@ -74,14 +74,29 @@ class Account : NSObject {
             subscriptions: subscriptions)
     }
 
+    private var groupUnreadCountContext = 0
+
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        switch context {
+        case &self.groupUnreadCountContext:
+            self.willChangeValueForKey("unreadCount")
+            self.didChangeValueForKey("unreadCount")
+
+        default:
+            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+        }
+    }
+
     private func refreshSubscriptions(subscriptions: Set<String>) {
         self.subscriptions.forEach {
             $0.subscribed = false
+            $0.removeObserver(self, forKeyPath: "unreadCount")
         }
         self.subscriptions = subscriptions.map {
             let group = self.group($0)
 
             group.subscribed = true
+            group.addObserver(self, forKeyPath: "unreadCount", options: .New, context: &self.groupUnreadCountContext)
             group.load()
             return group
         }
@@ -168,5 +183,14 @@ class Account : NSObject {
 
         self.articleByMsgid[msgid] = article
         return article
+    }
+
+    dynamic var unreadCount : Int {
+        var unreadCount = 0
+
+        for group in self.subscriptions {
+            unreadCount += group.unreadCount
+        }
+        return unreadCount
     }
 }
