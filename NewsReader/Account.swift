@@ -31,6 +31,8 @@ class Account : NSObject {
     var groups : [String: Group] = [:]
     var subscriptions : [Group] = []
 
+    var articleByMsgid : [String: Article] = [:]
+
     private func refreshSubscriptions(subscriptions: Set<String>) {
         self.subscriptions.forEach {
             $0.subscribed = false
