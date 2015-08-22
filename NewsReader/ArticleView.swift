@@ -38,12 +38,12 @@ class ArticleViewItem : NSCollectionViewItem {
                 (_) in
 
                 self.articlePromise = nil
-                guard let indexPath = self.collectionView.indexPathForItem(self) else {
+                guard let _ = self.collectionView.indexPathForItem(self) else {
                     return
                 }
 
-                //self.collectionView.reloadData()
-                self.collectionView.reloadItemsAtIndexPaths([indexPath])
+                self.collectionView.reloadData()
+                //self.collectionView.reloadItemsAtIndexPaths([indexPath])
             }
 
             self.fromView.objectValue = self.article?.from
