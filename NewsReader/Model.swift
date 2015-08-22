@@ -113,6 +113,14 @@ class Article : NSObject {
 
         didSet {
             self.threadRoot.didChangeValueForKey("threadIsRead")
+
+            for ref in self.refs {
+                if self.isRead {
+                    self.account?.group(ref.0).markAsRead(ref.1)
+                } else {
+                    self.account?.group(ref.0).unmarkAsRead(ref.1)
+                }
+            }
         }
     }
 
@@ -299,6 +307,27 @@ class Group : NSObject {
         self.fullName = fullName
         self.shortDesc = shortDesc
         super.init()
+    }
+
+    func markAsRead(num: Int) {
+        self.willChangeValueForKey("unreadCount")
+        self.willChangeValueForKey("unreadCountText")
+        self.willChangeValueForKey("isRead")
+
+
+        self.didChangeValueForKey("unreadCount")
+        self.didChangeValueForKey("unreadCountText")
+        self.didChangeValueForKey("isRead")
+    }
+
+    func unmarkAsRead(num: Int) {
+        self.willChangeValueForKey("unreadCount")
+        self.willChangeValueForKey("unreadCountText")
+        self.willChangeValueForKey("isRead")
+
+        self.didChangeValueForKey("unreadCount")
+        self.didChangeValueForKey("unreadCountText")
+        self.didChangeValueForKey("isRead")
     }
 
     var articleByMsgid : [String: Article] = [:]

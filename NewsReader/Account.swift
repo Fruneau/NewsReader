@@ -11,6 +11,8 @@ import Lib
 import News
 
 class Account : NSObject {
+    let name : String
+
     var host : String
     var port : Int
     var useSSL : Bool
@@ -19,10 +21,6 @@ class Account : NSObject {
 
     var client : NNTPClient?
 
-    var name : String {
-        return host
-    }
-
     var shortDesc : String {
         return "\(host):\(port)"
     }
@@ -30,7 +28,30 @@ class Account : NSObject {
     let children : [AnyObject] = []
     let isLeaf : Bool = true
 
-    init(host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
+    var groups : [String: Group] = [:]
+    var subscriptions : [Group] = []
+
+    private func refreshSubscriptions(subscriptions: Set<String>) {
+        self.subscriptions.forEach {
+            $0.subscribed = false
+        }
+        self.subscriptions = subscriptions.map {
+            let group = self.group($0)
+
+            group.subscribed = true
+            return group
+        }
+    }
+
+    private func connect() {
+        self.client = NNTPClient(host: host, port: port, ssl: useSSL)
+        self.client?.setCredentials(login, password: password)
+        self.client?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+        self.client?.connect()
+    }
+
+    init(name: String, host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
+        self.name = name
         self.host = host
         self.port = port
         self.useSSL = useSSL
@@ -38,22 +59,11 @@ class Account : NSObject {
         self.password = password
 
         super.init()
-
-        self.subscriptions = subscriptions.map {
-            let group = Group(account: self, fullName: $0, shortDesc: nil)
-
-            group.subscribed = true
-            self.groups[$0] = group
-            return group
-        }
-
-        self.client = NNTPClient(host: host, port: port, ssl: useSSL)
-        self.client?.setCredentials(login, password: password)
-        self.client?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-        self.client?.connect()
+        self.refreshSubscriptions(subscriptions)
+        self.connect()
     }
 
-    convenience init?(host: String, port: Int, useSSL : Bool, login: String?, subscriptions: Set<String>) {
+    convenience init?(name: String, host: String, port: Int, useSSL : Bool, login: String?, subscriptions: Set<String>) {
         var password : String?
 
         if let alogin = login {
@@ -63,10 +73,13 @@ class Account : NSObject {
                 return nil
             }
         }
-        self.init(host: host, port: port, useSSL: useSSL, login: login, password: password, subscriptions: subscriptions)
+        self.init(name: name, host: host, port: port, useSSL: useSSL, login: login, password: password, subscriptions: subscriptions)
     }
 
     convenience init?(account: AnyObject) {
+        guard let name = account.valueForKey("name") as? String else {
+            return nil
+        }
         guard let host = account.valueForKey("hostname") as? String else {
             return nil
         }
@@ -85,12 +98,23 @@ class Account : NSObject {
             subscriptions = Set<String>()
         }
 
-        self.init(host: host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
+        self.init(name: name, host: host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
     }
 
     deinit {
         self.client?.disconnect()
         self.client = nil
+    }
+
+    func group(name: String) -> Group {
+        if let group = self.groups[name] {
+            return group
+        } else {
+            let group = Group(account: self, fullName: name, shortDesc: nil)
+
+            self.groups[name] = group
+            return group
+        }
     }
 
     func update(host: String, port: Int, useSSL : Bool, login: String?, password: String?, subscriptions: Set<String>) {
@@ -105,26 +129,8 @@ class Account : NSObject {
         self.login = login
         self.password = password
 
-        self.subscriptions.forEach {
-            $0.subscribed = false
-        }
-        self.subscriptions = subscriptions.map {
-            if let group = self.groups[$0] {
-                group.subscribed = true
-                return group
-            } else {
-                let group = Group(account: self, fullName: $0, shortDesc: nil)
-
-                group.subscribed = true
-                self.groups[$0] = group
-                return group
-            }
-        }
-
-        self.client = NNTPClient(host: host, port: port, ssl: useSSL)
-        self.client?.setCredentials(login, password: password)
-        self.client?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-        self.client?.connect()
+        self.refreshSubscriptions(subscriptions)
+        self.connect()
     }
 
     func update(host: String, port: Int, useSSL : Bool, login: String?, subscriptions: Set<String>) {
@@ -163,7 +169,4 @@ class Account : NSObject {
 
         self.update(host, port: port, useSSL: useSSL, login: login, subscriptions: subscriptions)
     }
-
-    var groups : [String: Group] = [:]
-    var subscriptions : [Group] = []
 }
