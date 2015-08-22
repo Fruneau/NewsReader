@@ -627,6 +627,9 @@ public enum NNTPCommand : CustomStringConvertible {
         case .Stat(group: let x, _):
             return x
 
+        case .Over(group: let x, range: _):
+            return x
+
         default:
             return nil
         }
