@@ -162,7 +162,7 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
         let size = collectionView.frame.size
 
-        return NSSize(width: size.width, height: 64)
+        return NSSize(width: size.width, height: 74)
     }
 
     private func updateCurrentThread() {

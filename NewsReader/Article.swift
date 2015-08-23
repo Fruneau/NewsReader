@@ -21,7 +21,19 @@ class Article : NSObject {
     private weak var promise : Promise<NNTPPayload>?
 
     var headers : MIMEHeaders
-    dynamic var body : String?
+    dynamic var body : String? {
+        willSet {
+            if self === self.threadRoot.threadFirstUnread {
+                self.threadRoot.willChangeValueForKey("threadPreviewBody")
+            }
+        }
+
+        didSet {
+            if self === self.threadRoot.threadFirstUnread {
+                self.threadRoot.didChangeValueForKey("threadPreviewBody")
+            }
+        }
+    }
 
     var replies : [Article] = []
     weak var inReplyTo : Article?
@@ -114,10 +126,14 @@ class Article : NSObject {
     dynamic var isRead : Bool = false {
         willSet {
             self.threadRoot.willChangeValueForKey("threadIsRead")
+            self.threadRoot.willChangeValueForKey("threadUnreadCount")
+            self.threadRoot.willChangeValueForKey("threadPreviewBody")
         }
 
         didSet {
             self.threadRoot.didChangeValueForKey("threadIsRead")
+            self.threadRoot.didChangeValueForKey("threadUnreadCount")
+            self.threadRoot.didChangeValueForKey("threadPreviewBody")
 
             for ref in self.refs {
                 if self.isRead {
@@ -244,7 +260,7 @@ extension Article {
         return count
     }
 
-    var threadUnreadCount : Int {
+    dynamic var threadUnreadCount : Int {
         var count = 0
 
         for article in self.replies {
@@ -275,7 +291,7 @@ extension Article {
         return thread
     }
 
-    var threadIsRead : Bool {
+    dynamic var threadIsRead : Bool {
         if !self.isRead {
             return false
         }
@@ -286,5 +302,37 @@ extension Article {
             }
         }
         return true
+    }
+
+    var threadFirstUnread : Article? {
+        if !self.isRead {
+            return self
+        }
+
+        for article in self.replies {
+            if let unread = article.threadFirstUnread {
+                return unread
+            }
+        }
+
+        return nil
+    }
+
+    dynamic var threadPreviewBody : String? {
+        var article : Article
+
+        if let unread = self.threadFirstUnread {
+            article = unread
+        } else {
+            article = self
+        }
+
+        guard let body = article.body else {
+            article.load()
+            return nil
+        }
+
+        return body.stringByReplacingOccurrencesOfString("\r\n", withString: " ")
+                   .stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
     }
 }
