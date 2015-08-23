@@ -698,7 +698,9 @@ private class NNTPOperation {
     }
 
     private func payloadForEachLine(action: (NSData) throws -> ()) rethrows {
-        try self.payload!.forEachChunk("\r\n", action: action)
+        try self.payload!.forEachChunk("\r\n") {
+            (line, _) in try action(line)
+        }
     }
 
     private func parseCapabilities() -> Set<NNTPCapability> {
@@ -933,19 +935,19 @@ private class NNTPOperation {
 
                 headers.removeAll()
                 if !tokens[1].isEmpty {
-                    headers.append("Subject: " + tokens[1])
+                    headers.append("Subject: \(tokens[1])")
                 }
                 if !tokens[2].isEmpty {
-                    headers.append("From: " + tokens[2])
+                    headers.append("From: \(tokens[2])")
                 }
                 if !tokens[3].isEmpty {
-                    headers.append("Date: " + tokens[3])
+                    headers.append("Date: \(tokens[3])")
                 }
                 if !tokens[4].isEmpty {
-                    headers.append("Message-ID: " + tokens[4])
+                    headers.append("Message-ID: \(tokens[4])")
                 }
                 if !tokens[5].isEmpty {
-                    headers.append("References: " + tokens[5])
+                    headers.append("References: \(tokens[5])")
                 }
 
                 var bytes : Int?
@@ -968,7 +970,11 @@ private class NNTPOperation {
                     headers.extend(tokens[8..<tokens.count])
                 }
 
-                let overview = NNTPOverview(num: num, headers: try MIMEHeaders.parse(headers), bytes: bytes, lines: lines)
+                guard let data = ("\r\n".join(headers) as NSString).dataUsingEncoding(NSUTF8StringEncoding) else {
+                    throw NNTPError.MalformedOverviewLine(line)
+                }
+
+                let overview = NNTPOverview(num: num, headers: try MIMEHeaders.parse(data), bytes: bytes, lines: lines)
                 overviews.append(overview)
             }
             return .Overview(overviews)

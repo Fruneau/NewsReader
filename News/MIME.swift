@@ -10,12 +10,14 @@ import Foundation
 import Lib
 
 public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
-    case MalformedHeader(name: String, content: String, error: ErrorType?)
+    case MalformedHeader(name: NSData, content: NSData, error: ErrorType?)
     case EmptyHeaderLine
-    case MalformedHeaderName(String)
+    case MalformedHeaderName(NSData)
+    case MalformedHeaderContent(NSData)
     case MalformedDate(String)
 
     case MissingHeaderEndMark
+    case UnexpectedHeaderEndMark
     case UnsupportedHeaderEncoding(encoding: String)
     case UnsupportedHeaderCharset(charset: String)
     case EncodingError(value: String)
@@ -27,16 +29,22 @@ public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvert
     public var debugDescription : String {
         switch (self) {
         case .MalformedHeader(name: let name, content: let content, error: let e):
-            return "MalformedHeader(\(name), \(content), \(e))"
+            return "MalformedHeader(\(String.fromData(name)!), \(String.fromData(content)!), \(e))"
 
         case .EmptyHeaderLine:
             return "EmptyHeaderLine"
 
         case .MalformedHeaderName(let s):
-            return "MalformedHeaderName(\(s))"
+            return "MalformedHeaderName(\(String.fromData(s)!))"
+
+        case .MalformedHeaderContent(let s):
+            return "MalformedHeaderContent(\(String.fromData(s)!))"
 
         case .MissingHeaderEndMark:
             return "MissingHeaderEndMark"
+
+        case .UnexpectedHeaderEndMark:
+            return "UnexpectedHeaderEndMark"
 
         case .UnsupportedHeaderEncoding(let s):
             return "UnsupportedHeaderEncoding(\(s))"
@@ -198,30 +206,43 @@ public enum MIMEHeader {
         }
     }
 
-    static private func decodeRFC2047(var headerLine: String) throws -> String {
-        var matches = rfc2047Re.matchesInString(headerLine, options: [], range: NSMakeRange(0, headerLine.characters.count))
+    static private func decodeRFC2047(headerLine: NSData) throws -> String {
+        guard var content = String.fromData(headerLine) else {
+            throw Error.MalformedHeaderContent(headerLine)
+        }
+
+        var matches = rfc2047Re.matchesInString(content, options: [], range: NSMakeRange(0, content.characters.count))
 
         matches.sortInPlace { $0.range.location > $1.range.location }
 
         for match in matches {
-            let charset = (headerLine as NSString).substringWithRange(match.rangeAtIndex(1))
-            let encoding = (headerLine as NSString).substringWithRange(match.rangeAtIndex(2))
-            let chunk = (headerLine as NSString).substringWithRange(match.rangeAtIndex(3))
+            let charset = (content as NSString).substringWithRange(match.rangeAtIndex(1))
+            let encoding = (content as NSString).substringWithRange(match.rangeAtIndex(2))
+            let chunk = (content as NSString).substringWithRange(match.rangeAtIndex(3))
 
-            headerLine = (headerLine as NSString).stringByReplacingCharactersInRange(match.range, withString: try MIMEHeader.decodeRFC2047Chunk(chunk, withEncoding: encoding, andCharset: charset))
+            content = (content as NSString).stringByReplacingCharactersInRange(match.range, withString: try MIMEHeader.decodeRFC2047Chunk(chunk, withEncoding: encoding, andCharset: charset))
         }
 
-        return headerLine
+        return content
     }
 
-    static func appendHeader(inout headers : [MIMEHeader], name: String, encodedContent : String) throws {
+    static func appendHeader(inout headers : [MIMEHeader], name: NSData, encodedContent : NSData) throws {
         var content : String
         do {
             content = try MIMEHeader.decodeRFC2047(encodedContent)
         } catch let e {
             throw Error.MalformedHeader(name: name, content: encodedContent, error: e)
         }
-        let lower = name.lowercaseString
+
+        guard let originalName = String.fromData(name) else {
+            throw Error.MalformedHeaderName(name)
+        }
+
+        if originalName.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet()) != originalName {
+            throw Error.MalformedHeaderName(name)
+        }
+
+        let lower = originalName.lowercaseString
 
         switch lower {
         case "from":
@@ -254,7 +275,7 @@ public enum MIMEHeader {
                 if !scanner.scanUpToString(">", intoString: &msgid)
                 || !scanner.skipString(">")
                 {
-                    throw Error.MalformedHeader(name: name, content: content, error: nil)
+                    throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
                 }
 
                 headers.append(.MessageId(name: lower, msgid: (msgid! as String) + ">"))
@@ -280,7 +301,7 @@ public enum MIMEHeader {
                 || !scanner.scanInteger(&num)
                 || !scanner.atEnd
                 {
-                    throw Error.MalformedHeader(name: name, content: content, error: nil)
+                    throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
                 }
 
                 headers.append(.NewsgroupRef(group: group! as String, number: num))
@@ -292,66 +313,118 @@ public enum MIMEHeader {
         }
     }
 
-    static func parseHeaders<S : SequenceType where S.Generator.Element == String>(data: S) throws -> [MIMEHeader] {
+    private enum ParseHeader : ErrorType {
+        case EndOfHeaders(body: NSData)
+    }
+
+    static func parse(data: NSData) throws -> ([MIMEHeader], NSData?) {
         let cset = NSCharacterSet.whitespaceCharacterSet()
         var headers : [MIMEHeader] = []
-        var currentHeader : String?
-        var currentValue : String?
+        var currentHeader : NSData?
+        var currentValue : NSMutableData?
 
-        for var line in data {
-            if line.isEmpty {
-                throw Error.EmptyHeaderLine
-            } else if cset.characterIsMember(line.utf16.first!) {
-                line = line.stringByTrimmingCharactersInSet(cset)
-                currentValue?.append(Character(" "))
-                currentValue?.extend(line)
-            } else {
-                if let hdr = currentHeader, let value = currentValue {
-                    try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
+        do {
+            try data.forEachChunk("\r\n") {
+                (line, pos) in
+
+                switch line {
+                case _ where line.length == 0:
+                    /* Reached end of headers */
+                    let dataBytes = data.bytes + pos
+                    let remaining = data.length - pos
+
+                    if let hdr = currentHeader, let value = currentValue {
+                        try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
+                    }
+
+                    if remaining < 2 {
+                        throw ParseHeader.EndOfHeaders(body: NSData(data: line))
+                    } else {
+                        throw ParseHeader.EndOfHeaders(body: NSData(bytes: dataBytes + 2, length: remaining - 2))
+                    }
+
+                case _ where cset.characterIsMember(unichar(line.bytes[0])):
+                    var bytes = UnsafePointer<UInt8>(line.bytes)
+                    var len = line.length
+
+
+                    while len > 0 && cset.characterIsMember(unichar(bytes[0])) {
+                        bytes++
+                        len--
+                    }
+
+                    if len == 0 {
+                        throw Error.MalformedHeader(name: currentHeader!, content: currentValue!, error: nil)
+                    }
+
+                    var space : UInt8 = 0x20 /* space */
+                    currentValue?.appendBytes(&space, length: 1)
+                    currentValue?.appendBytes(bytes, length: len)
+
+
+                default:
+                    if let hdr = currentHeader, let value = currentValue {
+                        try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
+                        currentHeader = nil
+                        currentValue = nil
+                    }
+
+                    do {
+                        try line.forEachChunk(":") {
+                            (data, pos) in
+
+                            if currentHeader == nil {
+                                currentHeader = NSData(data: data)
+                            } else {
+                                var bytes = line.bytes + pos
+                                var len = line.length - pos
+
+                                while len > 0 && cset.characterIsMember(unichar(bytes[0])) {
+                                    bytes++
+                                    len--
+                                }
+
+                                if len == 0 {
+                                    throw Error.MalformedHeader(name: currentHeader!, content: data, error: nil)
+                                }
+                                
+                                currentValue = NSMutableData(bytes: bytes, length: len)
+                                throw ParseHeader.EndOfHeaders(body: currentValue!)
+                            }
+                        }
+                    } catch ParseHeader.EndOfHeaders(body: _) {
+                    }
                 }
-
-                let vals = line.characters.split(":").map(String.init)
-
-                if vals.count < 2 {
-                    throw Error.MalformedHeader(name: "", content: line, error: nil)
-                }
-
-                if vals[0].stringByTrimmingCharactersInSet(cset) != vals[0] {
-                    throw Error.MalformedHeaderName(vals[0])
-                }
-
-                line = ":".join(vals[1..<vals.count]).stringByTrimmingCharactersInSet(cset)
-                currentValue = line
-                currentHeader = vals[0]
             }
-        }
+            if let hdr = currentHeader, let value = currentValue {
+                try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
+            }
 
-        if let hdr = currentHeader, let value = currentValue {
-            try MIMEHeader.appendHeader(&headers, name: hdr, encodedContent: value)
+            return (headers, nil)
+        } catch ParseHeader.EndOfHeaders(body: let body) {
+
+            return (headers, body)
+        }
+    }
+
+    static func parseHeaders(data: NSData) throws -> [MIMEHeader] {
+        let (headers, body) = try MIMEHeader.parse(data)
+
+        if body != nil {
+            throw Error.UnexpectedHeaderEndMark
         }
 
         return headers
     }
 
-    static func parseHeadersAndGetBody(data: [String]) throws -> ([MIMEHeader], ArraySlice<String>) {
-        guard let idx = data.indexOf("") else {
+    static func parseHeadersAndGetBody(data: NSData) throws -> ([MIMEHeader], NSData) {
+        let (headers, optBody) = try MIMEHeader.parse(data)
+
+        guard let body = optBody else {
             throw Error.MissingHeaderEndMark
         }
 
-        let sub = data[data.startIndex..<idx]
-        let headers = try MIMEHeader.parseHeaders(sub)
-        return (headers, data[idx..<data.endIndex])
-    }
-
-    static func parseHeadersAndGetBody(data: NSData) throws -> ([MIMEHeader], ArraySlice<String>) {
-        var lines : [String] = []
-
-        data.forEachChunk("\r\n") {
-            if let line = String.fromData($0) {
-                lines.append(line)
-            }
-        }
-        return try MIMEHeader.parseHeadersAndGetBody(lines)
+        return (headers, body)
     }
 }
 
@@ -378,47 +451,25 @@ public class MIMEHeaders {
         return self.headers[name.lowercaseString]
     }
 
-    static public func parse(data: [String]) throws -> MIMEHeaders {
+    static public func parse(data: NSData) throws -> MIMEHeaders {
         let headers = try MIMEHeader.parseHeaders(data)
 
         return MIMEHeaders(headers: headers)
-    }
-
-    static public func parse(data: NSData) throws -> MIMEHeaders {
-        var lines : [String] = []
-
-        data.forEachChunk("\r\n") {
-            if let line = String.fromData($0) {
-                lines.append(line)
-            }
-        }
-        return try MIMEHeaders.parse(lines)
     }
 }
 
 public class MIMEPart {
     public let headers : MIMEHeaders
-    public let body : String
+    public let body : NSData
 
-    private init(headers: [MIMEHeader], body: ArraySlice<String>) {
+    private init(headers: [MIMEHeader], body: NSData) {
         self.headers = MIMEHeaders(headers: headers)
-        self.body = "\r\n".join(body)
-    }
-
-    static public func parse(data: [String]) throws -> MIMEPart {
-        let (headers, body) = try MIMEHeader.parseHeadersAndGetBody(data)
-
-        return MIMEPart(headers: headers, body: body)
+        self.body = body
     }
 
     static public func parse(data: NSData) throws -> MIMEPart {
-        var lines : [String] = []
+        let (headers, body) = try MIMEHeader.parseHeadersAndGetBody(data)
 
-        data.forEachChunk("\r\n") {
-            if let line = String.fromData($0) {
-                lines.append(line)
-            }
-        }
-        return try MIMEPart.parse(lines)
+        return MIMEPart(headers: headers, body: body)
     }
 }

@@ -107,7 +107,7 @@ public extension NSData {
         self.init(data: data)
     }
 
-    public func forEachChunk(separator: String, action: (NSData) throws -> ()) rethrows {
+    public func forEachChunk(separator: String, action: (NSData, Int) throws -> ()) rethrows {
         let separatorChars = separator.utf8
         let bytes = self.bytes
         let length = self.length
@@ -118,13 +118,17 @@ public extension NSData {
             let end = memfind(begin, length: length - pos, str: separatorChars)
 
             if end == nil {
-                try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: length - pos, freeWhenDone: false))
+                try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: length - pos, freeWhenDone: false), pos)
                 break
             } else {
-                try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: end - begin, freeWhenDone: false))
+                try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: end - begin, freeWhenDone: false), pos)
             }
             pos += (end - begin) + separatorChars.count
         }
+    }
+
+    public subscript(pos: Int) -> UInt8 {
+        return UnsafePointer<UInt8>(self.bytes)[pos]
     }
 }
 
