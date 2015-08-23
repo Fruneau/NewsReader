@@ -10,7 +10,7 @@ import Foundation
 import Lib
 
 public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
-    case MalformedHeader(String)
+    case MalformedHeader(name: String, content: String, error: ErrorType?)
     case EmptyHeaderLine
     case MalformedHeaderName(String)
     case MalformedDate(String)
@@ -26,8 +26,8 @@ public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvert
 
     public var debugDescription : String {
         switch (self) {
-        case .MalformedHeader(let s):
-            return "MalformedHeader(\(s))"
+        case .MalformedHeader(name: let name, content: let content, error: let e):
+            return "MalformedHeader(\(name), \(content), \(e))"
 
         case .EmptyHeaderLine:
             return "EmptyHeaderLine"
@@ -173,9 +173,11 @@ public enum MIMEHeader {
         switch (encoding) {
         case "b", "B":
             guard let data = NSData(base64EncodedString: chunk, options: []) else {
+                print("bad base64")
                 throw Error.EncodingError(value: chunk)
             }
-            guard let decoded = NSString(data: data, encoding: charset) else {
+            guard let decoded = String.fromData(data, encoding: charset) else {
+                print("bad charset")
                 throw Error.EncodingError(value: chunk)
             }
 
@@ -185,7 +187,7 @@ public enum MIMEHeader {
             guard let data = NSData(quotedPrintableString: chunk) else {
                 throw Error.EncodingError(value: chunk)
             }
-            guard let decoded = NSString(data: data, encoding: charset) else {
+            guard let decoded = String.fromData(data, encoding: charset) else {
                 throw Error.EncodingError(value: chunk)
             }
 
@@ -213,7 +215,12 @@ public enum MIMEHeader {
     }
 
     static func appendHeader(inout headers : [MIMEHeader], name: String, encodedContent : String) throws {
-        let content = try MIMEHeader.decodeRFC2047(encodedContent)
+        var content : String
+        do {
+            content = try MIMEHeader.decodeRFC2047(encodedContent)
+        } catch let e {
+            throw Error.MalformedHeader(name: name, content: encodedContent, error: e)
+        }
         let lower = name.lowercaseString
 
         switch lower {
@@ -245,8 +252,9 @@ public enum MIMEHeader {
                 var msgid : NSString?
 
                 if !scanner.scanUpToString(">", intoString: &msgid)
-                    || !scanner.skipString(">") {
-                    throw Error.MalformedHeader(content)
+                || !scanner.skipString(">")
+                {
+                    throw Error.MalformedHeader(name: name, content: content, error: nil)
                 }
 
                 headers.append(.MessageId(name: lower, msgid: (msgid! as String) + ">"))
@@ -272,7 +280,7 @@ public enum MIMEHeader {
                 || !scanner.scanInteger(&num)
                 || !scanner.atEnd
                 {
-                    throw Error.MalformedHeader(content)
+                    throw Error.MalformedHeader(name: name, content: content, error: nil)
                 }
 
                 headers.append(.NewsgroupRef(group: group! as String, number: num))
@@ -305,7 +313,7 @@ public enum MIMEHeader {
                 let vals = line.characters.split(":").map(String.init)
 
                 if vals.count < 2 {
-                    throw Error.MalformedHeader(line)
+                    throw Error.MalformedHeader(name: "", content: line, error: nil)
                 }
 
                 if vals[0].stringByTrimmingCharactersInSet(cset) != vals[0] {
