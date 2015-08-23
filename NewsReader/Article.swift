@@ -256,6 +256,7 @@ class Article : NSObject {
             self.to = self.loadNewsgroups()
             self.loadRefs()
         })
+        self.promise?.otherwise(print)
         return self.promise
     }
 }
