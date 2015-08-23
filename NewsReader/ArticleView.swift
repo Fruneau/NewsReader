@@ -166,7 +166,7 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
             return NSSize(width: 0, height: 0)
         }
 
-        let height = 120 + article.lines * 14
+        let height = 140 + article.lines * 14
         return NSSize(width: size.width, height: CGFloat(height))
     }
 }

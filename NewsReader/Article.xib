@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8173.3" systemVersion="15A243d" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8173.3" systemVersion="15A262e" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8173.3"/>
@@ -10,17 +10,17 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customView id="c22-O7-iKe" userLabel="Article" customClass="BackgroundView" customModule="NewsReader" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="553" height="595"/>
+            <rect key="frame" x="0.0" y="0.0" width="553" height="615"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qK4-dS-KD4">
-                    <rect key="frame" x="20" y="0.0" width="533" height="595"/>
+                    <rect key="frame" x="20" y="0.0" width="533" height="615"/>
                     <subviews>
                         <customView translatesAutoresizingMaskIntoConstraints="NO" id="Xo2-6q-hOl" userLabel="Header View">
-                            <rect key="frame" x="0.0" y="512" width="533" height="83"/>
+                            <rect key="frame" x="0.0" y="512" width="533" height="103"/>
                             <subviews>
                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iIf-4K-Nvq">
-                                    <rect key="frame" x="0.0" y="58" width="425" height="17"/>
+                                    <rect key="frame" x="0.0" y="78" width="425" height="17"/>
                                     <animations/>
                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="hI1-Mv-4Bg">
                                         <font key="font" metaFont="systemBold"/>
@@ -32,7 +32,7 @@
                                     </connections>
                                 </textField>
                                 <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c6o-cm-MoD">
-                                    <rect key="frame" x="0.0" y="37" width="88" height="17"/>
+                                    <rect key="frame" x="0.0" y="57" width="88" height="17"/>
                                     <animations/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Newsgroups: " id="hiV-XU-WcN">
                                         <font key="font" metaFont="system"/>
@@ -41,7 +41,7 @@
                                     </textFieldCell>
                                 </textField>
                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qKH-5K-Ror">
-                                    <rect key="frame" x="88" y="37" width="37" height="17"/>
+                                    <rect key="frame" x="88" y="57" width="37" height="17"/>
                                     <animations/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="Ram-as-bQe">
                                         <font key="font" metaFont="system"/>
@@ -53,7 +53,7 @@
                                     </connections>
                                 </textField>
                                 <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="60R-w7-M2C">
-                                    <rect key="frame" x="0.0" y="16" width="444" height="17"/>
+                                    <rect key="frame" x="0.0" y="36" width="444" height="17"/>
                                     <animations/>
                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Subject" id="be3-FA-B40">
                                         <font key="font" metaFont="system"/>
@@ -65,7 +65,7 @@
                                     </connections>
                                 </textField>
                                 <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ivL-TL-EAP">
-                                    <rect key="frame" x="429" y="59" width="31" height="16"/>
+                                    <rect key="frame" x="429" y="79" width="31" height="16"/>
                                     <animations/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Date" id="06b-cm-n2p">
                                         <dateFormatter key="formatter" dateStyle="long" timeStyle="short" doesRelativeDateFormatting="YES" id="TGa-Wd-fCR"/>
@@ -78,14 +78,14 @@
                                     </connections>
                                 </textField>
                                 <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="6nE-an-pfc">
-                                    <rect key="frame" x="0.0" y="-2" width="533" height="5"/>
+                                    <rect key="frame" x="0.0" y="18" width="533" height="5"/>
                                     <animations/>
                                     <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                                     <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     <font key="titleFont" metaFont="system"/>
                                 </box>
                                 <imageView focusRingType="none" horizontalHuggingPriority="1000" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZAn-dN-wjh" customClass="UserBadgeView" customModule="NewsReader" customModuleProvider="target">
-                                    <rect key="frame" x="460" y="16" width="59" height="59"/>
+                                    <rect key="frame" x="460" y="36" width="59" height="59"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="59" id="97V-P1-upO"/>
                                         <constraint firstAttribute="width" constant="59" id="xEu-w2-BxS"/>
@@ -97,7 +97,7 @@
                                     </connections>
                                 </imageView>
                                 <progressIndicator wantsLayer="YES" horizontalHuggingPriority="1000" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="fM8-hh-h5f">
-                                    <rect key="frame" x="442" y="16" width="16" height="16"/>
+                                    <rect key="frame" x="442" y="36" width="16" height="16"/>
                                     <animations/>
                                     <connections>
                                         <binding destination="ojD-sA-dGM" name="animate" keyPath="representedObject.body" id="BNc-5g-Kgp">
@@ -116,14 +116,14 @@
                             <constraints>
                                 <constraint firstItem="c6o-cm-MoD" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="leading" id="04D-AN-QPI"/>
                                 <constraint firstItem="60R-w7-M2C" firstAttribute="top" secondItem="qKH-5K-Ror" secondAttribute="bottom" constant="4" id="1Ue-kM-Otb"/>
-                                <constraint firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" constant="16" id="2Hp-ma-pZs"/>
+                                <constraint firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" constant="36" id="2Hp-ma-pZs"/>
                                 <constraint firstItem="fM8-hh-h5f" firstAttribute="leading" secondItem="60R-w7-M2C" secondAttribute="trailing" id="ATB-Kp-eNk"/>
                                 <constraint firstItem="6nE-an-pfc" firstAttribute="leading" secondItem="Xo2-6q-hOl" secondAttribute="leading" id="Bem-M5-dAK"/>
                                 <constraint firstItem="ivL-TL-EAP" firstAttribute="leading" secondItem="iIf-4K-Nvq" secondAttribute="trailing" constant="8" id="BtQ-T1-Utq"/>
                                 <constraint firstItem="iIf-4K-Nvq" firstAttribute="top" secondItem="Xo2-6q-hOl" secondAttribute="top" constant="8" id="Djv-W8-WGe"/>
                                 <constraint firstItem="iIf-4K-Nvq" firstAttribute="top" secondItem="Xo2-6q-hOl" secondAttribute="top" constant="8" id="ECw-tQ-9s7"/>
                                 <constraint firstItem="ZAn-dN-wjh" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="top" id="Mtr-ck-2uu"/>
-                                <constraint firstAttribute="bottom" secondItem="6nE-an-pfc" secondAttribute="bottom" id="RdF-cB-Gfd"/>
+                                <constraint firstAttribute="bottom" secondItem="6nE-an-pfc" secondAttribute="bottom" constant="20" id="RdF-cB-Gfd"/>
                                 <constraint firstItem="qKH-5K-Ror" firstAttribute="top" secondItem="c6o-cm-MoD" secondAttribute="top" id="Red-Qd-vUu"/>
                                 <constraint firstItem="fM8-hh-h5f" firstAttribute="trailing" secondItem="ivL-TL-EAP" secondAttribute="trailing" id="ZqO-DW-Ufk"/>
                                 <constraint firstItem="ZAn-dN-wjh" firstAttribute="leading" secondItem="ivL-TL-EAP" secondAttribute="trailing" constant="2" id="b1J-5L-xka"/>
@@ -169,12 +169,12 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </clipView>
                             <animations/>
-                            <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="htJ-8K-li7">
+                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="htJ-8K-li7">
                                 <rect key="frame" x="-100" y="-100" width="87" height="18"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <animations/>
                             </scroller>
-                            <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="0qs-tv-uam">
+                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="0qs-tv-uam">
                                 <rect key="frame" x="-100" y="-100" width="16" height="512"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <animations/>
@@ -200,7 +200,7 @@
                     </customSpacing>
                 </stackView>
                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="li3-Pd-GPc">
-                    <rect key="frame" x="2" y="571" width="16" height="16"/>
+                    <rect key="frame" x="2" y="591" width="16" height="16"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="16" id="BiL-66-7AU"/>
                         <constraint firstAttribute="width" constant="16" id="sN1-CI-eL1"/>
