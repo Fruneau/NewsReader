@@ -1118,12 +1118,12 @@ private class NNTPConnection {
         if let ins = istream, let ous = ostream {
             self.istream = ins
             self.ostream = ous
-            self.reader = BufferedReader(fromStream: ins, lineBreak: "\r\n")
+            self.reader = BufferedReader(fromStream: ins)
 
         } else {
             self.istream = NSInputStream(data: NSData(bytes: nil, length: 0))
             self.ostream = NSOutputStream(toBuffer: nil, capacity: 0)
-            self.reader = BufferedReader(fromStream: self.istream, lineBreak: "\r\n")
+            self.reader = BufferedReader(fromStream: self.istream)
             return nil
         }
         if ssl {
@@ -1172,7 +1172,11 @@ private class NNTPConnection {
     }
 
     private func read() throws {
-        while let line = try self.reader.readLine() {
+        while let lineData = try self.reader.readDataUpTo("\r\n", keepBound: false, endOfStreamIsBound: true) {
+            guard let line = String.fromData(lineData) else {
+                return
+            }
+
             //print("<<< \(line)")
             if let reply = self.sentCommands.head {
                 do {

@@ -12,16 +12,14 @@ import Lib
 class BufferedReaderTests: XCTestCase {
     private func checkLine(buf: BufferedReader, exp: String?) {
         do {
-            let line = try buf.readLine()
+            let line = try buf.readDataUpTo("\r\n", keepBound: false, endOfStreamIsBound: true)
 
             if exp == nil {
                 XCTAssertNil(line)
             } else {
                 XCTAssertNotNil(line)
-                XCTAssertEqual(line!, exp!)
+                XCTAssertEqual(line!, (exp! as NSString).dataUsingEncoding(NSUTF8StringEncoding))
             }
-        } catch BufferedReader.Error.NotEnoughBytes {
-            XCTAssert(true)
         } catch BufferedReader.Error.ReadError {
             XCTAssert(false)
         } catch {
@@ -39,7 +37,7 @@ class BufferedReaderTests: XCTestCase {
     }
 
     func testReadLineNewline() {
-        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne\r\n\r\n", lineBreak: "\r\n")
+        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne\r\n\r\n")
 
         XCTAssertNotNil(buf)
         self.checkLine(buf!, exp: "a")
@@ -50,7 +48,7 @@ class BufferedReaderTests: XCTestCase {
     }
 
     func testReadLineNonNewline() {
-        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne", lineBreak: "\r\n")
+        let buf = BufferedReader(fromString: "a\r\nbcd\r\ne")
 
         XCTAssertNotNil(buf)
         self.checkLine(buf!, exp: "a")

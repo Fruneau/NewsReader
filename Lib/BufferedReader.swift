@@ -41,28 +41,28 @@ public class BufferedReader {
     private let stream : NSInputStream
     private let buffer: Buffer
     private var ended = false
-    private let lineBreak : String.UTF8View
+    private var lastReadTo = 0
+    private var lastBound = ""
 
     public enum Error : ErrorType {
         case ReadError
     }
 
-    public init(fromStream stream: NSInputStream, lineBreak: String) {
+    public init(fromStream stream: NSInputStream) {
         self.stream = stream
         self.buffer = Buffer(capacity: 2 << 20)
-        self.lineBreak = lineBreak.utf8
     }
 
-    public convenience init(fromData data: NSData, lineBreak: String) {
+    public convenience init(fromData data: NSData) {
         let stream = NSInputStream(data: data)
 
         stream.open()
-        self.init(fromStream: stream, lineBreak: lineBreak)
+        self.init(fromStream: stream)
     }
 
-    public convenience init?(fromString string: String, lineBreak: String) {
+    public convenience init?(fromString string: String) {
         if let data = (string as NSString).dataUsingEncoding(NSUTF8StringEncoding) {
-            self.init(fromData: data, lineBreak: lineBreak)
+            self.init(fromData: data)
         } else {
             return nil
         }
@@ -90,35 +90,47 @@ public class BufferedReader {
         }
     }
 
-    public func readLine() throws -> String? {
-        if self.ended || self.lineBreak.count == 0 {
+    public func readDataUpTo(bound: String, keepBound: Bool, endOfStreamIsBound: Bool) throws -> NSData? {
+        let boundChars = bound.utf8
+
+        assert (boundChars.count > 0)
+        if self.ended {
             return nil
         }
 
-        repeat {
-            var res : String?
-            var hasReply = false
+        if bound != self.lastBound {
+            self.lastReadTo = 0
+            self.lastBound = bound
+        }
 
-            try self.fillBuffer(4 << 10)
+        repeat {
+            var res : NSData?
+
+            try self.fillBuffer(64 << 10)
             self.buffer.read() {
                 (buffer, maxLength) in
 
-                let end = memfind(buffer, length: maxLength, str: self.lineBreak)
+                assert (maxLength >= self.lastReadTo)
+
+                let end = memfind(buffer + self.lastReadTo, length: maxLength - self.lastReadTo, str: boundChars)
+                self.lastReadTo = max(maxLength - boundChars.count, 0)
 
                 if end != nil {
                     let len = end - buffer
 
                     if len + 1 < maxLength {
-                        res = String.fromBytes(buffer, length: len)
-                        hasReply = true
-                        return len + self.lineBreak.count
+                        if keepBound {
+                            res = NSData(bytes: buffer, length: len + boundChars.count)
+                        } else {
+                            res = NSData(bytes: buffer, length: len)
+                        }
+                        return len + boundChars.count
                     }
                 } else if self.stream.streamStatus == NSStreamStatus.AtEnd {
                     assert (!self.stream.hasBytesAvailable)
                     if maxLength > 0 {
-                        res = String.fromBytes(buffer, length: maxLength)
+                        res = NSData(bytes: buffer, length: maxLength)
                     }
-                    hasReply = true
                     self.ended = true
                     return maxLength
                 }
@@ -126,10 +138,11 @@ public class BufferedReader {
                 return 0
             }
 
-            if hasReply {
+            if res != nil {
+                self.lastReadTo = 0
                 return res
             }
-        } while self.stream.hasBytesAvailable
+        } while self.stream.hasBytesAvailable && !self.ended
 
         return nil
     }
