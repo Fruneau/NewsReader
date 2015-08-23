@@ -37,7 +37,8 @@ class SubscriptionController : NSObject {
         }
 
         self.account = Account(accountId: self.accountListController.selectionIndexes.firstIndex,
-                               account: self.accountListController.selection)
+                               account: self.accountListController.selection,
+                               cacheRoot: nil)
         self.promise = self.account?.client?.sendCommand(.ListNewsgroups(nil))
         self.promise?.then({
             (payload) in

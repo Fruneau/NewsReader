@@ -13,6 +13,7 @@ import News
 class Account : NSObject {
     var id : Int
     let name : String
+
     var host : String
     var port : Int
     var useSSL : Bool
@@ -32,6 +33,11 @@ class Account : NSObject {
     var subscriptions : [Group] = []
 
     var articleByMsgid : [String: Article] = [:]
+
+    let cacheRoot : NSURL?
+    let cacheGroups : NSURL?
+    let cacheMessages : NSURL?
+
 
     private static func getAccountParameters(account: AnyObject)
         -> (name: String, host: String, port: Int, useSSL: Bool,
@@ -109,11 +115,14 @@ class Account : NSObject {
         self.client?.connect()
     }
 
-    init(accountId: Int, account: AnyObject) {
+    init(accountId: Int, account: AnyObject, cacheRoot: NSURL?) {
         guard let params = Account.getAccountParameters(account) else {
             assert (false)
         }
 
+        self.cacheRoot = cacheRoot
+        self.cacheGroups = cacheRoot?.URLByAppendingPathComponent("Groups", isDirectory: true)
+        self.cacheMessages = cacheRoot?.URLByAppendingPathComponent("Messages", isDirectory: true)
         self.id = accountId
         self.name = params.name
         self.host = params.host
@@ -122,6 +131,13 @@ class Account : NSObject {
         self.login = params.login
         self.password = params.password
         super.init()
+
+        if cacheRoot != nil {
+            let fileManager = NSFileManager.defaultManager()
+            try! fileManager.createDirectoryAtURL(self.cacheRoot!, withIntermediateDirectories: true, attributes: nil)
+            try! fileManager.createDirectoryAtURL(self.cacheGroups!, withIntermediateDirectories: true, attributes: nil)
+            try! fileManager.createDirectoryAtURL(self.cacheMessages!, withIntermediateDirectories: true, attributes: nil)
+        }
 
         self.connect()
         self.refreshSubscriptions(params.subscriptions)

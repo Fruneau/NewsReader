@@ -76,6 +76,7 @@ class ShortDateFormatter : NSFormatter {
 class AppDelegate: NSObject, NSApplicationDelegate {
     var browserWindowController: BrowserWindowController?
     var preferenceWindowController : PreferenceWindowController?
+    var applicationCache : NSURL!
 
     /* Model handling */
     var accounts : [String: Account] = [:]
@@ -94,7 +95,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return nil
         }
 
-        return Account(accountId: accountId, account: account)
+        let cacheRoot = self.applicationCache.URLByAppendingPathComponent("\(accountId)", isDirectory: true)
+
+
+        return Account(accountId: accountId, account: account, cacheRoot: cacheRoot)
     }
 
     private func refreshApplicationUnreadCount() {
@@ -180,6 +184,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSUserDefaults.standardUserDefaults().registerDefaults([
             "accounts": [[String: AnyObject]]()
         ])
+
+        let fileManager = NSFileManager.defaultManager()
+        let cacheRoot = try! fileManager.URLForDirectory(.CachesDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
+
+        self.applicationCache = cacheRoot.URLByAppendingPathComponent("fr.mymind.NewsReader", isDirectory: true)
+
+        try! fileManager.createDirectoryAtURL(self.applicationCache, withIntermediateDirectories: true, attributes: nil)
+
 
         NSUserDefaults.standardUserDefaults().addObserver(self, forKeyPath: "accounts",
             options: NSKeyValueObservingOptions.New, context: &self.accountUpdateContext)

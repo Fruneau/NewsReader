@@ -220,7 +220,15 @@ class Article : NSObject {
 
         if let msgid = self.msgid {
             self.account?.articleByMsgid[msgid] = self
+            self.readFromFile()
         }
+    }
+
+    func writeToFile() {
+    }
+
+    func readFromFile() -> MIMEPart? {
+        return nil
     }
 
     func load() -> Promise<NNTPPayload>? {
@@ -228,7 +236,9 @@ class Article : NSObject {
             return self.promise
         }
 
-        if let msgid = self.msgid  {
+        if let msg = self.readFromFile() {
+            self.promise = Promise<NNTPPayload>(success: .Article(0, "", msg))
+        } else if let msgid = self.msgid  {
             self.promise = self.account?.client?.sendCommand(.ArticleByMsgid(msgid: msgid))
         } else {
             self.promise = self.account?.client?.sendCommand(.Article(group: self.refs[0].group.fullName, article: self.refs[0].num))
