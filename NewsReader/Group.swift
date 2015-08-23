@@ -114,13 +114,20 @@ class Group : NSObject {
                 throw NNTPError.ServerProtocolError
             }
 
-            guard case .GroupContent(_, let count, let lowestNumber, let highestNumber, _) = payload else {
+            switch payload {
+            case .GroupContent(_, 0, _, _, _):
+                print("group \(self.fullName) is empty")
+                return Promise<NNTPPayload>(success: .Overview([]))
+
+            case .GroupContent(_, let count, let lowestNumber, let highestNumber, _):
+                let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
+
+                return client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.From(from)))
+
+
+            default:
                 throw NNTPError.ServerProtocolError
             }
-
-            let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
-
-            return client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.From(from)))
         })
         self.promise?.then({
             (payload) throws in
