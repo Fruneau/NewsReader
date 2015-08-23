@@ -45,7 +45,6 @@ public class BufferedReader {
 
     public enum Error : ErrorType {
         case ReadError
-        case NotEnoughBytes
     }
 
     public init(fromStream stream: NSInputStream, lineBreak: String) {
@@ -68,16 +67,13 @@ public class BufferedReader {
     private func fillBuffer(minSize: Int) throws {
         var remain = minSize
 
-        while remain > 0 {
-            if !self.stream.hasBytesAvailable {
-                throw Error.NotEnoughBytes
-            }
+        while remain > 0 && self.stream.hasBytesAvailable {
             try self.buffer.append(remain) {
                 (buffer, length) throws in
 
                 switch (self.stream.read(UnsafeMutablePointer<UInt8>(buffer), maxLength: length)) {
                 case 0:
-                    throw Error.NotEnoughBytes
+                    return 0
 
                 case let e where e > 0:
                     remain -= e
@@ -91,16 +87,15 @@ public class BufferedReader {
     }
 
     public func readLine() throws -> String? {
-        var shouldContinue = true
-
         if self.ended || self.lineBreak.count == 0 {
             return nil
         }
 
-        while true {
+        repeat {
             var res : String?
             var hasReply = false
 
+            try self.fillBuffer(4 << 10)
             self.buffer.read() {
                 (buffer, maxLength) in
 
@@ -110,15 +105,17 @@ public class BufferedReader {
                     let len = end - buffer
 
                     if len + 1 < maxLength {
-                        res = NSString(bytes: buffer, length: len, encoding: NSUTF8StringEncoding) as String?
+                        res = String.fromBytes(buffer, length: len)
                         hasReply = true
                         return len + self.lineBreak.count
                     }
                 } else if self.stream.streamStatus == NSStreamStatus.AtEnd {
+                    assert (!self.stream.hasBytesAvailable)
                     if maxLength > 0 {
-                        res = NSString(bytes: buffer, length: maxLength, encoding: NSUTF8StringEncoding) as String?
+                        res = String.fromBytes(buffer, length: maxLength)
                     }
                     hasReply = true
+                    self.ended = true
                     return maxLength
                 }
 
@@ -128,17 +125,9 @@ public class BufferedReader {
             if hasReply {
                 return res
             }
+        } while self.stream.hasBytesAvailable
 
-            if !shouldContinue {
-                return nil
-            }
-
-            do {
-                try self.fillBuffer(4 << 10)
-            } catch Error.NotEnoughBytes {
-                shouldContinue = false
-            }
-        }
+        return nil
     }
 
     public func close() {
