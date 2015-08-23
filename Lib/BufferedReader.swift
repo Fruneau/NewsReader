@@ -8,35 +8,6 @@
 
 import Foundation
 
-private func memfind(ptr: UnsafePointer<Void>, length: Int, str: String.UTF8View) -> UnsafePointer<Void> {
-    let first = Int32(str.first!)
-    var pos = ptr
-    let end = ptr + length - (str.count - 1)
-
-    func matchAt(sub : UnsafePointer<Void>) -> Bool {
-        var bytes = UnsafePointer<UInt8>(sub)
-
-        for byte in str {
-            if byte != bytes[0] {
-                return false
-            }
-            bytes = bytes + 1
-        }
-        return true
-    }
-
-    while pos < end {
-        let match = memchr(pos, first, end - pos)
-
-        if match == nil || matchAt(match) {
-            return UnsafePointer<Void>(match)
-        }
-
-        pos = UnsafePointer<Void>(match) + 1
-    }
-    return nil
-}
-
 public class BufferedReader {
     private let stream : NSInputStream
     private let buffer: Buffer

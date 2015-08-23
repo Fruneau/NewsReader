@@ -36,6 +36,35 @@ private func charToHex(char: UInt8) -> UInt8? {
     }
 }
 
+public func memfind(ptr: UnsafePointer<Void>, length: Int, str: String.UTF8View) -> UnsafePointer<Void> {
+    let first = Int32(str.first!)
+    var pos = ptr
+    let end = ptr + length - (str.count - 1)
+
+    func matchAt(sub : UnsafePointer<Void>) -> Bool {
+        var bytes = UnsafePointer<UInt8>(sub)
+
+        for byte in str {
+            if byte != bytes[0] {
+                return false
+            }
+            bytes = bytes + 1
+        }
+        return true
+    }
+
+    while pos < end {
+        let match = memchr(pos, first, end - pos)
+
+        if match == nil || matchAt(match) {
+            return UnsafePointer<Void>(match)
+        }
+
+        pos = UnsafePointer<Void>(match) + 1
+    }
+    return nil
+}
+
 public extension NSData {
     public var utf8String : String? {
         return NSString(bytes: self.bytes, length: self.length, encoding: NSUTF8StringEncoding) as String?
@@ -77,4 +106,41 @@ public extension NSData {
         }
         self.init(data: data)
     }
+
+    public func split(separator: String) -> [NSData] {
+        var chunks : [NSData] = []
+        let separatorChars = separator.utf8
+        let bytes = self.bytes
+        let length = self.length
+        var pos = 0
+
+        while pos < length {
+            let begin = bytes + pos
+            let end = memfind(begin, length: length - pos, str: separatorChars)
+
+            if end == nil {
+                chunks.append(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: length - pos, freeWhenDone: false))
+                break
+            } else {
+                chunks.append(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: end - begin, freeWhenDone: false))
+            }
+            pos += (end - begin) + separatorChars.count
+        }
+        return chunks
+    }
+}
+
+public func ~=(pattern: String, value: NSData) -> Bool {
+    let chars = pattern.utf8
+    let bytes = value.bytes
+
+    if chars.count != value.length {
+        return false
+    }
+
+    var res = false
+    pattern.withCString {
+        res = memcmp(bytes, $0, value.length) == 0
+    }
+    return res
 }

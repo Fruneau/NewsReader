@@ -342,6 +342,15 @@ public enum MIMEHeader {
         let headers = try MIMEHeader.parseHeaders(sub)
         return (headers, data[idx..<data.endIndex])
     }
+
+    static func parseHeadersAndGetBody(data: NSData) throws -> ([MIMEHeader], ArraySlice<String>) {
+        var lines : [String] = []
+
+        for case let line? in data.split("\r\n").map(String.fromData) {
+            lines.append(line)
+        }
+        return try MIMEHeader.parseHeadersAndGetBody(lines)
+    }
 }
 
 public class MIMEHeaders {
@@ -372,6 +381,15 @@ public class MIMEHeaders {
 
         return MIMEHeaders(headers: headers)
     }
+
+    static public func parse(data: NSData) throws -> MIMEHeaders {
+        var lines : [String] = []
+
+        for case let line? in data.split("\r\n").map(String.fromData) {
+            lines.append(line)
+        }
+        return try MIMEHeaders.parse(lines)
+    }
 }
 
 public class MIMEPart {
@@ -387,5 +405,14 @@ public class MIMEPart {
         let (headers, body) = try MIMEHeader.parseHeadersAndGetBody(data)
 
         return MIMEPart(headers: headers, body: body)
+    }
+
+    static public func parse(data: NSData) throws -> MIMEPart {
+        var lines : [String] = []
+
+        for case let line? in data.split("\r\n").map(String.fromData) {
+            lines.append(line)
+        }
+        return try MIMEPart.parse(lines)
     }
 }

@@ -643,17 +643,13 @@ private class NNTPOperation {
     private let isCancelled : (Void) -> Bool
 
     private var response : NNTPResponse?
-    private var payload : [String]?
+    private var payload : NSData?
 
     private init(command: NNTPCommand, onSuccess: (NNTPPayload) -> Void, onError: (ErrorType) -> Void, isCancelled: (Void) -> Bool) {
         self.command = command
         self.onSuccess = onSuccess
         self.onError = onError
         self.isCancelled = isCancelled
-
-        if self.command.isMultiline {
-            self.payload = []
-        }
     }
 
     private func acceptResponse(response: NNTPResponse) -> Bool {
@@ -701,8 +697,16 @@ private class NNTPOperation {
         }
     }
 
-    private func parseCapabilities() -> Set<NNTPCapability> {
+    var payloadByLine : [NSData]? {
         guard let payload = self.payload else {
+            return nil
+        }
+
+        return payload.split("\r\n")
+    }
+
+    private func parseCapabilities() -> Set<NNTPCapability> {
+        guard let payload = self.payloadByLine else {
             assert (false)
         }
 
@@ -734,8 +738,12 @@ private class NNTPOperation {
                 set.insert(.Streaming)
 
             default:
+                guard let strLine = String.fromData(line) else {
+                    continue lines
+                }
+
                 let cset = NSCharacterSet(charactersInString: " ")
-                let scanner = NSScanner(string: line)
+                let scanner = NSScanner(string: strLine)
                 var keyword : NSString?
 
                 scanner.charactersToBeSkipped = nil
@@ -834,7 +842,15 @@ private class NNTPOperation {
             return .PasswordRequired
 
         case ("2", "3", "0"):
-            return .MessageIds(payload!)
+            var msgids : [String] = []
+
+            self.payloadByLine?.forEach {
+                if let line = String.fromData($0) {
+                    msgids.append(line)
+                }
+            }
+
+            return .MessageIds(msgids)
 
         case ("2", "1", "1"):
             let scanner = NSScanner(string: response.message)
@@ -854,16 +870,19 @@ private class NNTPOperation {
                 throw NNTPError.MalformedResponse(response)
             }
 
-            if let idList = payload {
+            if let idList = self.payloadByLine {
                 ids = []
 
-                for id in idList {
-                    let numId = Int(id)
-
-                    if numId == nil {
+                for id in idList.map(String.fromData) {
+                    if id == nil {
                         throw NNTPError.MalformedResponse(response)
                     }
-                    ids?.append(numId!)
+
+                    guard let numId = Int(id!) else {
+                        throw NNTPError.MalformedResponse(response)
+                    }
+
+                    ids?.append(numId)
                 }
             }
 
@@ -884,8 +903,11 @@ private class NNTPOperation {
 
         case ("2", "2", "2"):
             let (number, msgid) = try self.parseArticleFound(response)
+            guard let body = String.fromData(payload!) else {
+                throw NNTPError.ServerProtocolError
+            }
 
-            return .Body(number, msgid, "\r\n".join(payload!))
+            return .Body(number, msgid, body)
 
         case ("2", "2", "3"):
             let (number, msgid) = try self.parseArticleFound(response)
@@ -896,9 +918,16 @@ private class NNTPOperation {
             var overviews : [NNTPOverview] = []
             var headers : [String] = []
 
-            for line in payload! {
-                let tokens = line.characters.split("\t", maxSplit: 100, allowEmptySlices: true).map(String.init)
+            guard let payload = self.payloadByLine else {
+                throw NNTPError.ServerProtocolError
+            }
 
+            for data in payload {
+                guard let line = String.fromData(data) else {
+                    throw NNTPError.ServerProtocolError
+                }
+
+                let tokens = line.characters.split("\t", maxSplit: 100, allowEmptySlices: true).map(String.init)
                 if tokens.count < 8 {
                     throw NNTPError.MalformedOverviewLine(line)
                 }
@@ -955,7 +984,15 @@ private class NNTPOperation {
                 var res : [(String, String)] = []
                 let cset = NSCharacterSet(charactersInString: " \t")
 
-                for line in payload! {
+                guard let payload = self.payloadByLine else {
+                    throw NNTPError.ServerProtocolError
+                }
+
+                for data in payload {
+                    guard let line = String.fromData(data) else {
+                        throw NNTPError.ServerProtocolError
+                    }
+
                     let scanner = NSScanner(string: line)
                     var group : NSString?
 
@@ -1071,19 +1108,34 @@ private class NNTPOperation {
         throw NNTPError.ServerProtocolError
     }
 
-    private func receivedLine(line: String) throws -> Bool {
+    private func readFrom(reader: BufferedReader) throws -> Bool {
         if self.response == nil {
-            self.response = try self.parseResponse(line)
-            return self.response!.status != .Completed || !self.command.isMultiline
-        } else {
-            assert(self.command.isMultiline)
+            guard let data = try reader.readDataUpTo("\r\n", keepBound: false, endOfStreamIsBound: true) else {
+                return false
+            }
 
-            if line == "." {
+            guard let str = String.fromData(data) else {
+                throw NNTPError.ServerProtocolError
+            }
+            //print(">>> \(str)")
+
+            self.response = try self.parseResponse(str)
+            if self.response!.status != .Completed {
                 return true
             }
-            self.payload?.append(line)
-            return false
         }
+
+        if self.command.isMultiline {
+            guard let payload = try reader.readDataUpTo("\r\n.\r\n", keepBound: false, endOfStreamIsBound: false) else {
+                return false
+            }
+
+            //print(">>> \(String.fromData(payload))")
+
+            self.payload = payload
+        }
+
+        return true
     }
 
     private func fail(error: ErrorType) {
@@ -1172,25 +1224,20 @@ private class NNTPConnection {
     }
 
     private func read() throws {
-        while let lineData = try self.reader.readDataUpTo("\r\n", keepBound: false, endOfStreamIsBound: true) {
-            guard let line = String.fromData(lineData) else {
+        while true {
+            guard let reply = self.sentCommands.head else {
+                assert (!self.istream.hasBytesAvailable)
                 return
             }
 
-            //print("<<< \(line)")
-            if let reply = self.sentCommands.head {
-                do {
-                    if try reply.receivedLine(line) {
-                        self.sentCommands.pop()
-                        reply.process()
-                    }
-                } catch let e {
+            do {
+                if try reply.readFrom(self.reader) {
                     self.sentCommands.pop()
-                    reply.fail(e)
-                    self.close()
-                    return
+                    reply.process()
                 }
-            } else {
+            } catch let e {
+                self.sentCommands.pop()
+                reply.fail(e)
                 self.close()
                 return
             }
