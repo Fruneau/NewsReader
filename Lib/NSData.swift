@@ -107,8 +107,7 @@ public extension NSData {
         self.init(data: data)
     }
 
-    public func split(separator: String) -> [NSData] {
-        var chunks : [NSData] = []
+    public func forEachChunk(separator: String, action: (NSData) throws -> ()) rethrows {
         let separatorChars = separator.utf8
         let bytes = self.bytes
         let length = self.length
@@ -119,14 +118,13 @@ public extension NSData {
             let end = memfind(begin, length: length - pos, str: separatorChars)
 
             if end == nil {
-                chunks.append(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: length - pos, freeWhenDone: false))
+                try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: length - pos, freeWhenDone: false))
                 break
             } else {
-                chunks.append(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: end - begin, freeWhenDone: false))
+                try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: end - begin, freeWhenDone: false))
             }
             pos += (end - begin) + separatorChars.count
         }
-        return chunks
     }
 }
 

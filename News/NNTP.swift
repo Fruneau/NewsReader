@@ -697,21 +697,15 @@ private class NNTPOperation {
         }
     }
 
-    var payloadByLine : [NSData]? {
-        guard let payload = self.payload else {
-            return nil
-        }
-
-        return payload.split("\r\n")
+    private func payloadForEachLine(action: (NSData) throws -> ()) rethrows {
+        try self.payload!.forEachChunk("\r\n", action: action)
     }
 
     private func parseCapabilities() -> Set<NNTPCapability> {
-        guard let payload = self.payloadByLine else {
-            assert (false)
-        }
-
         var set = Set<NNTPCapability>()
-        lines: for line in payload {
+        self.payloadForEachLine {
+            (line) in
+
             switch (line) {
             case "HDR":
                 set.insert(.Hdr)
@@ -739,7 +733,7 @@ private class NNTPOperation {
 
             default:
                 guard let strLine = String.fromData(line) else {
-                    continue lines
+                    return
                 }
 
                 let cset = NSCharacterSet(charactersInString: " ")
@@ -748,7 +742,7 @@ private class NNTPOperation {
 
                 scanner.charactersToBeSkipped = nil
                 if !scanner.scanUpToCharactersFromSet(cset, intoString: &keyword) {
-                    continue lines
+                    return
                 }
                 switch (keyword!) {
                 case "LIST":
@@ -756,7 +750,7 @@ private class NNTPOperation {
                         var cap : NSString?
 
                         if !scanner.scanUpToCharactersFromSet(cset, intoString: &cap) {
-                            continue lines
+                            return
                         }
 
                         switch (cap!) {
@@ -781,10 +775,10 @@ private class NNTPOperation {
                     var version : Int = 0
 
                     if !scanner.skipCharactersFromSet(cset) {
-                        continue lines
+                        return
                     }
                     if !scanner.scanInteger(&version) {
-                        continue lines
+                        return
                     }
                     set.insert(.Version(Int(version)))
                     
@@ -844,7 +838,7 @@ private class NNTPOperation {
         case ("2", "3", "0"):
             var msgids : [String] = []
 
-            self.payloadByLine?.forEach {
+            self.payloadForEachLine {
                 if let line = String.fromData($0) {
                     msgids.append(line)
                 }
@@ -870,15 +864,18 @@ private class NNTPOperation {
                 throw NNTPError.MalformedResponse(response)
             }
 
-            if let idList = self.payloadByLine {
+
+            if self.payload != nil {
                 ids = []
 
-                for id in idList.map(String.fromData) {
-                    if id == nil {
+                try self.payloadForEachLine {
+                    (line) in
+
+                    guard let id = String.fromData(line) else {
                         throw NNTPError.MalformedResponse(response)
                     }
 
-                    guard let numId = Int(id!) else {
+                    guard let numId = Int(id) else {
                         throw NNTPError.MalformedResponse(response)
                     }
 
@@ -918,11 +915,9 @@ private class NNTPOperation {
             var overviews : [NNTPOverview] = []
             var headers : [String] = []
 
-            guard let payload = self.payloadByLine else {
-                throw NNTPError.ServerProtocolError
-            }
+            try self.payloadForEachLine {
+                (data) in
 
-            for data in payload {
                 guard let line = String.fromData(data) else {
                     throw NNTPError.ServerProtocolError
                 }
@@ -984,12 +979,8 @@ private class NNTPOperation {
                 var res : [(String, String)] = []
                 let cset = NSCharacterSet(charactersInString: " \t")
 
-                guard let payload = self.payloadByLine else {
-                    throw NNTPError.ServerProtocolError
-                }
-
-                for data in payload {
-                    guard let line = String.fromData(data) else {
+                try self.payloadForEachLine {
+                    guard let line = String.fromData($0) else {
                         throw NNTPError.ServerProtocolError
                     }
 
