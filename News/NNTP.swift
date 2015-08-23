@@ -267,8 +267,8 @@ public struct NNTPOverview {
     public let num : Int
     public let headers : MIMEHeaders
 
-    public let bytes : Int
-    public let lines : Int
+    public let bytes : Int?
+    public let lines : Int?
 }
 
 public enum NNTPPayload {
@@ -924,11 +924,20 @@ private class NNTPOperation {
                     headers.append("References: " + tokens[5])
                 }
 
-                guard let bytes = Int(tokens[6]) else {
-                    throw NNTPError.MalformedOverviewLine(line)
+                var bytes : Int?
+                if !tokens[6].isEmpty {
+                    bytes = Int(tokens[6])
+                    if bytes == nil {
+                        throw NNTPError.MalformedOverviewLine(line)
+                    }
                 }
-                guard let lines = Int(tokens[7]) else {
-                    throw NNTPError.MalformedOverviewLine(line)
+
+                var lines : Int?
+                if !tokens[7].isEmpty {
+                    lines = Int(tokens[7])
+                    if lines == nil {
+                        throw NNTPError.MalformedOverviewLine(line)
+                    }
                 }
 
                 if tokens.count > 8 {
