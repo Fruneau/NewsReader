@@ -38,4 +38,16 @@ extension String {
         } while otherStart < otherPos
         return true
     }
+
+    public static func fromBytes(bytes: UnsafePointer<Void>, length: Int) -> String? {
+        if let utf8String = NSString(bytes: bytes, length: length, encoding: NSUTF8StringEncoding) {
+            return utf8String as String
+        }
+
+        let charset = CFStringConvertEncodingToNSStringEncoding(CFStringBuiltInEncodings.ISOLatin1.rawValue)
+        if let latin1String = NSString(bytes: bytes, length: length, encoding: charset) {
+            return latin1String as String
+        }
+        return nil
+    }
 }
