@@ -992,7 +992,7 @@ private class NNTPOperation {
         case ("4", "2", "2"):
             throw NNTPError.NoPreviousArticleInGroup
 
-        case ("4", "3", "3"):
+        case ("4", "2", "3"):
             throw NNTPError.NoArticleWithThatNumber
 
         case ("4", "3", "0"):
