@@ -39,9 +39,15 @@ extension String {
         return true
     }
 
-    public static func fromBytes(bytes: UnsafePointer<Void>, length: Int) -> String? {
-        if let utf8String = NSString(bytes: bytes, length: length, encoding: NSUTF8StringEncoding) {
-            return utf8String as String
+    public static func fromBytes(bytes: UnsafePointer<Void>, length: Int, encoding: UInt) -> String? {
+        if let encString = NSString(bytes: bytes, length: length, encoding: encoding) {
+            return encString as String
+        }
+
+        if encoding != NSUTF8StringEncoding {
+            if let utf8String = NSString(bytes: bytes, length: length, encoding: NSUTF8StringEncoding) {
+                return utf8String as String
+            }
         }
 
         let charset = CFStringConvertEncodingToNSStringEncoding(CFStringBuiltInEncodings.ISOLatin1.rawValue)
@@ -49,5 +55,17 @@ extension String {
             return latin1String as String
         }
         return nil
+    }
+
+    public static func fromBytes(bytes: UnsafePointer<Void>, length: Int) -> String? {
+        return String.fromBytes(bytes, length: length, encoding: NSUTF8StringEncoding)
+    }
+
+    public static func fromData(data: NSData, encoding: UInt) -> String? {
+        return String.fromBytes(data.bytes, length: data.length, encoding: encoding)
+    }
+
+    public static func fromData(data: NSData) -> String? {
+        return String.fromBytes(data.bytes, length: data.length)
     }
 }
