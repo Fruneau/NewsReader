@@ -1164,6 +1164,7 @@ private class NNTPConnection {
 
     private func read() throws {
         while let line = try self.reader.readLine() {
+            //print("<<< \(line)")
             if let reply = self.sentCommands.head {
                 do {
                     if try reply.receivedLine(line) {
@@ -1196,6 +1197,7 @@ private class NNTPConnection {
             let cmd = self.pendingCommands.pop()!
 
             if !cmd.isCancelled() {
+                //print(">>> \(cmd.command)")
                 cmd.command.pack(self.outBuffer)
                 self.sentCommands.push(cmd)
             }
