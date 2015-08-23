@@ -227,6 +227,7 @@ public enum MIMEHeader {
     }
 
     static func appendHeader(inout headers : [MIMEHeader], name: NSData, encodedContent : NSData) throws {
+        let cset = NSCharacterSet.whitespaceCharacterSet()
         var content : String
         do {
             content = try MIMEHeader.decodeRFC2047(encodedContent)
@@ -238,7 +239,7 @@ public enum MIMEHeader {
             throw Error.MalformedHeaderName(name)
         }
 
-        if originalName.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet()) != originalName {
+        if originalName.stringByTrimmingCharactersInSet(cset) != originalName {
             throw Error.MalformedHeaderName(name)
         }
 
@@ -250,14 +251,14 @@ public enum MIMEHeader {
 
         case "cc", "to":
             for slice in content.characters.split(",") {
-                let addr = String(slice).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+                let addr = String(slice).stringByTrimmingCharactersInSet(cset)
 
                 headers.append(.Address(name: lower, address: MIMEAddress.parse(addr)))
             }
 
         case "newsgroups", "followup-to":
             for slice in content.characters.split(",") {
-                let group = String(slice).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+                let group = String(slice).stringByTrimmingCharactersInSet(cset)
 
                 headers.append(.Newsgroup(name: lower, group: group))
             }
@@ -320,10 +321,11 @@ public enum MIMEHeader {
     static func parse(data: NSData) throws -> ([MIMEHeader], NSData?) {
         let cset = NSCharacterSet.whitespaceCharacterSet()
         var headers : [MIMEHeader] = []
-        var currentHeader : NSData?
-        var currentValue : NSMutableData?
 
         do {
+            var currentHeader : NSData?
+            var currentValue : NSMutableData?
+
             try data.forEachChunk("\r\n") {
                 (line, pos) in
 
@@ -343,7 +345,7 @@ public enum MIMEHeader {
                         throw ParseHeader.EndOfHeaders(body: NSData(bytes: dataBytes + 2, length: remaining - 2))
                     }
 
-                case _ where cset.characterIsMember(unichar(line.bytes[0])):
+                case _ where cset.characterIsMember(unichar(UnsafePointer<UInt8>(line.bytes)[0])):
                     var bytes = UnsafePointer<UInt8>(line.bytes)
                     var len = line.length
 
@@ -376,7 +378,7 @@ public enum MIMEHeader {
                             if currentHeader == nil {
                                 currentHeader = NSData(data: data)
                             } else {
-                                var bytes = line.bytes + pos
+                                var bytes = UnsafePointer<UInt8>(line.bytes) + pos
                                 var len = line.length - pos
 
                                 while len > 0 && cset.characterIsMember(unichar(bytes[0])) {

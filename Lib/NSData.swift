@@ -126,10 +126,6 @@ public extension NSData {
             pos += (end - begin) + separatorChars.count
         }
     }
-
-    public subscript(pos: Int) -> UInt8 {
-        return UnsafePointer<UInt8>(self.bytes)[pos]
-    }
 }
 
 public func ~=(pattern: String, value: NSData) -> Bool {
