@@ -28,16 +28,14 @@ class BackgroundView : NSView {
 
 @IBDesignable
 class UserBadgeView : NSImageView {
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-
     override func awakeFromNib() {
         super.awakeFromNib()
+
         self.wantsLayer = true
 
+        self.layer?.frame = self.frame
         self.layer?.borderWidth = 0
-        self.layer?.cornerRadius = self.bounds.size.width / 2
+        self.layer?.cornerRadius = self.frame.size.width / 2
         self.layer?.masksToBounds = true
     }
 }
