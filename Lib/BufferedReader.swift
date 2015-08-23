@@ -53,12 +53,16 @@ public class BufferedReader {
         self.lineBreak = lineBreak.utf8
     }
 
+    public convenience init(fromData data: NSData, lineBreak: String) {
+        let stream = NSInputStream(data: data)
+
+        stream.open()
+        self.init(fromStream: stream, lineBreak: lineBreak)
+    }
+
     public convenience init?(fromString string: String, lineBreak: String) {
         if let data = (string as NSString).dataUsingEncoding(NSUTF8StringEncoding) {
-            let stream = NSInputStream(data: data)
-
-            stream.open()
-            self.init(fromStream: stream, lineBreak: lineBreak)
+            self.init(fromData: data, lineBreak: lineBreak)
         } else {
             return nil
         }
