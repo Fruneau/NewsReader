@@ -128,6 +128,10 @@ class Account : NSObject {
     }
 
     deinit {
+        self.subscriptions.forEach {
+            $0.removeObserver(self, forKeyPath: "unreadCount")
+        }
+
         self.client?.disconnect()
         self.client = nil
     }
