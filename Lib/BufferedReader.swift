@@ -39,25 +39,33 @@ public class BufferedReader {
         }
     }
 
-    private func fillBuffer(minSize: Int) throws {
-        var remain = minSize
+    private func fillBuffer(minSize: Int) throws -> Bool {
+        var filledAll = false
 
-        while remain > 0 && self.stream.hasBytesAvailable {
-            try self.buffer.append(remain) {
-                (buffer, length) throws in
+        try self.buffer.append(minSize) {
+            (buffer, length) throws in
 
-                switch (self.stream.read(UnsafeMutablePointer<UInt8>(buffer), maxLength: length)) {
-                case 0:
-                    return 0
+            switch (self.stream.read(UnsafeMutablePointer<UInt8>(buffer), maxLength: length)) {
+            case 0:
+                return 0
 
-                case let e where e > 0:
-                    remain -= e
-                    return e
+            case length:
+                filledAll = true
+                return length
 
-                default:
-                    throw Error.ReadError
-                }
+            case let e where e > 0:
+                return e
+
+            default:
+                throw Error.ReadError
             }
+        }
+
+        return filledAll
+    }
+
+    public func fillBuffer() throws {
+        while try self.fillBuffer(64 << 10) {
         }
     }
 
@@ -74,48 +82,42 @@ public class BufferedReader {
             self.lastBound = bound
         }
 
-        repeat {
-            var res : NSData?
+        var res : NSData?
+        self.buffer.read() {
+            (buffer, maxLength) in
 
-            try self.fillBuffer(64 << 10)
-            self.buffer.read() {
-                (buffer, maxLength) in
+            assert (maxLength >= self.lastReadTo)
 
-                assert (maxLength >= self.lastReadTo)
+            let end = memfind(buffer + self.lastReadTo, length: maxLength - self.lastReadTo, str: boundChars)
+            self.lastReadTo = max(maxLength - boundChars.count, 0)
 
-                let end = memfind(buffer + self.lastReadTo, length: maxLength - self.lastReadTo, str: boundChars)
-                self.lastReadTo = max(maxLength - boundChars.count, 0)
+            if end != nil {
+                let len = end - buffer
 
-                if end != nil {
-                    let len = end - buffer
-
-                    if len + 1 < maxLength {
-                        if keepBound {
-                            res = NSData(bytes: buffer, length: len + boundChars.count)
-                        } else {
-                            res = NSData(bytes: buffer, length: len)
-                        }
-                        return len + boundChars.count
+                if len + 1 < maxLength {
+                    if keepBound {
+                        res = NSData(bytes: buffer, length: len + boundChars.count)
+                    } else {
+                        res = NSData(bytes: buffer, length: len)
                     }
-                } else if self.stream.streamStatus == NSStreamStatus.AtEnd {
-                    assert (!self.stream.hasBytesAvailable)
-                    if maxLength > 0 {
-                        res = NSData(bytes: buffer, length: maxLength)
-                    }
-                    self.ended = true
-                    return maxLength
+                    return len + boundChars.count
                 }
-
-                return 0
+            } else if self.stream.streamStatus == NSStreamStatus.AtEnd {
+                assert (!self.stream.hasBytesAvailable)
+                if maxLength > 0 {
+                    res = NSData(bytes: buffer, length: maxLength)
+                }
+                self.ended = true
+                return maxLength
             }
 
-            if res != nil {
-                self.lastReadTo = 0
-                return res
-            }
-        } while self.stream.hasBytesAvailable && !self.ended
+            return 0
+        }
 
-        return nil
+        if res != nil {
+            self.lastReadTo = 0
+        }
+        return res
     }
 
     public func close() {
@@ -128,5 +130,9 @@ public class BufferedReader {
 
     public var streamStatus : NSStreamStatus {
         return self.stream.streamStatus
+    }
+
+    public var hasBytesAvailable : Bool {
+        return self.buffer.length > 0
     }
 }

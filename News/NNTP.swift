@@ -1216,17 +1216,19 @@ private class NNTPConnection {
     }
 
     private func read() throws {
-        while true {
+        try self.reader.fillBuffer()
+
+        while self.reader.hasBytesAvailable {
             guard let reply = self.sentCommands.head else {
-                assert (!self.istream.hasBytesAvailable)
                 return
             }
 
             do {
-                if try reply.readFrom(self.reader) {
-                    self.sentCommands.pop()
-                    reply.process()
+                if !(try reply.readFrom(self.reader)) {
+                    return
                 }
+                self.sentCommands.pop()
+                reply.process()
             } catch let e {
                 self.sentCommands.pop()
                 reply.fail(e)
