@@ -70,6 +70,14 @@ public extension NSData {
         return NSString(bytes: self.bytes, length: self.length, encoding: NSUTF8StringEncoding) as String?
     }
 
+    public var intValue : Int? {
+        guard let str = self.utf8String else {
+            return nil
+        }
+
+        return Int(str)
+    }
+
     public convenience init?(quotedPrintableString content: String) {
         let utf8Data = content.utf8
         guard let data = NSMutableData(capacity: utf8Data.count) else {
@@ -124,6 +132,14 @@ public extension NSData {
                 try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: end - begin, freeWhenDone: false), pos)
             }
             pos += (end - begin) + separatorChars.count
+        }
+    }
+}
+
+extension NSMutableData {
+    public func appendString(string: String) {
+        string.withCString {
+            self.appendBytes($0, length: Int(strlen($0)))
         }
     }
 }

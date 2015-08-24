@@ -116,10 +116,8 @@ class Account : NSObject {
     }
 
     init(accountId: Int, account: AnyObject, cacheRoot: NSURL?) {
-        guard let params = Account.getAccountParameters(account) else {
-            assert (false)
-        }
-
+        let params = Account.getAccountParameters(account)!
+        
         self.cacheRoot = cacheRoot
         self.cacheGroups = cacheRoot?.URLByAppendingPathComponent("Groups", isDirectory: true)
         self.cacheMessages = cacheRoot?.URLByAppendingPathComponent("Messages", isDirectory: true)

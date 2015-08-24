@@ -135,7 +135,7 @@ public enum NNTPError : ErrorType, CustomStringConvertible {
     case ServerProtocolError
     case UnexpectedResponse(NNTPResponse)
     case MalformedResponse(NNTPResponse)
-    case MalformedOverviewLine(String)
+    case MalformedOverviewLine(NSData)
 
     case ServiceTemporarilyUnvailable /* Error 400 */
     case NoSuchNewsgroup(group: String?) /* Error 411 */
@@ -185,7 +185,7 @@ public enum NNTPError : ErrorType, CustomStringConvertible {
             return "malformed server response: \(response)"
 
         case .MalformedOverviewLine(let line):
-            return "malformed message overview: \(line)"
+            return "malformed message overview: \(String.fromData(line))"
 
         case .ServiceTemporarilyUnvailable:
             return "service temporarily unavailable (retry later)"
@@ -915,66 +915,61 @@ private class NNTPOperation {
 
         case ("2", "2", "4"):
             var overviews : [NNTPOverview] = []
-            var headers : [String] = []
 
             try self.payloadForEachLine {
                 (data) in
 
-                guard let line = String.fromData(data) else {
+                var pos = 0
+                var num : Int?
+                var bytes : Int?
+                var lines : Int?
+
+                guard let headers = NSMutableData(capacity: data.length + 60) else {
                     throw NNTPError.ServerProtocolError
                 }
 
-                let tokens = line.characters.split("\t", maxSplit: 100, allowEmptySlices: true).map(String.init)
-                if tokens.count < 8 {
-                    throw NNTPError.MalformedOverviewLine(line)
-                }
+                try data.forEachChunk("\t") {
+                    (chunk, _) in
 
-                guard let num = Int(tokens[0]) else {
-                    throw NNTPError.MalformedOverviewLine(line)
-                }
+                    switch (pos) {
+                    case 0:
+                        num = chunk.intValue
+                        if num == nil {
+                            throw NNTPError.MalformedOverviewLine(data)
+                        }
 
-                headers.removeAll()
-                if !tokens[1].isEmpty {
-                    headers.append("Subject: \(tokens[1])")
-                }
-                if !tokens[2].isEmpty {
-                    headers.append("From: \(tokens[2])")
-                }
-                if !tokens[3].isEmpty {
-                    headers.append("Date: \(tokens[3])")
-                }
-                if !tokens[4].isEmpty {
-                    headers.append("Message-ID: \(tokens[4])")
-                }
-                if !tokens[5].isEmpty {
-                    headers.append("References: \(tokens[5])")
-                }
+                    case 1...5:
+                        if chunk.length != 0 {
+                            let chunkHeader = [ "Subject: ", "From: ", "Date: ", "Message-ID: ", "References: "]
+                            headers.appendString(chunkHeader[pos - 1])
+                            headers.appendData(chunk)
+                            headers.appendString("\r\n")
+                        }
 
-                var bytes : Int?
-                if !tokens[6].isEmpty {
-                    bytes = Int(tokens[6])
-                    if bytes == nil {
-                        throw NNTPError.MalformedOverviewLine(line)
+                    case 6:
+                        if chunk.length != 0 {
+                            bytes = chunk.intValue
+                            if bytes == nil {
+                                throw NNTPError.MalformedOverviewLine(data)
+                            }
+                        }
+
+                    case 7:
+                        if chunk.length != 0 {
+                            lines = chunk.intValue
+                            if lines == nil {
+                                throw NNTPError.MalformedOverviewLine(data)
+                            }
+                        }
+
+                    default:
+                        headers.appendData(chunk)
+                        headers.appendString("\r\n")
                     }
+                    pos++
                 }
 
-                var lines : Int?
-                if !tokens[7].isEmpty {
-                    lines = Int(tokens[7])
-                    if lines == nil {
-                        throw NNTPError.MalformedOverviewLine(line)
-                    }
-                }
-
-                if tokens.count > 8 {
-                    headers.extend(tokens[8..<tokens.count])
-                }
-
-                guard let data = ("\r\n".join(headers) as NSString).dataUsingEncoding(NSUTF8StringEncoding) else {
-                    throw NNTPError.MalformedOverviewLine(line)
-                }
-
-                let overview = NNTPOverview(num: num, headers: try MIMEHeaders.parse(data), bytes: bytes, lines: lines)
+                let overview = NNTPOverview(num: num!, headers: try MIMEHeaders.parse(headers), bytes: bytes, lines: lines)
                 overviews.append(overview)
             }
             return .Overview(overviews)

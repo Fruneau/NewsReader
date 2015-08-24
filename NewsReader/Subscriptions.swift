@@ -146,14 +146,17 @@ extension SubscriptionController : NSOutlineViewDelegate {
 
         guard let dict = cell.objectValue as? NSDictionary else {
             assert (false)
+            return
         }
 
         guard let fullname = dict["fullname"] as? String else {
             assert (false)
+            return
         }
 
         guard let subscriptions = self.accountListController.selection.valueForKey("subscriptions") as? NSMutableArray else {
             assert (false)
+            return
         }
 
         let pos = subscriptions.indexOfObject(fullname)
