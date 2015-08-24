@@ -112,7 +112,7 @@ public enum MIMEHeader {
 
         f.locale = NSLocale(localeIdentifier: "en_US_POSIX")
         f.timeZone = NSTimeZone(abbreviation: "GMT")
-        f.dateFormat = "E, dd MMM yyyy HH:mm:ss"
+        f.dateFormat = "E, dd MMM yyyy HH:mm:ss Z"
         return f
     }()
 
@@ -121,7 +121,7 @@ public enum MIMEHeader {
 
         f.locale = NSLocale(localeIdentifier: "en_US_POSIX")
         f.timeZone = NSTimeZone(abbreviation: "GMT")
-        f.dateFormat = "E, dd MMM yyyy HH:mm:ss Z (v)"
+        f.dateFormat = "E, dd MMM yyyy HH:mm:ss Z (zzz)"
         return f
     }()
 
