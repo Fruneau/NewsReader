@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8173.3" systemVersion="15A262e" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8187.4" systemVersion="15A262e" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8173.3"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8187.4"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="BrowserWindowController" customModule="NewsReader" customModuleProvider="target">
@@ -260,47 +260,60 @@
                                 <rect key="frame" x="640.5" y="0.0" width="424.5" height="595"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
-                                    <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XCO-Uf-JPk">
+                                    <visualEffectView appearanceType="vibrantLight" blendingMode="behindWindow" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="tS2-cK-ymy">
                                         <rect key="frame" x="0.0" y="0.0" width="424" height="595"/>
-                                        <clipView key="contentView" id="Q75-1s-EEZ">
-                                            <rect key="frame" x="0.0" y="0.0" width="424" height="595"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <subviews>
-                                                <collectionView id="DbJ-IL-AaF" userLabel="Article View">
-                                                    <rect key="frame" x="0.0" y="0.0" width="449" height="595"/>
+                                        <subviews>
+                                            <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XCO-Uf-JPk">
+                                                <rect key="frame" x="0.0" y="0.0" width="424" height="595"/>
+                                                <clipView key="contentView" id="Q75-1s-EEZ">
+                                                    <rect key="frame" x="0.0" y="0.0" width="424" height="595"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <collectionView id="DbJ-IL-AaF" userLabel="Article View">
+                                                            <rect key="frame" x="0.0" y="0.0" width="448" height="595"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <animations/>
+                                                            <collectionViewFlowLayout key="collectionViewLayout" minimumInteritemSpacing="10" minimumLineSpacing="10" id="3iu-D0-Oha" customClass="ArticleLayout" customModule="NewsReader" customModuleProvider="target">
+                                                                <size key="itemSize" width="50" height="50"/>
+                                                            </collectionViewFlowLayout>
+                                                            <color key="primaryBackgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="calibratedRGB"/>
+                                                            <connections>
+                                                                <outlet property="dataSource" destination="owI-TE-WDB" id="65W-KR-aoT"/>
+                                                                <outlet property="delegate" destination="owI-TE-WDB" id="Zr7-i3-hIn"/>
+                                                            </connections>
+                                                        </collectionView>
+                                                    </subviews>
                                                     <animations/>
-                                                    <collectionViewFlowLayout key="collectionViewLayout" minimumInteritemSpacing="10" minimumLineSpacing="10" id="3iu-D0-Oha">
-                                                        <size key="itemSize" width="50" height="50"/>
-                                                    </collectionViewFlowLayout>
-                                                    <color key="primaryBackgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                    <connections>
-                                                        <outlet property="dataSource" destination="owI-TE-WDB" id="65W-KR-aoT"/>
-                                                        <outlet property="delegate" destination="owI-TE-WDB" id="Zr7-i3-hIn"/>
-                                                    </connections>
-                                                </collectionView>
-                                            </subviews>
-                                            <animations/>
-                                        </clipView>
+                                                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="calibratedRGB"/>
+                                                </clipView>
+                                                <animations/>
+                                                <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="lWD-Wm-dG8">
+                                                    <rect key="frame" x="0.0" y="579" width="424" height="16"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <animations/>
+                                                </scroller>
+                                                <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="ggU-2b-xcJ">
+                                                    <rect key="frame" x="234" y="1" width="15" height="143"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <animations/>
+                                                </scroller>
+                                            </scrollView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="XCO-Uf-JPk" secondAttribute="bottom" id="AeH-Zg-3o3"/>
+                                            <constraint firstItem="XCO-Uf-JPk" firstAttribute="top" secondItem="tS2-cK-ymy" secondAttribute="top" id="dUC-Dm-e1w"/>
+                                            <constraint firstAttribute="trailing" secondItem="XCO-Uf-JPk" secondAttribute="trailing" id="wpp-FL-6zH"/>
+                                            <constraint firstItem="XCO-Uf-JPk" firstAttribute="leading" secondItem="tS2-cK-ymy" secondAttribute="leading" id="zXZ-43-YwA"/>
+                                        </constraints>
                                         <animations/>
-                                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="lWD-Wm-dG8">
-                                            <rect key="frame" x="0.0" y="579" width="424" height="16"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <animations/>
-                                        </scroller>
-                                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="ggU-2b-xcJ">
-                                            <rect key="frame" x="234" y="1" width="15" height="143"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <animations/>
-                                        </scroller>
-                                    </scrollView>
+                                    </visualEffectView>
                                 </subviews>
                                 <constraints>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="400" id="1XQ-cr-FC6"/>
-                                    <constraint firstItem="XCO-Uf-JPk" firstAttribute="leading" secondItem="oVf-tN-sVW" secondAttribute="leading" id="1bh-x1-HzF"/>
-                                    <constraint firstAttribute="bottom" secondItem="XCO-Uf-JPk" secondAttribute="bottom" id="KPf-a3-ALw"/>
-                                    <constraint firstItem="XCO-Uf-JPk" firstAttribute="top" secondItem="oVf-tN-sVW" secondAttribute="top" id="Mfy-GE-EwH"/>
-                                    <constraint firstAttribute="trailing" secondItem="XCO-Uf-JPk" secondAttribute="trailing" id="tQs-My-AEH"/>
+                                    <constraint firstAttribute="bottom" secondItem="tS2-cK-ymy" secondAttribute="bottom" id="COR-yV-gYh"/>
+                                    <constraint firstItem="tS2-cK-ymy" firstAttribute="leading" secondItem="oVf-tN-sVW" secondAttribute="leading" id="So4-lM-cm6"/>
+                                    <constraint firstAttribute="trailing" secondItem="tS2-cK-ymy" secondAttribute="trailing" id="XuR-Dd-ThC"/>
+                                    <constraint firstItem="tS2-cK-ymy" firstAttribute="top" secondItem="oVf-tN-sVW" secondAttribute="top" id="oiA-Y4-ZJZ"/>
                                 </constraints>
                                 <animations/>
                             </customView>

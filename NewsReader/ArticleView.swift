@@ -70,6 +70,10 @@ class ArticleViewItem : NSCollectionViewItem {
     }
 }
 
+class ArticleLayout : NSCollectionViewFlowLayout {
+
+}
+
 class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
 
     @IBOutlet weak var articleView: NSCollectionView!
@@ -160,13 +164,18 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
     }
 
     func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
-        let size = collectionView.frame.size
+        let size = collectionView.superview!.superview!.frame.size
 
         guard let article = self.articleForIndexPath(indexPath) else {
             return NSSize(width: 0, height: 0)
         }
 
         let height = 140 + article.lines * 14
-        return NSSize(width: size.width, height: CGFloat(height))
+
+        if article.inReplyTo != nil || article.replies.count != 0 {
+            return NSSize(width: size.width - 30, height: CGFloat(height))
+        } else {
+            return NSSize(width: size.width, height: max(size.height, CGFloat(height)))
+        }
     }
 }
