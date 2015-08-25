@@ -58,14 +58,14 @@ class Article : NSObject {
             var res = ""
 
             if let firstName = contact.valueForProperty(kABFirstNameProperty) as? String {
-                res.extend(firstName)
+                res.appendContentsOf(firstName)
             }
 
             if let lastName = contact.valueForProperty(kABLastNameProperty) as? String {
                 if !res.isEmpty {
                     res.append(Character(" "))
                 }
-                res.extend(lastName)
+                res.appendContentsOf(lastName)
             }
 
             if !res.isEmpty {
@@ -154,7 +154,7 @@ class Article : NSObject {
         for case .Newsgroup(name: _, group: let v) in dest {
             out.append(v)
         }
-        return ", ".join(out)
+        return out.joinWithSeparator(", ")
     }
 
     private func loadRefs() {
@@ -256,7 +256,7 @@ class Article : NSObject {
             self.to = self.loadNewsgroups()
             self.loadRefs()
         })
-        self.promise?.otherwise(print)
+        self.promise?.otherwise({ print($0) })
         return self.promise
     }
 }
@@ -297,7 +297,7 @@ extension Article {
         var thread : [Article] = [self]
 
         for article in self.replies {
-            thread.extend(article.thread)
+            thread.appendContentsOf(article.thread)
         }
         return thread
     }
