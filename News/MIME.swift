@@ -211,6 +211,10 @@ public enum MIMEHeader {
             throw Error.MalformedHeaderContent(headerLine)
         }
 
+        if !content.containsString("=?") {
+            return content
+        }
+
         var matches = rfc2047Re.matchesInString(content, options: [], range: NSMakeRange(0, content.characters.count))
 
         matches.sortInPlace { $0.range.location > $1.range.location }
