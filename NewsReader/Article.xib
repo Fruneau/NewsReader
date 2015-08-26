@@ -14,13 +14,13 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qK4-dS-KD4">
-                    <rect key="frame" x="20" y="0.0" width="533" height="615"/>
+                    <rect key="frame" x="20" y="0.0" width="523" height="615"/>
                     <subviews>
                         <customView translatesAutoresizingMaskIntoConstraints="NO" id="Xo2-6q-hOl" userLabel="Header View">
-                            <rect key="frame" x="0.0" y="512" width="533" height="103"/>
+                            <rect key="frame" x="0.0" y="512" width="523" height="103"/>
                             <subviews>
                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iIf-4K-Nvq">
-                                    <rect key="frame" x="0.0" y="78" width="425" height="17"/>
+                                    <rect key="frame" x="0.0" y="78" width="438" height="17"/>
                                     <animations/>
                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="hI1-Mv-4Bg">
                                         <font key="font" metaFont="systemBold"/>
@@ -53,7 +53,7 @@
                                     </connections>
                                 </textField>
                                 <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="60R-w7-M2C">
-                                    <rect key="frame" x="0.0" y="36" width="444" height="17"/>
+                                    <rect key="frame" x="0.0" y="36" width="457" height="17"/>
                                     <animations/>
                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Subject" id="be3-FA-B40">
                                         <font key="font" metaFont="system"/>
@@ -65,7 +65,7 @@
                                     </connections>
                                 </textField>
                                 <textField horizontalHuggingPriority="300" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ivL-TL-EAP">
-                                    <rect key="frame" x="429" y="79" width="31" height="16"/>
+                                    <rect key="frame" x="442" y="79" width="31" height="16"/>
                                     <animations/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Date" id="06b-cm-n2p">
                                         <dateFormatter key="formatter" dateStyle="long" timeStyle="short" doesRelativeDateFormatting="YES" id="TGa-Wd-fCR"/>
@@ -78,17 +78,17 @@
                                     </connections>
                                 </textField>
                                 <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="6nE-an-pfc">
-                                    <rect key="frame" x="0.0" y="18" width="533" height="5"/>
+                                    <rect key="frame" x="0.0" y="18" width="523" height="5"/>
                                     <animations/>
                                     <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                                     <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     <font key="titleFont" metaFont="system"/>
                                 </box>
                                 <imageView focusRingType="none" horizontalHuggingPriority="1000" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZAn-dN-wjh" customClass="UserBadgeView" customModule="NewsReader" customModuleProvider="target">
-                                    <rect key="frame" x="460" y="36" width="59" height="59"/>
+                                    <rect key="frame" x="473" y="45" width="50" height="50"/>
                                     <constraints>
-                                        <constraint firstAttribute="height" constant="59" id="97V-P1-upO"/>
-                                        <constraint firstAttribute="width" constant="59" id="xEu-w2-BxS"/>
+                                        <constraint firstAttribute="height" constant="50" id="97V-P1-upO"/>
+                                        <constraint firstAttribute="width" constant="50" id="xEu-w2-BxS"/>
                                     </constraints>
                                     <animations/>
                                     <imageCell key="cell" refusesFirstResponder="YES" focusRingType="none" alignment="left" imageScaling="proportionallyDown" image="NSUserGuest" id="mlj-A7-2y1"/>
@@ -97,7 +97,7 @@
                                     </connections>
                                 </imageView>
                                 <progressIndicator wantsLayer="YES" horizontalHuggingPriority="1000" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="fM8-hh-h5f">
-                                    <rect key="frame" x="442" y="36" width="16" height="16"/>
+                                    <rect key="frame" x="455" y="36" width="16" height="16"/>
                                     <animations/>
                                     <connections>
                                         <binding destination="ojD-sA-dGM" name="animate" keyPath="representedObject.body" id="BNc-5g-Kgp">
@@ -133,27 +133,26 @@
                                 <constraint firstItem="qKH-5K-Ror" firstAttribute="leading" secondItem="c6o-cm-MoD" secondAttribute="trailing" constant="4" id="cwY-cG-5g9"/>
                                 <constraint firstItem="iIf-4K-Nvq" firstAttribute="leading" secondItem="Xo2-6q-hOl" secondAttribute="leading" constant="2" id="d7n-Fi-OYF"/>
                                 <constraint firstItem="ivL-TL-EAP" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="top" id="dOK-MN-kPx"/>
-                                <constraint firstItem="ZAn-dN-wjh" firstAttribute="bottom" secondItem="60R-w7-M2C" secondAttribute="bottom" id="o76-GI-Gg1"/>
-                                <constraint firstAttribute="trailing" secondItem="ZAn-dN-wjh" secondAttribute="trailing" constant="14" id="r3P-yp-al8"/>
+                                <constraint firstAttribute="trailing" secondItem="ZAn-dN-wjh" secondAttribute="trailing" id="r3P-yp-al8"/>
                                 <constraint firstItem="c6o-cm-MoD" firstAttribute="top" secondItem="iIf-4K-Nvq" secondAttribute="bottom" constant="4" id="zsR-3F-hMX"/>
                             </constraints>
                             <animations/>
                         </customView>
                         <scrollView horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" verticalScrollElasticity="allowed" translatesAutoresizingMaskIntoConstraints="NO" id="7V9-EW-8l3" customClass="UnscrollableScrollView" customModule="NewsReader" customModuleProvider="target">
-                            <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
+                            <rect key="frame" x="0.0" y="0.0" width="523" height="512"/>
                             <clipView key="contentView" copiesOnScroll="NO" id="okK-cx-IIg">
-                                <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
+                                <rect key="frame" x="0.0" y="0.0" width="523" height="512"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <textView editable="NO" importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="VAU-cY-XlL">
-                                        <rect key="frame" x="0.0" y="0.0" width="533" height="512"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="523" height="512"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <animations/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <size key="minSize" width="533" height="512"/>
+                                        <size key="minSize" width="523" height="512"/>
                                         <size key="maxSize" width="4030" height="10000000"/>
                                         <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <size key="minSize" width="533" height="512"/>
+                                        <size key="minSize" width="523" height="512"/>
                                         <size key="maxSize" width="4030" height="10000000"/>
                                         <connections>
                                             <binding destination="ojD-sA-dGM" name="attributedString" keyPath="representedObject.body" id="Ulm-G0-gqx">
@@ -213,7 +212,7 @@
                 </imageView>
             </subviews>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="qK4-dS-KD4" secondAttribute="trailing" id="AeR-FS-ADy"/>
+                <constraint firstAttribute="trailing" secondItem="qK4-dS-KD4" secondAttribute="trailing" constant="10" id="AeR-FS-ADy"/>
                 <constraint firstAttribute="bottom" secondItem="qK4-dS-KD4" secondAttribute="bottom" id="As8-Jl-xLz"/>
                 <constraint firstItem="qK4-dS-KD4" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" id="Jkg-pO-zKg"/>
                 <constraint firstItem="qK4-dS-KD4" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" id="dpY-3G-89i"/>
