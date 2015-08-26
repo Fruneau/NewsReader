@@ -101,34 +101,31 @@ class Group : NSObject {
 
     dynamic var roots : [Article]?
 
-    func load() {
-        if self.roots != nil {
-            return
+    private var fetchedCount = 0
+    private var groupRange : NSRange?
+    private var fetchedRange : NSRange?
+
+    private func loadHistory() throws -> Promise<NNTPPayload> {
+        if self.groupRange?.location == self.fetchedRange?.location
+        && self.groupRange?.length == self.fetchedRange?.length
+        {
+            return Promise<NNTPPayload>(success: .Overview([]))
         }
 
-        self.promise = self.account.client?.sendCommand(.Group(group: self.fullName)).thenChain({
-            (payload) throws in
+        if self.fetchedCount > 10000 {
+            return Promise<NNTPPayload>(success: .Overview([]))
+        }
 
-            guard let client = self.account?.client else {
-                throw NNTPError.ServerProtocolError
-            }
+        let highest = self.fetchedRange!.location - 1
+        let lowest = self.groupRange!.location
+        let from = max(lowest, highest - 100)
 
-            switch payload {
-            case .GroupContent(_, 0, _, _, _):
-                print("group \(self.fullName) is empty")
-                return Promise<NNTPPayload>(success: .Overview([]))
+        guard let client = self.account?.client else {
+            throw NNTPError.ServerProtocolError
+        }
 
-            case .GroupContent(_, let count, let lowestNumber, let highestNumber, _):
-                let from = count > 1000 ? max(lowestNumber, highestNumber - 1000) : lowestNumber
-
-                return client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.From(from)))
-
-
-            default:
-                throw NNTPError.ServerProtocolError
-            }
-        })
-        self.promise?.then({
+        let promise = client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.Between(from, highest)))
+        promise.then({
             (payload) throws in
 
             guard case .Overview(let messages) = payload else {
@@ -143,12 +140,40 @@ class Group : NSObject {
                     roots.append(article)
                 }
             }
+            self.fetchedCount += messages.count
+            self.fetchedRange = NSMakeRange(from, highest - from + 1 + self.fetchedRange!.length)
 
             self.notifyUnreadCountChange {
-                self.roots = roots.reverse()
+                self.roots?.appendContentsOf(roots.reverse())
             }
             self.delegate?.groupTree(self, hasNewThreads: roots)
-        }).otherwise({
+
+            try self.loadHistory()
+        })
+        return promise
+    }
+
+    func load() {
+        if self.groupRange != nil {
+            return
+        }
+
+        self.promise = self.account.client?.sendCommand(.Group(group: self.fullName)).thenChain({
+            (payload) throws -> Promise<NNTPPayload> in
+
+            switch payload {
+            case .GroupContent(_, _, let lowest, let highest, _):
+                self.groupRange = NSMakeRange(lowest, highest - lowest + 1)
+                self.fetchedRange = NSMakeRange(highest, 0)
+
+            default:
+                throw NNTPError.ServerProtocolError
+            }
+
+            self.roots = []
+            return try self.loadHistory()
+        })
+        self.promise?.otherwise({
             (error) in
             
             debugPrint("loading of group \(self.fullName) failed: \(error)")
