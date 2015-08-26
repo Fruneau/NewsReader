@@ -188,6 +188,27 @@ class Account : NSObject {
         }
     }
 
+    private func findArticleParent(article: Article) -> Article? {
+        assert (article.inReplyTo == nil)
+
+        guard let parentIds = article.parentsIds else {
+            return nil
+        }
+
+        for parentId in parentIds.reverse() {
+            guard let parent = self.articleByMsgid[parentId] else {
+                continue
+            }
+
+            if parent === article {
+                continue
+            }
+
+            return parent
+        }
+        return nil
+    }
+
     func article(ref: (group: String, num: Int), headers: MIMEHeaders) -> Article {
         guard case .MessageId(name: _, msgid: let msgid)? = headers["message-id"]?.first else {
             return Article(account: self, ref: ref, headers: headers)
@@ -200,6 +221,12 @@ class Account : NSObject {
         let article = Article(account: self, ref: ref, headers: headers)
 
         self.articleByMsgid[msgid] = article
+
+        if let parent = self.findArticleParent(article) {
+            article.inReplyTo = parent
+            parent.replies.append(article)
+        }
+
         return article
     }
 

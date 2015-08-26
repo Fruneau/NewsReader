@@ -99,11 +99,10 @@ class Group : NSObject {
         }
     }
 
-    dynamic var articles : [Article]?
     dynamic var roots : [Article]?
 
     func load() {
-        if self.articles != nil {
+        if self.roots != nil {
             return
         }
 
@@ -137,38 +136,16 @@ class Group : NSObject {
             }
 
             var roots : [Article] = []
-            let articles = messages.reverse().map {
-                (msg) -> Article in
 
-                return self.account.article((group: self.fullName, msg.num), headers: msg.headers)
-            }
-
-            threads: for article in articles {
-                if article.inReplyTo != nil {
-                    continue
+            for msg in messages {
+                let article = self.account.article((group: self.fullName, msg.num), headers: msg.headers)
+                if article.inReplyTo == nil {
+                    roots.append(article)
                 }
-
-                if let parentIds = article.parentsIds {
-                    for parentId in parentIds {
-                        guard let parent = self.account?.articleByMsgid[parentId] else {
-                            continue
-                        }
-
-                        if parent === article {
-                            continue
-                        }
-
-                        article.inReplyTo = parent
-                        parent.replies.append(article)
-                        continue threads
-                    }
-                }
-                roots.append(article)
             }
 
             self.notifyUnreadCountChange {
-                self.articles = articles
-                self.roots = roots
+                self.roots = roots.reverse()
             }
             self.delegate?.groupTree(self, hasNewThreads: roots)
         }).otherwise({
