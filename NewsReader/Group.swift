@@ -67,6 +67,10 @@ class Group : NSObject {
         } else {
             self.readState = GroupReadState()
         }
+
+        if let group = defaults.objectAtPath("\(self.keyConfName).notifiedRange") as? String {
+            self.notifiedRange = NSRangeFromString(group)
+        }
         super.init()
     }
 
@@ -104,6 +108,7 @@ class Group : NSObject {
     private var fetchedCount = 0
     private var groupRange : NSRange?
     private var fetchedRange : NSRange?
+    private var notifiedRange : NSRange?
 
     private func loadHistory() throws -> Promise<NNTPPayload> {
         if self.groupRange?.location == self.fetchedRange?.location
@@ -116,15 +121,25 @@ class Group : NSObject {
             return Promise<NNTPPayload>(success: .Overview([]))
         }
 
-        let highest = self.fetchedRange!.location - 1
-        let lowest = self.groupRange!.location
-        let from = max(lowest, highest - 100)
+        var toFetch : NSRange
+
+        if NSMaxRange(self.groupRange!) > NSMaxRange(self.fetchedRange!) {
+            let highest = NSMaxRange(self.groupRange!)
+            let lowest = NSMaxRange(self.fetchedRange!)
+
+            toFetch = NSMakeRange(lowest, min(100, highest - lowest))
+        } else {
+            let highest = self.fetchedRange!.location
+            let lowest = self.groupRange!.location
+
+            toFetch = NSMakeRange(max(highest - 100, lowest), min(100, highest - lowest))
+        }
 
         guard let client = self.account?.client else {
             throw NNTPError.ServerProtocolError
         }
 
-        let promise = client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.Between(from, highest)))
+        let promise = client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.Between(toFetch.location, NSMaxRange(toFetch) - 1)))
         promise.then({
             (payload) throws in
 
@@ -133,20 +148,46 @@ class Group : NSObject {
             }
 
             var roots : [Article] = []
+            var notNotified : [Article] = []
 
             for msg in messages {
                 let article = self.account.article((group: self.fullName, msg.num), headers: msg.headers)
                 if article.inReplyTo == nil {
                     roots.append(article)
                 }
+
+                if !article.isRead {
+                    if !NSLocationInRange(msg.num, self.notifiedRange!) {
+                        notNotified.append(article)
+                    }
+                }
             }
             self.fetchedCount += messages.count
-            self.fetchedRange = NSMakeRange(from, highest - from + 1 + self.fetchedRange!.length)
+
+            let growUp = self.fetchedRange!.location < toFetch.location
+            self.fetchedRange = NSUnionRange(self.fetchedRange!, toFetch)
+            self.notifiedRange = NSUnionRange(toFetch, self.notifiedRange!)
+
+            let defaults = NSUserDefaults.standardUserDefaults()
+            defaults.setObject(NSStringFromRange(self.notifiedRange!), atPath: "\(self.keyConfName).notifiedRange")
 
             self.notifyUnreadCountChange {
-                self.roots?.appendContentsOf(roots.reverse())
+                if growUp {
+                    self.roots?.insertContentsOf(roots.reverse(), at: 0)
+                } else {
+                    self.roots?.appendContentsOf(roots.reverse())
+                }
             }
             self.delegate?.groupTree(self, hasNewThreads: roots)
+
+            if notNotified.count > 0 {
+                let notification = NSUserNotification()
+                notification.title = "\(self.fullName)"
+                notification.subtitle = "\(notNotified.count) new messages"
+
+                NSUserNotificationCenter.defaultUserNotificationCenter()
+                                        .scheduleNotification(notification)
+            }
 
             try self.loadHistory()
         })
@@ -164,7 +205,10 @@ class Group : NSObject {
             switch payload {
             case .GroupContent(_, _, let lowest, let highest, _):
                 self.groupRange = NSMakeRange(lowest, highest - lowest + 1)
-                self.fetchedRange = NSMakeRange(highest, 0)
+                self.fetchedRange = NSMakeRange(highest + 1, 0)
+                if self.notifiedRange == nil {
+                    self.notifiedRange = self.fetchedRange
+                }
 
             default:
                 throw NNTPError.ServerProtocolError
@@ -180,4 +224,3 @@ class Group : NSObject {
         })
     }
 }
-
