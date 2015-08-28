@@ -19,6 +19,7 @@ private struct ArticleRef {
 class Article : NSObject {
     private weak var account : Account!
     private weak var promise : Promise<NNTPPayload>?
+    private weak var notification : NSUserNotification?
 
     var headers : MIMEHeaders
     dynamic var body : String? {
@@ -123,6 +124,11 @@ class Article : NSObject {
         return body.utf8.reduce(0, combine: { $1 == 0x0a ? $0 + 1 : $0 })
     }
 
+    var previewBody : String? {
+        return self.body?.stringByReplacingOccurrencesOfString("\r\n", withString: " ")
+                         .stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+    }
+
     dynamic var isRead : Bool = false {
         willSet {
             self.threadRoot.willChangeValueForKey("threadIsRead")
@@ -134,6 +140,15 @@ class Article : NSObject {
             self.threadRoot.didChangeValueForKey("threadIsRead")
             self.threadRoot.didChangeValueForKey("threadUnreadCount")
             self.threadRoot.didChangeValueForKey("threadPreviewBody")
+
+            if self.isRead {
+                if let notification = self.notification {
+                    let center = NSUserNotificationCenter.defaultUserNotificationCenter()
+
+                    center.removeDeliveredNotification(notification)
+                    center.removeScheduledNotification(notification)
+                }
+            }
 
             for ref in self.refs {
                 if self.isRead {
@@ -262,6 +277,44 @@ class Article : NSObject {
 }
 
 extension Article {
+    private func doSendUserNotification() {
+        if self.notification != nil {
+            return
+        }
+
+        if self.isRead {
+            return
+        }
+
+        let notification = NSUserNotification()
+
+        notification.title = self.from
+        notification.subtitle = self.subject
+        notification.informativeText = self.previewBody
+        //notification.contentImage = self.contactPicture
+        notification.identifier = self.msgid
+
+        notification.userInfo = [ "type": "article", "account": self.account.name ]
+        self.notification = notification
+
+        NSUserNotificationCenter.defaultUserNotificationCenter()
+                                .scheduleNotification(notification)
+    }
+
+    func sendUserNotification() {
+        if self.body != nil {
+            self.doSendUserNotification()
+        } else {
+            self.load()?.then({
+                (_) in
+
+                self.doSendUserNotification()
+            })
+        }
+    }
+}
+
+extension Article {
     var threadCount : Int {
         var count = 1;
 
@@ -338,12 +391,11 @@ extension Article {
             article = self
         }
 
-        guard let body = article.body else {
+        guard let body = article.previewBody else {
             article.load()
             return nil
         }
 
-        return body.stringByReplacingOccurrencesOfString("\r\n", withString: " ")
-                   .stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+        return body
     }
 }

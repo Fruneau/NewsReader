@@ -11,7 +11,7 @@ import Lib
 import News
 
 protocol GroupDelegate : class {
-    func groupTree(groupTree: Group, hasNewThreads: [Article])
+    func group(group: Group, hasNewThreads: [Article])
 }
 
 class Group : NSObject {
@@ -178,15 +178,12 @@ class Group : NSObject {
                     self.roots?.appendContentsOf(roots.reverse())
                 }
             }
-            self.delegate?.groupTree(self, hasNewThreads: roots)
 
+            self.delegate?.group(self, hasNewThreads: roots)
             if notNotified.count > 0 {
-                let notification = NSUserNotification()
-                notification.title = "\(self.fullName)"
-                notification.subtitle = "\(notNotified.count) new messages"
-
-                NSUserNotificationCenter.defaultUserNotificationCenter()
-                                        .scheduleNotification(notification)
+                for article in notNotified {
+                    article.sendUserNotification()
+                }
             }
 
             try self.loadHistory()

@@ -197,6 +197,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             options: NSKeyValueObservingOptions.New, context: &self.accountUpdateContext)
         self.reloadAccounts()
         self.browserWindowController?.showWindow(self)
+
+        NSUserNotificationCenter.defaultUserNotificationCenter().delegate = self
     }
 
     func applicationWillTerminate(notification: NSNotification) {
@@ -211,5 +213,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         self.preferenceWindowController?.showWindow(self)
+    }
+}
+
+extension AppDelegate : NSUserNotificationCenterDelegate {
+    func userNotificationCenter(center: NSUserNotificationCenter, shouldPresentNotification notification: NSUserNotification) -> Bool {
+        guard let name = notification.userInfo?["account"] as? String else {
+            return false
+        }
+        
+        guard let account = self.accounts[name] else {
+            return false
+        }
+
+        guard let id = notification.identifier else {
+            return false
+        }
+
+        guard let article = account.articleByMsgid[id] else {
+            return false
+        }
+
+        return !article.isRead
     }
 }

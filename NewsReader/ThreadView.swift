@@ -185,7 +185,7 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
 }
 
 extension ThreadViewController : GroupDelegate {
-    func groupTree(groupTree: Group, hasNewThreads articles: [Article]) {
+    func group(group: Group, hasNewThreads articles: [Article]) {
         var indexPaths = Set<NSIndexPath>()
         for article in articles {
             if let indexPath = self.indexPathForThread(article) {
