@@ -169,7 +169,8 @@ class Group : NSObject {
             throw NNTPError.ServerProtocolError
         }
 
-        let promise = client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.Between(toFetch.location, NSMaxRange(toFetch) - 1)))
+        print("\(self.fullName): requesting overviews \(NSStringFromRange(toFetch))")
+        let promise = client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.InRange(toFetch)))
         promise.then({
             (payload) throws in
 
@@ -246,6 +247,7 @@ extension Group {
             switch payload {
             case .GroupContent(_, _, let lowest, let highest, _):
                 self.groupRange = NSMakeRange(lowest, highest - lowest + 1)
+                print("\(self.fullName): group range refreshed \(NSStringFromRange(self.groupRange!))")
                 if self.fetchedRange == nil {
                     self.fetchedRange = NSMakeRange(highest + 1, 0)
                 }

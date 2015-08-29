@@ -296,7 +296,7 @@ public enum NNTPCommand : CustomStringConvertible {
     public enum ArticleRange {
         case Number(Int)
         case From(Int)
-        case Between(Int, Int)
+        case InRange(NSRange)
 
         func pack(buffer: Buffer) {
             switch (self) {
@@ -306,8 +306,8 @@ public enum NNTPCommand : CustomStringConvertible {
             case .From(let from):
                 buffer.appendString("\(from)-")
 
-            case .Between(let from, let to):
-                buffer.appendString("\(from)-\(to)")
+            case .InRange(let range):
+                buffer.appendString("\(range.location)-\(NSMaxRange(range) - 1)")
             }
         }
     }
