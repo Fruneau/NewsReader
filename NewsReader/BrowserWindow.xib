@@ -61,8 +61,8 @@
                                             <rect key="frame" x="0.0" y="0.0" width="277" height="595"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <outlineView allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="Ttp-G5-L42" id="NU2-fY-9fJ">
-                                                    <rect key="frame" x="0.0" y="0.0" width="277" height="0.0"/>
+                                                <outlineView allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="Ttp-G5-L42" id="NU2-fY-9fJ" customClass="GroupOutlineView" customModule="NewsReader" customModuleProvider="target">
+                                                    <rect key="frame" x="0.0" y="0.0" width="277" height="595"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
                                                     <size key="intercellSpacing" width="3" height="0.0"/>
@@ -174,6 +174,7 @@
                                                         <binding destination="8xK-p1-sTJ" name="content" keyPath="arrangedObjects" id="RDZ-d2-VfL"/>
                                                         <binding destination="8xK-p1-sTJ" name="selectionIndexPaths" keyPath="selectionIndexPaths" previousBinding="RDZ-d2-VfL" id="Sgo-ul-E6Z"/>
                                                         <outlet property="delegate" destination="-2" id="fSM-zB-PXg"/>
+                                                        <outlet property="menu" destination="yAY-Lg-Pko" id="EjI-7x-3fy"/>
                                                     </connections>
                                                 </outlineView>
                                             </subviews>
@@ -181,8 +182,8 @@
                                             <nil key="backgroundColor"/>
                                         </clipView>
                                         <animations/>
-                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="1zc-18-Bok">
-                                            <rect key="frame" x="1" y="119" width="238" height="15"/>
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="1zc-18-Bok">
+                                            <rect key="frame" x="0.0" y="579" width="277" height="16"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <animations/>
                                         </scroller>
@@ -287,7 +288,7 @@
                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="calibratedRGB"/>
                                                 </clipView>
                                                 <animations/>
-                                                <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="lWD-Wm-dG8">
+                                                <scroller key="horizontalScroller" verticalHuggingPriority="750" doubleValue="0.020833333333333332" horizontal="YES" id="lWD-Wm-dG8">
                                                     <rect key="frame" x="0.0" y="579" width="424" height="16"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
@@ -339,6 +340,17 @@
             </connections>
             <point key="canvasLocation" x="-2436.5" y="25.5"/>
         </window>
+        <menu id="yAY-Lg-Pko">
+            <items>
+                <menuItem title="Refresh" keyEquivalent="r" id="gQv-bG-JWF"/>
+                <menuItem title="Mark group as read" keyEquivalent="U" id="n3z-WP-OcF"/>
+                <menuItem isSeparatorItem="YES" id="Zgg-o9-j8A"/>
+                <menuItem title="Notify on new messages" state="on" id="E5G-i6-waO">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+            </items>
+            <point key="canvasLocation" x="-2841" y="-392.5"/>
+        </menu>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

@@ -45,8 +45,8 @@ class Article : NSObject {
                 }
             } else {
                 for ref in self.refs {
-                    if let pos = ref.group.roots?.indexOf(self) {
-                        ref.group.roots?.removeAtIndex(pos)
+                    if let pos = ref.group.roots.indexOf(self) {
+                        ref.group.roots.removeAtIndex(pos)
                     }
                 }
             }
@@ -149,17 +149,48 @@ class Article : NSObject {
                          .stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
     }
 
+    private var threadCountChanging = 0
+    private func threadCountWillChange() {
+        let root = self.threadRoot
+
+        root.threadCountChanging++
+        if root.threadCountChanging != 1 {
+            return
+        }
+
+        root.willChangeValueForKey("threadIsRead")
+        root.willChangeValueForKey("threadUnreadCount")
+        root.willChangeValueForKey("threadPreviewBody")
+    }
+
+    private func threadCountDidChange() {
+        let root = self.threadRoot
+
+        root.threadCountChanging--
+        if root.threadCountChanging != 0 {
+            return
+        }
+
+        root.didChangeValueForKey("threadIsRead")
+        root.didChangeValueForKey("threadUnreadCount")
+        root.didChangeValueForKey("threadPreviewBody")
+    }
+
     dynamic var isRead : Bool = false {
         willSet {
-            self.threadRoot.willChangeValueForKey("threadIsRead")
-            self.threadRoot.willChangeValueForKey("threadUnreadCount")
-            self.threadRoot.willChangeValueForKey("threadPreviewBody")
+            if newValue == self.isRead {
+                return
+            }
+
+            self.threadCountWillChange()
         }
 
         didSet {
-            self.threadRoot.didChangeValueForKey("threadIsRead")
-            self.threadRoot.didChangeValueForKey("threadUnreadCount")
-            self.threadRoot.didChangeValueForKey("threadPreviewBody")
+            if oldValue == self.isRead {
+                return
+            }
+
+            self.threadCountDidChange()
 
             if self.isRead {
                 if let notification = self.notification {
@@ -420,6 +451,7 @@ extension Article {
     }
 
     @objc func toggleThreadAsReadState() {
+        self.threadCountWillChange()
         if self.threadIsRead {
             for article in self.thread {
                 article.isRead = false
@@ -429,5 +461,14 @@ extension Article {
                 article.isRead = true
             }
         }
+        self.threadCountDidChange()
+    }
+
+    @objc func markThreadAsRead() {
+        self.threadCountWillChange()
+        for article in self.thread {
+            article.isRead = true
+        }
+        self.threadCountDidChange()
     }
 }

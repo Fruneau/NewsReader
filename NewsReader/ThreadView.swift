@@ -137,7 +137,7 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     }
 
     private func indexPathForThread(article: Article) -> NSIndexPath? {
-        guard let idx = self.currentGroup?.roots?.indexOf(article) else {
+        guard let idx = self.currentGroup?.roots.indexOf(article) else {
             return nil
         }
 
