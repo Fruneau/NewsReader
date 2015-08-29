@@ -147,10 +147,6 @@ class Group : NSObject {
             return promise
         }
 
-        if self.fetchedCount > 10000 {
-            return Promise<NNTPPayload>(success: .Overview([]))
-        }
-
         var toFetch : NSRange
 
         if NSMaxRange(self.groupRange!) > NSMaxRange(self.fetchedRange!) {
@@ -158,6 +154,8 @@ class Group : NSObject {
             let lowest = NSMaxRange(self.fetchedRange!)
 
             toFetch = NSMakeRange(lowest, min(100, highest - lowest))
+        } else if self.fetchedCount > 10000 {
+            return Promise<NNTPPayload>(success: .Overview([]))
         } else {
             let highest = self.fetchedRange!.location
             let lowest = self.groupRange!.location
