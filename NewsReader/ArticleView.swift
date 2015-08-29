@@ -44,6 +44,9 @@ class ArticleViewItem : NSCollectionViewItem {
 
                 self.collectionView.reloadData()
                 //self.collectionView.reloadItemsAtIndexPaths([indexPath])
+                if !self.view.hidden {
+                    self.article?.isRead = true
+                }
             }
 
             self.fromView.objectValue = self.article?.from
