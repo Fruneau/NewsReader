@@ -37,6 +37,7 @@ class Account : NSObject {
     let cacheRoot : NSURL?
     let cacheGroups : NSURL?
     let cacheMessages : NSURL?
+    var reloadCron : NSTimer?
 
 
     private static func getAccountParameters(account: AnyObject)
@@ -93,7 +94,7 @@ class Account : NSObject {
         }
     }
 
-    private func refreshSubscriptions(subscriptions: Set<String>) {
+    private func reloadSubscriptions(subscriptions: Set<String>) {
         self.subscriptions.forEach {
             $0.subscribed = false
             $0.removeObserver(self, forKeyPath: "unreadCount")
@@ -113,6 +114,12 @@ class Account : NSObject {
         self.client?.setCredentials(login, password: password)
         self.client?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
         self.client?.connect()
+    }
+
+    @objc private func refreshSubscriptions() {
+        for group in self.subscriptions {
+            group.refresh()
+        }
     }
 
     init(accountId: Int, account: AnyObject, cacheRoot: NSURL?) {
@@ -138,7 +145,9 @@ class Account : NSObject {
         }
 
         self.connect()
-        self.refreshSubscriptions(params.subscriptions)
+        self.reloadSubscriptions(params.subscriptions)
+
+        self.reloadCron = NSTimer.scheduledTimerWithTimeInterval(60, target: self, selector: "refreshSubscriptions", userInfo: nil, repeats: true)
     }
 
     deinit {
@@ -171,7 +180,7 @@ class Account : NSObject {
 
         let oldSubs = Set<String>(self.subscriptions.map { $0.fullName })
         if oldSubs != params.subscriptions {
-            self.refreshSubscriptions(params.subscriptions)
+            self.reloadSubscriptions(params.subscriptions)
             return true
         }
         return false

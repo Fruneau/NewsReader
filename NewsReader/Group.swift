@@ -17,6 +17,7 @@ protocol GroupDelegate : class {
 class Group : NSObject {
     private weak var account : Account!
     private weak var promise : Promise<NNTPPayload>?
+    private weak var loadHistoryPromise : Promise<NNTPPayload>?
     weak var delegate : GroupDelegate?
 
     let children : [AnyObject] = []
@@ -117,6 +118,10 @@ class Group : NSObject {
             return Promise<NNTPPayload>(success: .Overview([]))
         }
 
+        if let promise = self.loadHistoryPromise {
+            return promise
+        }
+
         if self.fetchedCount > 10000 {
             return Promise<NNTPPayload>(success: .Overview([]))
         }
@@ -186,8 +191,15 @@ class Group : NSObject {
                 }
             }
 
+            self.loadHistoryPromise = nil
+            try self.loadHistory()
+        }, otherwise: {
+            (_) in
+
+            self.loadHistoryPromise = nil
             try self.loadHistory()
         })
+        self.loadHistoryPromise = promise
         return promise
     }
 
@@ -218,6 +230,26 @@ class Group : NSObject {
             (error) in
             
             debugPrint("loading of group \(self.fullName) failed: \(error)")
+        })
+    }
+
+    func refresh() {
+        if self.account.client == nil {
+            return
+        }
+
+        self.account.client?.sendCommand(.Group(group: self.fullName)).then({
+            (payload) throws in
+
+            switch payload {
+            case .GroupContent(_, _, let lowest, let highest, _):
+                self.groupRange = NSMakeRange(lowest, highest - lowest + 1)
+
+            default:
+                throw NNTPError.ServerProtocolError
+            }
+
+            try self.loadHistory()
         })
     }
 }
