@@ -398,4 +398,16 @@ extension Article {
 
         return body
     }
+
+    @objc func toggleThreadAsReadState() {
+        if self.threadIsRead {
+            for article in self.thread {
+                article.isRead = false
+            }
+        } else {
+            for article in self.thread {
+                article.isRead = true
+            }
+        }
+    }
 }

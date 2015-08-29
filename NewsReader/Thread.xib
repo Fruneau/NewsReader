@@ -150,6 +150,9 @@
                     <color key="value" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                 </userDefinedRuntimeAttribute>
             </userDefinedRuntimeAttributes>
+            <connections>
+                <outlet property="menu" destination="ZGe-4j-82b" id="Iht-Qb-eHW"/>
+            </connections>
             <point key="canvasLocation" x="-884" y="87"/>
         </view>
         <collectionViewItem id="xJv-tv-U3k" userLabel="Thread" customClass="ThreadViewItem" customModule="NewsReader" customModuleProvider="target">
@@ -170,6 +173,20 @@
             </connections>
         </collectionViewItem>
         <userDefaultsController representsSharedInstance="YES" id="rVX-2L-faB"/>
+        <menu id="ZGe-4j-82b">
+            <items>
+                <menuItem title="Toggle thread as read state" keyEquivalent="U" id="v8e-hI-FWd">
+                    <connections>
+                        <binding destination="xJv-tv-U3k" name="target" keyPath="self.representedObject" id="uNy-ZX-N61">
+                            <dictionary key="options">
+                                <string key="NSSelectorName">toggleThreadAsReadState</string>
+                            </dictionary>
+                        </binding>
+                    </connections>
+                </menuItem>
+            </items>
+            <point key="canvasLocation" x="-1064.5" y="-119.5"/>
+        </menu>
     </objects>
     <resources>
         <image name="NSUserGuest" width="32" height="32"/>
