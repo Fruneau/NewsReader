@@ -33,6 +33,7 @@ class Account : NSObject {
     var subscriptions : [Group] = []
 
     var articleByMsgid : [String: Article] = [:]
+    var orphanArticles : [String: Set<Article>] = [:]
 
     let cacheRoot : NSURL?
     let cacheGroups : NSURL?
@@ -206,6 +207,13 @@ class Account : NSObject {
 
         for parentId in parentIds.reverse() {
             guard let parent = self.articleByMsgid[parentId] else {
+                var orphans = self.orphanArticles[parentId]
+
+                if orphans == nil {
+                    orphans = []
+                }
+                orphans?.insert(article)
+                self.orphanArticles[parentId] = orphans!
                 continue
             }
 
@@ -216,6 +224,23 @@ class Account : NSObject {
             return parent
         }
         return nil
+    }
+
+    private func relocateArticle(child: Article, asReplyTo article: Article) {
+        child.inReplyTo = article
+
+        guard let parentIds = article.parentsIds else {
+            return
+        }
+
+        var foundArticleId = false
+        for parentId in parentIds.reverse() {
+            if foundArticleId {
+                self.orphanArticles[parentId]?.remove(child)
+            } else if parentId == article.msgid {
+                foundArticleId = true
+            }
+        }
     }
 
     func article(ref: (group: String, num: Int), headers: MIMEHeaders) -> Article {
@@ -230,12 +255,13 @@ class Account : NSObject {
         let article = Article(account: self, ref: ref, headers: headers)
 
         self.articleByMsgid[msgid] = article
-
-        if let parent = self.findArticleParent(article) {
-            article.inReplyTo = parent
-            parent.replies.append(article)
+        if let articles = self.orphanArticles.removeValueForKey(msgid) {
+            for child in articles {
+                self.relocateArticle(child, asReplyTo: article)
+            }
         }
 
+        article.inReplyTo = self.findArticleParent(article)
         return article
     }
 

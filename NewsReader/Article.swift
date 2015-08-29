@@ -37,7 +37,27 @@ class Article : NSObject {
     }
 
     var replies : [Article] = []
-    weak var inReplyTo : Article?
+    weak var inReplyTo : Article? {
+        willSet {
+            if let previousParent = self.inReplyTo {
+                if let pos = previousParent.replies.indexOf(self) {
+                    previousParent.replies.removeAtIndex(pos)
+                }
+            } else {
+                for ref in self.refs {
+                    if let pos = ref.group.roots?.indexOf(self) {
+                        ref.group.roots?.removeAtIndex(pos)
+                    }
+                }
+            }
+        }
+
+        didSet {
+            if let newParent = self.inReplyTo {
+                newParent.replies.append(self)
+            }
+        }
+    }
     var threadRoot : Article {
         var article = self
 
