@@ -114,12 +114,12 @@
                                                                     <rect key="frame" x="1" y="17" width="274" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
-                                                                        <imageView horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="oxW-iD-wOF">
+                                                                        <imageView horizontalCompressionResistancePriority="1000" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oxW-iD-wOF">
                                                                             <rect key="frame" x="3" y="0.0" width="14" height="17"/>
                                                                             <animations/>
-                                                                            <imageCell key="cell" refusesFirstResponder="YES" imageScaling="proportionallyDown" image="NSActionTemplate" id="ksS-wP-c5x"/>
+                                                                            <imageCell key="cell" refusesFirstResponder="YES" imageAlignment="bottomRight" imageScaling="proportionallyDown" image="newsgroup" id="ksS-wP-c5x"/>
                                                                         </imageView>
-                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="5IW-xs-a6o">
+                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5IW-xs-a6o">
                                                                             <rect key="frame" x="22" y="0.0" width="205" height="17"/>
                                                                             <animations/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="3a5-Qe-lon">
@@ -353,6 +353,6 @@
         </menu>
     </objects>
     <resources>
-        <image name="NSActionTemplate" width="14" height="14"/>
+        <image name="newsgroup" width="22" height="22"/>
     </resources>
 </document>
