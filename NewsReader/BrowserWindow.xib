@@ -62,7 +62,7 @@
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <outlineView allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="Ttp-G5-L42" id="NU2-fY-9fJ" customClass="GroupOutlineView" customModule="NewsReader" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="277" height="595"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="277" height="0.0"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
                                                     <size key="intercellSpacing" width="3" height="0.0"/>
@@ -288,7 +288,7 @@
                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="calibratedRGB"/>
                                                 </clipView>
                                                 <animations/>
-                                                <scroller key="horizontalScroller" verticalHuggingPriority="750" doubleValue="0.020833333333333332" horizontal="YES" id="lWD-Wm-dG8">
+                                                <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="lWD-Wm-dG8">
                                                     <rect key="frame" x="0.0" y="579" width="424" height="16"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
@@ -335,6 +335,49 @@
                 </constraints>
                 <animations/>
             </view>
+            <toolbar key="toolbar" implicitIdentifier="DFB5DBAD-7F18-4071-9472-417612AB962E" autosavesConfiguration="NO" displayMode="iconOnly" sizeMode="regular" id="wPr-Rr-HZq">
+                <allowedToolbarItems>
+                    <toolbarItem implicitItemIdentifier="FE609631-10D3-4929-890F-A2A7342DF11B" label="Refresh" paletteLabel="Refresh groups" image="NSRefreshTemplate" id="Rg9-eK-qba">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="47" height="32"/>
+                        <size key="maxSize" width="47" height="32"/>
+                        <button key="view" verticalHuggingPriority="750" id="e3D-T8-TV3">
+                            <rect key="frame" x="21" y="14" width="47" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <animations/>
+                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YgD-f5-gee">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="refreshGroups:" target="-2" id="CVz-Bc-VzX"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="NXc-Us-ajq"/>
+                    <toolbarItem implicitItemIdentifier="CBD54031-2F55-4C56-B9C4-939F2F5B3E62" label="Search" paletteLabel="Search" id="TWc-71-Q7y">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="96" height="22"/>
+                        <size key="maxSize" width="96" height="22"/>
+                        <searchField key="view" wantsLayer="YES" verticalHuggingPriority="750" id="cId-aM-Rqs">
+                            <rect key="frame" x="0.0" y="14" width="96" height="22"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <animations/>
+                            <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="efE-Ro-0Sg">
+                                <font key="font" metaFont="system"/>
+                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            </searchFieldCell>
+                        </searchField>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="aw8-HS-3nf"/>
+                </allowedToolbarItems>
+                <defaultToolbarItems>
+                    <toolbarItem reference="Rg9-eK-qba"/>
+                    <toolbarItem reference="aw8-HS-3nf"/>
+                    <toolbarItem reference="TWc-71-Q7y"/>
+                </defaultToolbarItems>
+            </toolbar>
             <connections>
                 <outlet property="delegate" destination="-2" id="6Fe-GR-Rb3"/>
             </connections>
@@ -353,6 +396,7 @@
         </menu>
     </objects>
     <resources>
+        <image name="NSRefreshTemplate" width="11" height="15"/>
         <image name="newsgroup" width="22" height="22"/>
     </resources>
 </document>

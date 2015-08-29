@@ -117,7 +117,7 @@ class Account : NSObject {
         self.client?.connect()
     }
 
-    @objc private func refreshSubscriptions() {
+    @objc func refreshSubscriptions() {
         for group in self.subscriptions {
             group.refresh()
         }

@@ -86,3 +86,9 @@ extension BrowserWindowController : NSOutlineViewDelegate {
         }
     }
 }
+
+extension BrowserWindowController {
+    @IBAction func refreshGroups(sender: AnyObject?) {
+        self.appDelegate?.refreshGroups(sender)
+    }
+}

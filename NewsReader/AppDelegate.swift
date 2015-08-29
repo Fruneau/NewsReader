@@ -237,3 +237,11 @@ extension AppDelegate : NSUserNotificationCenterDelegate {
         return !article.isRead
     }
 }
+
+extension AppDelegate {
+    @IBAction func refreshGroups(sender: AnyObject?) {
+        for account in self.accounts {
+            account.1.refreshSubscriptions()
+        }
+    }
+}
