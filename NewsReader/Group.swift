@@ -10,8 +10,12 @@ import Foundation
 import Lib
 import News
 
-protocol GroupDelegate : class {
-    func group(group: Group, hasNewThreads: [Article])
+@objc protocol GroupDelegate : class {
+    optional func group(group: Group, willHaveNewThreads: [Article])
+    optional func group(group: Group, hasNewThreads: [Article], atBottom: Bool)
+
+    optional func group(group: Group, willLoseThreads: [Article])
+    optional func group(group: Group, hasLostThreads: [Article])
 }
 
 class Group : NSObject {
@@ -136,6 +140,38 @@ class Group : NSObject {
         }
     }
 
+    func getIndexOfThread(thread: Article) -> Int? {
+        return self.roots.indexOf(thread)
+    }
+
+    func addThreads(threads: [Article], atBottom: Bool) {
+        self.delegate?.group?(self, willHaveNewThreads: threads)
+
+        self.notifyUnreadCountChange {
+            if !atBottom {
+                self.roots.insertContentsOf(threads, at: 0)
+            } else {
+                self.roots.appendContentsOf(threads)
+            }
+        }
+
+        self.delegate?.group?(self, hasNewThreads: roots, atBottom: atBottom)
+    }
+
+    func removeThreads(threads: [Article]) {
+        self.delegate?.group?(self, willLoseThreads: threads)
+
+        self.notifyUnreadCountChange {
+            for thread in threads {
+                if let pos = self.roots.indexOf(thread) {
+                    self.roots.removeAtIndex(pos)
+                }
+            }
+        }
+
+        self.delegate?.group?(self, hasLostThreads: threads)
+    }
+
     private func loadHistory() throws -> Promise<NNTPPayload> {
         if self.groupRange?.location == self.fetchedRange?.location
         && self.groupRange?.length == self.fetchedRange?.length
@@ -176,36 +212,30 @@ class Group : NSObject {
                 throw NNTPError.ServerProtocolError
             }
 
-            var roots : [Article] = []
             var notNotified : [Article] = []
+            self.notifyUnreadCountChange {
+                var roots : [Article] = []
 
-            for msg in messages {
-                let article = self.account.article((group: self.fullName, msg.num), headers: msg.headers)
-                if article.inReplyTo == nil {
-                    roots.append(article)
-                }
-
-                if !article.isRead {
-                    if !NSLocationInRange(msg.num, self.notifiedRange!) {
-                        notNotified.append(article)
+                for msg in messages {
+                    let article = self.account.article((group: self.fullName, msg.num), headers: msg.headers)
+                    if article.inReplyTo == nil {
+                        roots.append(article)
+                    }
+                    
+                    if !article.isRead {
+                        if !NSLocationInRange(msg.num, self.notifiedRange!) {
+                            notNotified.append(article)
+                        }
                     }
                 }
+                self.fetchedCount += messages.count
+                
+                let growUp = self.fetchedRange!.location < toFetch.location
+                self.fetchedRange = NSUnionRange(self.fetchedRange!, toFetch)
+                self.notifiedRange = NSUnionRange(toFetch, self.notifiedRange!)
+                
+                self.addThreads(roots.reverse(), atBottom: !growUp)
             }
-            self.fetchedCount += messages.count
-
-            let growUp = self.fetchedRange!.location < toFetch.location
-            self.fetchedRange = NSUnionRange(self.fetchedRange!, toFetch)
-            self.notifiedRange = NSUnionRange(toFetch, self.notifiedRange!)
-
-            self.notifyUnreadCountChange {
-                if growUp {
-                    self.roots.insertContentsOf(roots.reverse(), at: 0)
-                } else {
-                    self.roots.appendContentsOf(roots.reverse())
-                }
-            }
-
-            self.delegate?.group(self, hasNewThreads: roots)
             if notNotified.count > 0 {
                 for article in notNotified {
                     article.sendUserNotification()

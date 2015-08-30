@@ -80,47 +80,14 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     @IBOutlet weak var articleViewController: ArticleViewController!
 
     var currentGroup : Group? {
-        /*
         willSet {
-            if newValue === self.currentGroup {
-                return
-            }
-
             self.currentGroup?.delegate = nil
-            var paths = Set<NSIndexPath>()
-            if let roots = self.currentGroup?.roots {
-                for i in 0..<roots.count {
-                    paths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
-
-            if paths.count > 0 {
-                self.threadView.deleteItemsAtIndexPaths(paths)
-            }
         }
-        */
 
         didSet {
-            if oldValue === self.currentGroup {
-                return
-            }
-
             self.currentGroup?.delegate = self
             self.currentGroup?.load()
             self.threadView.reloadData()
-
-            /*
-            var paths = Set<NSIndexPath>()
-            if let roots = self.currentGroup?.roots {
-                for i in 0..<roots.count {
-                    paths.insert(NSIndexPath(forItem: i, inSection: 0))
-                }
-            }
-
-            if paths.count > 0 {
-                self.threadView.insertItemsAtIndexPaths(paths)
-            }
-            */
         }
     }
 
@@ -137,11 +104,21 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
     }
 
     private func indexPathForThread(article: Article) -> NSIndexPath? {
-        guard let idx = self.currentGroup?.roots.indexOf(article) else {
+        guard let idx = self.currentGroup?.getIndexOfThread(article) else {
             return nil
         }
 
         return NSIndexPath(forItem: idx, inSection: 0)
+    }
+
+    private func indexPathsForThreads(articles: [Article]) -> Set<NSIndexPath> {
+        var set = Set<NSIndexPath>()
+        for article in articles {
+            if let indexPath = self.indexPathForThread(article) {
+                set.insert(indexPath)
+            }
+        }
+        return set
     }
 
     func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -185,17 +162,19 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
 }
 
 extension ThreadViewController : GroupDelegate {
-    func group(group: Group, hasNewThreads articles: [Article]) {
-        var indexPaths = Set<NSIndexPath>()
-        for article in articles {
-            if let indexPath = self.indexPathForThread(article) {
-                indexPaths.insert(indexPath)
-            }
-        }
+    func group(group: Group, willLoseThreads articles: [Article]) {
+        let set = self.indexPathsForThreads(articles)
 
-        if indexPaths.count > 0 {
-            self.threadView.reloadData()
-            //self.threadView.insertItemsAtIndexPaths(indexPaths)
+        if set.count > 0 {
+            self.threadView.deleteItemsAtIndexPaths(set)
+        }
+    }
+
+    func group(group: Group, hasNewThreads articles: [Article]) {
+        let set = self.indexPathsForThreads(articles)
+
+        if set.count > 0 {
+            self.threadView.insertItemsAtIndexPaths(set)
         }
     }
 }

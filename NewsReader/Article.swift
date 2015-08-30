@@ -45,9 +45,7 @@ class Article : NSObject {
                 }
             } else {
                 for ref in self.refs {
-                    if let pos = ref.group.roots.indexOf(self) {
-                        ref.group.roots.removeAtIndex(pos)
-                    }
+                    ref.group.removeThreads([self])
                 }
             }
         }
