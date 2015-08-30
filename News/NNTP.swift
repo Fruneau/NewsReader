@@ -1282,6 +1282,17 @@ private class NNTPConnection {
     }
 }
 
+public enum NNTPClientEvent {
+    case Connected
+    case Disconnected
+    case Error(ErrorType)
+}
+
+/// The delegate object for NNTPClient.
+public protocol NNTPClientDelegate : class {
+    func nntpClient(client: NNTPClient, onEvent event: NNTPClientEvent)
+}
+
 /// The NNTPClient class manages the connection to a news server.
 ///
 /// The client wraps the connection to the server. It handles the command
@@ -1300,6 +1311,10 @@ public class NNTPClient {
     private var login : String?
     private var password : String?
 
+    private var requiredDisconnection = false
+    private var reconnectionDelay = 0
+    public weak var delegate : NNTPClientDelegate?
+
     /* {{{ Stream delegate */
 
     private class StreamDelegate : NSObject, NSStreamDelegate {
@@ -1310,13 +1325,23 @@ public class NNTPClient {
             super.init()
         }
 
+        @objc private func reconnect() {
+            if !self.nntp!.requiredDisconnection {
+                self.nntp?.connect()
+            }
+        }
+
         @objc func stream(stream: NSStream, handleEvent eventCode: NSStreamEvent) {
             switch (eventCode) {
             case NSStreamEvent.None:
                 break
 
             case NSStreamEvent.OpenCompleted:
-                break
+                if stream == self.nntp?.connection?.istream {
+                    print("connected")
+                    self.nntp?.delegate?.nntpClient(self.nntp!, onEvent: .Connected)
+                    self.nntp?.reconnectionDelay = 0
+                }
 
             case NSStreamEvent.HasBytesAvailable:
                 do {
@@ -1329,8 +1354,26 @@ public class NNTPClient {
 
             case NSStreamEvent.ErrorOccurred, NSStreamEvent.EndEncountered:
                 if let connection = self.nntp?.connection {
+                    if let error = stream.streamError {
+                        self.nntp?.delegate?.nntpClient(self.nntp!, onEvent: .Error(error))
+                    } else {
+                        self.nntp?.delegate?.nntpClient(self.nntp!, onEvent: .Disconnected)
+                    }
+
                     self.nntp?.connection = nil
+                    connection.delegate = nil
                     connection.close()
+
+                    if !self.nntp!.requiredDisconnection {
+                        let reconnectionDelay = self.nntp!.reconnectionDelay
+
+                        print("auto reconnect in \(reconnectionDelay)s")
+                        NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(reconnectionDelay),
+                            target: self, selector: "reconnect", userInfo: nil, repeats: false)
+                        self.nntp!.reconnectionDelay = min((reconnectionDelay + 1) * 2, 60)
+                    } else {
+                        print("no auto-reconn")
+                    }
                 }
 
             default:
@@ -1434,6 +1477,7 @@ public class NNTPClient {
     ///
     /// - returns: a promise a will be fired when the connection is established
     public func connect() -> Promise<NNTPPayload> {
+        self.requiredDisconnection = false
         if self.connection != nil {
             return self.pipelineBarrier
         }
@@ -1472,6 +1516,7 @@ public class NNTPClient {
     /// Force disconnection of the underlying channel from the server.
     public func disconnect() {
         if let connection = self.connection {
+            self.requiredDisconnection = true
             self.connection = nil
             connection.close()
         }

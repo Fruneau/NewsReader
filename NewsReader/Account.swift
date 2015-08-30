@@ -10,6 +10,10 @@ import Foundation
 import Lib
 import News
 
+private enum Error : ErrorType {
+    case NotConnected
+}
+
 class Account : NSObject {
     var id : Int
     let name : String
@@ -21,6 +25,15 @@ class Account : NSObject {
     var password : String?
 
     var client : NNTPClient?
+    var connectionError : ErrorType?
+    var isDisconnected = false {
+        didSet {
+            if !self.isDisconnected {
+                self.connectionError = nil
+                self.refreshSubscriptions()
+            }
+        }
+    }
 
     var shortDesc : String {
         return "\(host):\(port)"
@@ -112,6 +125,7 @@ class Account : NSObject {
 
     private func connect() {
         self.client = NNTPClient(host: host, port: port, ssl: useSSL)
+        self.client?.delegate = self
         self.client?.setCredentials(login, password: password)
         self.client?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
         self.client?.connect()
@@ -272,5 +286,23 @@ class Account : NSObject {
             unreadCount += group.unreadCount
         }
         return unreadCount
+    }
+}
+
+extension Account : NNTPClientDelegate {
+    func nntpClient(client: NNTPClient, onEvent event: NNTPClientEvent) {
+        switch event {
+        case .Connected:
+            self.isDisconnected = false
+            self.refreshSubscriptions()
+
+        case .Disconnected:
+            self.isDisconnected = true
+            self.connectionError = Error.NotConnected
+
+        case .Error(let error):
+            self.isDisconnected = true
+            self.connectionError = error
+        }
     }
 }

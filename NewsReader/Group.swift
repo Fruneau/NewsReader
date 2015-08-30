@@ -183,6 +183,10 @@ class Group : NSObject {
             return promise
         }
 
+        if let error = self.account.connectionError {
+            return Promise<NNTPPayload>(failure: error)
+        }
+
         var toFetch : NSRange
 
         if NSMaxRange(self.groupRange!) > NSMaxRange(self.fetchedRange!) {
@@ -245,8 +249,9 @@ class Group : NSObject {
             self.loadHistoryPromise = nil
             try self.loadHistory()
         }, otherwise: {
-            (_) in
+            (error) in
 
+            print("error : \(error)")
             self.loadHistoryPromise = nil
             try self.loadHistory()
         })

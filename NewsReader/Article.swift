@@ -321,7 +321,10 @@ class Article : NSObject {
             self.to = self.loadNewsgroups()
             self.loadRefs()
         })
-        self.promise?.otherwise({ print($0) })
+        self.promise?.otherwise({
+            print($0)
+            self.promise = nil
+        })
         return self.promise
     }
 }
