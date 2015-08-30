@@ -73,62 +73,41 @@ class ArticleViewItem : NSCollectionViewItem {
     }
 }
 
-class ArticleLayout : NSCollectionViewFlowLayout {
-
-}
-
 class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
 
     @IBOutlet weak var articleView: NSCollectionView!
 
     var currentThread : Article? {
-        /*
-        willSet {
-            if newValue === self.currentThread {
-                return
-            }
-
-            guard let thread = self.currentThread?.thread else {
-                return
-            }
-
-            if thread.count == 0 {
-                return
-            }
-
-            var paths = Set<NSIndexPath>()
-            for i in 0..<thread.count {
-                paths.insert(NSIndexPath(forItem: i, inSection: 0))
-            }
-
-            self.articleView.deleteItemsAtIndexPaths(paths)
-        }
-        */
-
         didSet {
-            if oldValue === self.currentThread {
-                return
-            }
-
             self.articleView.reloadData()
 
-            /*
-            guard let thread = self.currentThread?.thread else {
+            guard let thread = self.currentThread else {
                 return
             }
 
-            if thread.count == 0 {
-                return
-            }
-
-            var paths = Set<NSIndexPath>()
-            for i in 0..<thread.count {
-                paths.insert(NSIndexPath(forItem: i, inSection: 0))
-            }
-
-            self.articleView.insertItemsAtIndexPaths(paths)
-            */
+            self.scrollArticleToVisible(thread)
         }
+    }
+
+    private func scrollArticleToVisible(article: Article) -> Bool {
+        guard let indexPath = self.indexPathForArticle(article) else {
+            return false
+        }
+        
+        guard let rect = self.articleView.layoutAttributesForItemAtIndexPath(indexPath)?.frame else {
+            return false
+        }
+
+        self.articleView.superview?.scrollRectToVisible(rect)
+        return true
+    }
+
+    @IBAction func scrollFirstUnreadArticleToVisible(sender: AnyObject?) {
+        guard let unread = self.currentThread?.threadFirstUnread else {
+            return
+        }
+
+        self.scrollArticleToVisible(unread)
     }
 
     private func articleForIndexPath(indexPath: NSIndexPath) -> Article? {

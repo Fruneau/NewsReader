@@ -254,6 +254,7 @@ class Article : NSObject {
         if let references = self.headers["references"] {
             var parents : [String] = []
 
+            // print("references \(references)")
             for case .MessageId(name: _, msgid: let ref) in references {
                 parents.append(ref)
             }
