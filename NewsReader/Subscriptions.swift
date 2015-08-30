@@ -23,6 +23,12 @@ class SubscriptionController : NSObject {
     @IBOutlet weak var subscriptionsTab: NSTabViewItem!
 
     private func reloadAccount() {
+        if self.account != nil {
+            if self.account?.id == self.accountListController.selectionIndexes.firstIndex {
+                return
+            }
+        }
+
         self.promise?.cancel()
         self.account = nil
         (self.data["children"] as! NSMutableDictionary).removeAllObjects()
@@ -80,13 +86,12 @@ class SubscriptionController : NSObject {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        self.accountListController.addObserver(self, forKeyPath: "selection", options: .New, context: &self.accountListContext)
+        self.accountListController.addObserver(self, forKeyPath: "selectionIndexes", options: [], context: &self.accountListContext)
     }
 
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
         switch context {
         case &self.accountListContext:
-            print("reload because selection changed")
             self.reloadAccount()
 
         default:
