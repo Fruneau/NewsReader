@@ -52,6 +52,7 @@ class Account : NSObject {
     let cacheGroups : NSURL?
     let cacheMessages : NSURL?
     var reloadCron : NSTimer?
+    var synchronizeCacheCron : NSTimer?
 
 
     private static func getAccountParameters(account: AnyObject)
@@ -139,6 +140,12 @@ class Account : NSObject {
         }
     }
 
+    @objc func synchronizeCache() {
+        for group in self.subscriptions {
+            group.synchronizeCache()
+        }
+    }
+
     init(accountId: Int, account: AnyObject, cacheRoot: NSURL?) {
         let params = Account.getAccountParameters(account)!
         
@@ -165,6 +172,7 @@ class Account : NSObject {
         self.reloadSubscriptions(params.subscriptions)
 
         self.reloadCron = NSTimer.scheduledTimerWithTimeInterval(60, target: self, selector: "refreshSubscriptions", userInfo: nil, repeats: true)
+        self.synchronizeCacheCron = NSTimer.scheduledTimerWithTimeInterval(30, target: self, selector: "synchronizeCache", userInfo: nil, repeats: true)
     }
 
     deinit {

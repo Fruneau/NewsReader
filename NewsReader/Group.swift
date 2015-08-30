@@ -33,8 +33,17 @@ class Group : NSObject {
     var subscribed : Bool = false
     var readState = GroupReadState()
 
+    private var initDone = false
+    private let rootDataCacheURL : NSURL?
+    private var rootDataCache : NSMutableDictionary?
+    private var rootDataCacheDirty = false
+
     var isSilent : Bool = false {
         didSet {
+            if !self.initDone {
+                return
+            }
+
             self.setConfiguration(self.isSilent, forKey: "isSilent")
         }
     }
@@ -70,16 +79,7 @@ class Group : NSObject {
         defaults.setObject(object, atPath: "\(self.keyConfName).\(key)")
     }
 
-    init(account: Account?, fullName: String, shortDesc: String?) {
-        self.account = account
-        self.fullName = fullName
-
-        let normalizedGroup = fullName.stringByReplacingOccurrencesOfString(".", withString: "@")
-        self.keyConfName = "accounts[\(self.account.id)].groups.\(normalizedGroup)"
-        self.shortDesc = shortDesc
-
-        super.init()
-
+    private func loadConfigurationParameters() {
         if let line = self.readConfigurationForKey("readState") as? String,
                readState = GroupReadState(line: line) {
             self.readState = readState
@@ -94,6 +94,52 @@ class Group : NSObject {
         if let isSilent = self.readConfigurationForKey("isSilent") as? Bool {
             self.isSilent = isSilent
         }
+    }
+
+    private func loadCachedParameters() {
+        /*
+        if let groupRange = self.rootDataCache?["groupRange"] as? String {
+            self.groupRange = NSRangeFromString(groupRange)
+        }
+
+        if let fetchedRange = self.rootDataCache?["fetchedRange"] as? String {
+            self.fetchedRange = NSRangeFromString(fetchedRange)
+        }
+
+        if self.shortDesc == nil {
+            if let shortDesc = self.rootDataCache?["shortDesc"] as? String {
+                self.shortDesc = shortDesc
+            }
+        }*/
+    }
+
+    init(account: Account!, fullName: String, shortDesc: String?) {
+        self.account = account
+        self.fullName = fullName
+
+        let normalizedGroup = fullName.stringByReplacingOccurrencesOfString(".", withString: "@")
+        self.keyConfName = "accounts[\(self.account.id)].groups.\(normalizedGroup)"
+        self.shortDesc = shortDesc
+
+        self.rootDataCacheURL = account.cacheGroups?.URLByAppendingPathComponent("\(self.fullName).plist", isDirectory: false)
+        if let url = self.rootDataCacheURL {
+            self.rootDataCache = NSMutableDictionary(contentsOfURL: url)
+
+            if self.rootDataCache == nil {
+                self.rootDataCache = NSMutableDictionary()
+
+                self.rootDataCache?["overviews"] = NSMutableDictionary()
+                if shortDesc != nil {
+                    self.rootDataCache?["shortDesc"] = shortDesc!
+                }
+                self.rootDataCacheDirty = true
+            }
+        }
+
+        super.init()
+        self.loadConfigurationParameters()
+        self.loadCachedParameters()
+        self.initDone = true
     }
 
     private var inBatchMarking = false
@@ -132,10 +178,47 @@ class Group : NSObject {
     dynamic var roots : [Article] = []
 
     private var fetchedCount = 0
-    private var groupRange : NSRange?
-    private var fetchedRange : NSRange?
+    private var groupRange : NSRange? {
+        didSet {
+            if !self.initDone {
+                return
+            }
+            if let previous = oldValue {
+                if NSEqualRanges(previous, self.groupRange!) {
+                    return
+                }
+            }
+
+            self.rootDataCacheDirty = true
+            self.rootDataCache?["groupRange"] = NSStringFromRange(self.groupRange!)
+        }
+    }
+    private var fetchedRange : NSRange? {
+        didSet {
+            if !self.initDone {
+                return
+            }
+            if let previous = oldValue {
+                if NSEqualRanges(previous, self.fetchedRange!) {
+                    return
+                }
+            }
+
+            self.rootDataCacheDirty = true
+            self.rootDataCache?["fetchedRange"] = NSStringFromRange(self.fetchedRange!)
+        }
+    }
     private var notifiedRange : NSRange? {
         didSet {
+            if !self.initDone {
+                return
+            }
+            if let previous = oldValue {
+                if NSEqualRanges(previous, self.notifiedRange!) {
+                    return
+                }
+            }
+
             self.setConfiguration(NSStringFromRange(self.notifiedRange!), forKey: "notifiedRange")
         }
     }
@@ -172,10 +255,17 @@ class Group : NSObject {
         self.delegate?.group?(self, hasLostThreads: threads)
     }
 
+    func synchronizeCache() {
+        if !self.rootDataCacheDirty {
+            return
+        }
+        self.rootDataCacheDirty = false
+        self.rootDataCache?.writeToURL(self.rootDataCacheURL!, atomically: true)
+    }
+
     private func loadHistory() throws -> Promise<NNTPPayload> {
-        if self.groupRange?.location == self.fetchedRange?.location
-        && self.groupRange?.length == self.fetchedRange?.length
-        {
+        if NSEqualRanges(self.groupRange!, self.fetchedRange!) {
+            self.synchronizeCache()
             return Promise<NNTPPayload>(success: .Overview([]))
         }
 
@@ -195,6 +285,7 @@ class Group : NSObject {
 
             toFetch = NSMakeRange(lowest, min(100, highest - lowest))
         } else if self.fetchedCount > 10000 {
+            self.synchronizeCache()
             return Promise<NNTPPayload>(success: .Overview([]))
         } else {
             let highest = self.fetchedRange!.location
@@ -207,7 +298,6 @@ class Group : NSObject {
             throw NNTPError.ServerProtocolError
         }
 
-        print("\(self.fullName): requesting overviews \(NSStringFromRange(toFetch))")
         let promise = client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.InRange(toFetch)))
         promise.then({
             (payload) throws in
@@ -219,6 +309,7 @@ class Group : NSObject {
             var notNotified : [Article] = []
             self.notifyUnreadCountChange {
                 var roots : [Article] = []
+                let overviews = self.rootDataCache?["overviews"] as? NSMutableDictionary
 
                 for msg in messages {
                     let article = self.account.article((group: self.fullName, msg.num), headers: msg.headers)
@@ -231,7 +322,11 @@ class Group : NSObject {
                             notNotified.append(article)
                         }
                     }
+
+                    overviews?[String(msg.num)] = msg.headers.dictionary
                 }
+                self.rootDataCacheDirty = true
+
                 self.fetchedCount += messages.count
                 
                 let growUp = self.fetchedRange!.location < toFetch.location
@@ -280,12 +375,11 @@ extension Group {
             switch payload {
             case .GroupContent(_, _, let lowest, let highest, _):
                 self.groupRange = NSMakeRange(lowest, highest - lowest + 1)
-                print("\(self.fullName): group range refreshed \(NSStringFromRange(self.groupRange!))")
                 if self.fetchedRange == nil {
                     self.fetchedRange = NSMakeRange(highest + 1, 0)
                 }
                 if self.notifiedRange == nil {
-                    self.notifiedRange = self.fetchedRange
+                    self.notifiedRange = self.groupRange
                 }
 
             default:

@@ -97,6 +97,16 @@ public struct MIMEAddress {
 
         return MIMEAddress(address: address, email: address, name: nil)
     }
+
+    public var dictionary : NSDictionary {
+        var dict = [ "full": self.address, "email": self.email ]
+
+        if let name = self.name {
+            dict["name"] = name
+        }
+
+        return NSDictionary(dictionary: dict)
+    }
 }
 
 public enum MIMEHeader {
@@ -160,6 +170,28 @@ public enum MIMEHeader {
 
         case .Date(_):
             return "date"
+        }
+    }
+
+    public var dictionary : NSDictionary {
+        switch (self) {
+        case .Generic(name: _, content: let string):
+            return NSDictionary(dictionary: [ "type": "generic", "content": string ])
+
+        case .Address(name: _, address: let address):
+            return NSDictionary(dictionary: [ "type": "address", "address": address.dictionary ])
+
+        case .Newsgroup(name: _, group: let group):
+            return NSDictionary(dictionary: [ "type": "newsgroup", "group": group ])
+
+        case .NewsgroupRef(group: let group, number: let num):
+            return NSDictionary(dictionary: [ "type": "newsgroupref", "group": group, "number": num ])
+
+        case .MessageId(name: _, msgid: let msgid):
+            return NSDictionary(dictionary: [ "type": "messageid", "msgid": msgid ])
+
+        case .Date(let date):
+            return NSDictionary(dictionary: [ "type": "date", "date": date ])
         }
     }
 
@@ -461,6 +493,20 @@ public class MIMEHeaders {
         let headers = try MIMEHeader.parseHeaders(data)
 
         return MIMEHeaders(headers: headers)
+    }
+
+    public var dictionary : NSDictionary {
+        let dict = NSMutableDictionary()
+
+        for (name, values) in self.headers {
+            let array = NSMutableArray()
+
+            for header in values {
+                array.addObject(header.dictionary)
+            }
+            dict[name] = array
+        }
+        return dict
     }
 }
 

@@ -204,6 +204,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(notification: NSNotification) {
         for account in self.accounts {
             account.1.client?.disconnect()
+            account.1.synchronizeCache()
         }
     }
 
