@@ -121,6 +121,8 @@ class Account : NSObject {
             group.load()
             return group
         }
+
+        self.subscriptions.sortInPlace { $0.fullName < $1.fullName }
     }
 
     private func connect() {
