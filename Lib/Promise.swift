@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Cocoa
 
 private enum State<T> {
     case Success(T)
@@ -77,6 +78,52 @@ private struct PromiseHandler<T> {
             default:
                 self.onError(PromiseError.UncaughtError(res, 1))
             }
+        }
+    }
+}
+
+private class PromiseOperation<T> : NSOperation {
+    private var state : State<T> = .Running
+    private let operation : () throws -> T
+    private let onSuccess : (T) -> Void
+    private let onError : (ErrorType) -> Void
+    private let creationQueue : NSOperationQueue?
+
+    private init(operation: () throws -> T, onSuccess: (T) -> Void, onError: (ErrorType) -> Void) {
+        self.operation = operation
+        self.creationQueue = NSOperationQueue.currentQueue()
+        self.onSuccess = onSuccess
+        self.onError = onError
+        super.init()
+    }
+
+    private func notify() {
+        switch self.state {
+        case .Running:
+            self.onError(PromiseError.Cancelled)
+            
+        case .Error(let e):
+            self.onError(e)
+            
+        case .Success(let r):
+            self.onSuccess(r)
+            
+        case .Cancelled:
+            break
+        }
+    }
+
+    override func main() {
+        do {
+            self.state = .Success(try self.operation())
+        } catch let e {
+            self.state = .Error(e)
+        }
+
+        if let creationQueue = self.creationQueue {
+            creationQueue.addOperationWithBlock(self.notify)
+        } else {
+            NSOperationQueue.mainQueue().addOperationWithBlock(self.notify)
         }
     }
 }
@@ -165,6 +212,23 @@ public class Promise<T> {
     /// - parameter onCancel: the callback to call to cancel the action
     public convenience init(action: Constructor, onCancel: Cancellor) {
         self.init(action: action, onOptCancel: onCancel)
+    }
+
+    /// Create a promise that get executed concurrently
+    ///
+    /// This creates a promise for a function that is executed in background.
+    ///
+    /// This uses the NSOperation infrastructure to run the provided operation
+    /// concurrently.
+    ///
+    /// - parameter operation: the function to execute
+    public convenience init(queue: NSOperationQueue, operation: () throws -> T) {
+        self.init(action: {
+            (onSuccess, onError) in
+
+            let op = PromiseOperation<T>(operation: operation, onSuccess: onSuccess, onError: onError)
+            queue.addOperation(op)
+        })
     }
 
     /// Create a promise that has already succeeded
