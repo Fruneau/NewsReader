@@ -201,6 +201,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSUserNotificationCenter.defaultUserNotificationCenter().delegate = self
     }
 
+    func applicationShouldHandleReopen(sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if flag {
+            return false
+        } else {
+            self.browserWindowController?.window?.makeKeyAndOrderFront(self)
+            return true
+        }
+    }
+
     func applicationWillTerminate(notification: NSNotification) {
         for account in self.accounts {
             account.1.client?.disconnect()
