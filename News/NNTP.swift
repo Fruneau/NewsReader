@@ -269,6 +269,13 @@ public struct NNTPOverview {
 
     public let bytes : Int?
     public let lines : Int?
+
+    public init(num: Int, headers: MIMEHeaders, bytes: Int?, lines: Int?) {
+        self.num = num
+        self.headers = headers
+        self.bytes = bytes
+        self.lines = lines
+    }
 }
 
 public enum NNTPPayload {

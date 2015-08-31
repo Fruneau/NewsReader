@@ -107,6 +107,25 @@ public struct MIMEAddress {
 
         return NSDictionary(dictionary: dict)
     }
+
+    public init(address: String, email: String, name: String?) {
+        self.address = address
+        self.email = email
+        self.name = name
+    }
+
+    public init?(fromDictionary dictionary: NSDictionary) {
+        guard let address = dictionary["full"] as? String else {
+            return nil
+        }
+        self.address = address
+
+        guard let email = dictionary["email"] as? String else {
+            return nil
+        }
+        self.email = email
+        self.name = dictionary["name"] as? String
+    }
 }
 
 public enum MIMEHeader {
@@ -192,6 +211,51 @@ public enum MIMEHeader {
 
         case .Date(let date):
             return NSDictionary(dictionary: [ "type": "date", "date": date ])
+        }
+    }
+
+    public init?(fromDictionary dictionary: NSDictionary, forHeader header: String) {
+        switch dictionary["type"] as? String {
+        case "generic"?:
+            guard let content = dictionary["content"] as? String else {
+                return nil
+            }
+            self = .Generic(name: header, content: content)
+
+        case "address"?:
+            guard let address = dictionary["address"] as? NSDictionary,
+                  let mimeAddress = MIMEAddress(fromDictionary: address) else {
+                return nil
+            }
+            self = .Address(name: header, address: mimeAddress)
+
+        case "newsgroup"?:
+            guard let group = dictionary["group"] as? String else {
+                return nil
+            }
+            self = .Newsgroup(name: header, group: group)
+
+        case "newsgroupref"?:
+            guard let group = dictionary["group"] as? String,
+                  let number = dictionary["number"] as? Int else {
+                return nil
+            }
+            self = .NewsgroupRef(group: group, number: number)
+
+        case "messageid"?:
+            guard let msgid = dictionary["msgid"] as? String else {
+                return nil
+            }
+            self = .MessageId(name: header, msgid: msgid)
+
+        case "date"?:
+            guard let date = dictionary["date"] as? NSDate else {
+                return nil
+            }
+            self = .Date(date)
+
+        default:
+            return nil
         }
     }
 
@@ -466,7 +530,7 @@ public enum MIMEHeader {
     }
 }
 
-public class MIMEHeaders {
+public struct MIMEHeaders {
     private let headers : [String: [MIMEHeader]]
 
     private init(headers: [MIMEHeader]) {
@@ -507,6 +571,34 @@ public class MIMEHeaders {
             dict[name] = array
         }
         return dict
+    }
+
+    public init?(fromDictionary dictionary: NSDictionary) {
+        var headers : [String: [MIMEHeader]] = [:]
+
+        for (name, values) in dictionary {
+            guard let name = name as? String else {
+                return nil
+            }
+
+            guard let values = values as? NSArray else {
+                return nil
+            }
+
+            var content : [MIMEHeader] = []
+            for value in values {
+                guard let value = value as? NSDictionary else {
+                    return nil
+                }
+
+                guard let header = MIMEHeader(fromDictionary: value, forHeader: name) else {
+                    return nil
+                }
+                content.append(header)
+            }
+            headers[name] = content
+        }
+        self.headers = headers
     }
 }
 

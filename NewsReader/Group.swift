@@ -97,7 +97,6 @@ class Group : NSObject {
     }
 
     private func loadCachedParameters() {
-        /*
         if let groupRange = self.rootDataCache?["groupRange"] as? String {
             self.groupRange = NSRangeFromString(groupRange)
         }
@@ -110,7 +109,7 @@ class Group : NSObject {
             if let shortDesc = self.rootDataCache?["shortDesc"] as? String {
                 self.shortDesc = shortDesc
             }
-        }*/
+        }
     }
 
     init(account: Account!, fullName: String, shortDesc: String?) {
@@ -263,6 +262,74 @@ class Group : NSObject {
         self.rootDataCache?.writeToURL(self.rootDataCacheURL!, atomically: true)
     }
 
+    private enum Error : ErrorType {
+        case InvalidCache
+    }
+
+    private func loadOverview(payload: NNTPPayload, atBottom: Bool) throws {
+        guard case .Overview(let messages) = payload else {
+            throw NNTPError.ServerProtocolError
+        }
+
+        var notNotified : [Article] = []
+        self.notifyUnreadCountChange {
+            var roots : [Article] = []
+            let overviews = self.rootDataCache?["overviews"] as? NSMutableDictionary
+
+            for msg in messages {
+                let article = self.account.article((group: self.fullName, msg.num), headers: msg.headers)
+                if article.inReplyTo == nil {
+                    roots.append(article)
+                }
+
+                if !article.isRead {
+                    if !NSLocationInRange(msg.num, self.notifiedRange!) {
+                        notNotified.append(article)
+                    }
+                }
+
+                overviews?[String(msg.num)] = msg.headers.dictionary
+            }
+            self.rootDataCacheDirty = true
+
+            self.fetchedCount += messages.count
+
+            self.addThreads(roots.reverse(), atBottom: atBottom)
+        }
+        if notNotified.count > 0 {
+            for article in notNotified {
+                article.sendUserNotification()
+            }
+        }
+    }
+
+    private func loadFromCache() -> Promise<NNTPPayload>? {
+        guard let overviews = self.rootDataCache?["overviews"] as? NSDictionary else {
+            return nil
+        }
+
+        return Promise<NNTPPayload>(queue: self.account.processingQueue) {
+            () throws -> NNTPPayload in
+
+            var res : [NNTPOverview] = []
+
+            for (key, val) in overviews {
+                guard let key = key as? String,
+                    let num = Int(key),
+                    let dict = val as? NSDictionary,
+                    let headers = MIMEHeaders(fromDictionary: dict) else
+                {
+                    throw Error.InvalidCache
+                }
+
+                res.append(NNTPOverview(num: num, headers: headers, bytes: nil, lines: nil))
+            }
+
+            res.sortInPlace { $0.num < $1.num }
+            return .Overview(res)
+        }
+    }
+
     private func loadHistory() throws -> Promise<NNTPPayload> {
         if NSEqualRanges(self.groupRange!, self.fetchedRange!) {
             self.synchronizeCache()
@@ -302,44 +369,10 @@ class Group : NSObject {
         promise.then({
             (payload) throws in
 
-            guard case .Overview(let messages) = payload else {
-                throw NNTPError.ServerProtocolError
-            }
+            try self.loadOverview(payload, atBottom: self.fetchedRange!.location >= toFetch.location)
+            self.fetchedRange = NSUnionRange(self.fetchedRange!, toFetch)
+            self.notifiedRange = NSUnionRange(toFetch, self.notifiedRange!)
 
-            var notNotified : [Article] = []
-            self.notifyUnreadCountChange {
-                var roots : [Article] = []
-                let overviews = self.rootDataCache?["overviews"] as? NSMutableDictionary
-
-                for msg in messages {
-                    let article = self.account.article((group: self.fullName, msg.num), headers: msg.headers)
-                    if article.inReplyTo == nil {
-                        roots.append(article)
-                    }
-                    
-                    if !article.isRead {
-                        if !NSLocationInRange(msg.num, self.notifiedRange!) {
-                            notNotified.append(article)
-                        }
-                    }
-
-                    overviews?[String(msg.num)] = msg.headers.dictionary
-                }
-                self.rootDataCacheDirty = true
-
-                self.fetchedCount += messages.count
-                
-                let growUp = self.fetchedRange!.location < toFetch.location
-                self.fetchedRange = NSUnionRange(self.fetchedRange!, toFetch)
-                self.notifiedRange = NSUnionRange(toFetch, self.notifiedRange!)
-                
-                self.addThreads(roots.reverse(), atBottom: !growUp)
-            }
-            if notNotified.count > 0 {
-                for article in notNotified {
-                    article.sendUserNotification()
-                }
-            }
 
             self.loadHistoryPromise = nil
             try self.loadHistory()
@@ -354,18 +387,44 @@ class Group : NSObject {
         return promise
     }
 
+    private var loaded = false
     func load() {
-        if self.groupRange != nil {
+        if self.loaded || self.promise != nil {
             return
         }
 
-        self.refresh()
+        if let promise = self.loadFromCache() {
+            self.promise = promise
+            self.promise?.otherwise({
+                (_) in
+
+                self.rootDataCache = NSMutableDictionary()
+                self.rootDataCache?["overviews"] = NSMutableDictionary()
+                self.rootDataCacheDirty = true
+
+                self.fetchedRange = nil
+                self.groupRange = nil
+                self.loaded = true
+                self.refresh()
+            })
+            self.promise?.then({
+                (payload) throws in
+
+                try self.loadOverview(payload, atBottom: true)
+                print("loaded from cache")
+                self.loaded = true
+                self.refresh()
+            })
+        } else {
+            self.loaded = true
+            self.refresh()
+        }
     }
 }
 
 extension Group {
     @objc func refresh() {
-        if self.account.client == nil {
+        if self.account.client == nil || !self.loaded {
             return
         }
 

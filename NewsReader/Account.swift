@@ -53,7 +53,7 @@ class Account : NSObject {
     let cacheMessages : NSURL?
     var reloadCron : NSTimer?
     var synchronizeCacheCron : NSTimer?
-
+    let processingQueue = NSOperationQueue()
 
     private static func getAccountParameters(account: AnyObject)
         -> (name: String, host: String, port: Int, useSSL: Bool,
