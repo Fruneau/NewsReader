@@ -121,7 +121,7 @@ extension SubscriptionController : NSOutlineViewDataSource {
     }
 
     func outlineView(outlineView: NSOutlineView, child index: Int, ofItem item: AnyObject?) -> AnyObject {
-        return self.getChildren(item).allValues[index]
+        return self.getChildren(item).allValues.sort({ ($0["name"] as! String) < ($1["name"] as! String) })[index]
     }
 
     func outlineView(outlineView: NSOutlineView, isItemExpandable item: AnyObject) -> Bool {
