@@ -108,8 +108,8 @@
                                                                             <animations/>
                                                                             <imageCell key="cell" refusesFirstResponder="YES" imageAlignment="bottomRight" imageScaling="proportionallyDown" image="newsgroup" id="ksS-wP-c5x"/>
                                                                         </imageView>
-                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5IW-xs-a6o">
-                                                                            <rect key="frame" x="30" y="3" width="197" height="14"/>
+                                                                        <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="5IW-xs-a6o">
+                                                                            <rect key="frame" x="30" y="0.0" width="197" height="17"/>
                                                                             <animations/>
                                                                             <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="3a5-Qe-lon">
                                                                                 <font key="font" metaFont="smallSystem"/>

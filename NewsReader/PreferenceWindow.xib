@@ -427,7 +427,7 @@
                                                                 </textFieldCell>
                                                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                 <prototypeCellViews>
-                                                                    <tableCellView misplaced="YES" id="HGZ-cf-FYn">
+                                                                    <tableCellView id="HGZ-cf-FYn">
                                                                         <rect key="frame" x="123" y="1" width="17" height="17"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                         <subviews>
