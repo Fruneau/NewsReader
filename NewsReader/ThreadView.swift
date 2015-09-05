@@ -9,42 +9,48 @@
 import Cocoa
 
 class ThreadViewItem : NSCollectionViewItem {
-    @IBOutlet weak var threadView: BackgroundView!
-    @IBOutlet weak var fromView: NSTextField!
-    @IBOutlet weak var fromCell: NSTextFieldCell!
-    @IBOutlet weak var dateView: NSTextField!
-    @IBOutlet weak var dateCell: NSTextFieldCell!
-    @IBOutlet weak var subjectView: NSTextField!
-    @IBOutlet weak var subjectCell: NSTextFieldCell!
-    @IBOutlet weak var threadCountView: NSTextField!
-    @IBOutlet weak var threadCountCell: NSTextFieldCell!
-    @IBOutlet weak var arrowView: NSTextField!
-    @IBOutlet weak var arrowCell: NSTextFieldCell!
-    @IBOutlet weak var unreadMark: NSImageView!
+    dynamic var threadHasReplies = false
+    private func updateThreadCountViewVisibility() {
+        guard let article = self.representedObject as? Article else {
+            return
+        }
 
-    override var representedObject : AnyObject? {
-        didSet {
-            let article = self.representedObject as? Article
+        self.threadHasReplies = article.threadCount > 1
+    }
 
-            self.fromView.objectValue = article?.from
-            self.dateView.objectValue = article?.date
-            self.subjectView.objectValue = article?.subject
-            self.threadCountView.objectValue = article?.threadCount
+    var threadCountChangeCtx = 0;
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        switch context {
+        case &self.threadCountChangeCtx:
+            self.updateThreadCountViewVisibility()
 
-            if article?.threadCount == 1 {
-                self.threadCountView.hidden = true
-                self.arrowView.hidden = true
-            } else {
-                self.threadCountView.hidden = false
-                self.arrowView.hidden = false
-            }
+        default:
+            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
         }
     }
 
-    private var threadCountColor : NSColor?
-    override func awakeFromNib() {
-        self.threadCountColor = self.threadCountCell.textColor
+    override var representedObject : AnyObject? {
+        willSet {
+            guard let article = self.representedObject as? Article else {
+                return
+            }
+
+            article.removeObserver(self, forKeyPath: "threadCount")
+        }
+
+        didSet {
+            guard let article = self.representedObject as? Article else {
+                return
+            }
+
+            article.addObserver(self, forKeyPath: "threadCount", options: [], context: &self.threadCountChangeCtx)
+            self.updateThreadCountViewVisibility()
+        }
     }
+
+    dynamic var textColor : NSColor?
+    dynamic var backgroundColor : NSColor?
+    dynamic var unreadImage = NSImage(named: "unread")
 
     override var selected : Bool {
         didSet {
@@ -53,25 +59,20 @@ class ThreadViewItem : NSCollectionViewItem {
             }
 
             if self.selected {
-                self.threadView.backgroundColor = NSColor.alternateSelectedControlColor()
-                self.fromCell.textColor = NSColor.alternateSelectedControlTextColor()
-                self.dateCell.textColor = NSColor.alternateSelectedControlTextColor()
-                self.subjectCell.textColor = NSColor.alternateSelectedControlTextColor()
-                self.threadCountCell.textColor = NSColor.alternateSelectedControlTextColor()
-                self.arrowCell.textColor = NSColor.alternateSelectedControlTextColor()
-
-                self.unreadMark.image = NSImage(named: "unread-selected")
+                self.textColor = NSColor.alternateSelectedControlTextColor()
+                self.backgroundColor = NSColor.alternateSelectedControlColor()
+                self.unreadImage = NSImage(named: "unread-selected")
             } else {
-                self.threadView.backgroundColor = NSColor.whiteColor()
-                self.fromCell.textColor = NSColor.labelColor()
-                self.dateCell.textColor = NSColor.secondaryLabelColor()
-                self.subjectCell.textColor = NSColor.labelColor()
-                self.threadCountCell.textColor = self.threadCountColor
-                self.arrowCell.textColor = self.threadCountColor
-
-                self.unreadMark.image = NSImage(named: "unread")
+                self.textColor = nil
+                self.backgroundColor = nil
+                self.unreadImage = NSImage(named: "unread")
             }
         }
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.view.bind("backgroundColor", toObject: self, withKeyPath: "backgroundColor", options: nil)
     }
 }
 

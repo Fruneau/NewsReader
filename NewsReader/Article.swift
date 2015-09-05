@@ -24,13 +24,15 @@ class Article : NSObject {
     var headers : MIMEHeaders
     dynamic var body : String? {
         willSet {
-            if self === self.threadRoot.threadFirstUnread {
+            let root = self.threadRoot
+            if self === root || self === root.threadFirstUnread {
                 self.threadRoot.willChangeValueForKey("threadPreviewBody")
             }
         }
 
         didSet {
-            if self === self.threadRoot.threadFirstUnread {
+            let root = self.threadRoot
+            if self === root || self === root.threadFirstUnread {
                 self.threadRoot.didChangeValueForKey("threadPreviewBody")
             }
         }

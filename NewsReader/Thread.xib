@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8187.4" systemVersion="15A262e" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8187.4" systemVersion="15A278b" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8187.4"/>
@@ -22,6 +22,7 @@
                     </textFieldCell>
                     <connections>
                         <binding destination="xJv-tv-U3k" name="value" keyPath="representedObject.from" id="hDQ-gP-pKb"/>
+                        <binding destination="xJv-tv-U3k" name="textColor" keyPath="self.textColor" id="LeW-HW-xWU"/>
                     </connections>
                 </textField>
                 <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="QTO-b1-Wk0">
@@ -41,6 +42,7 @@
                     </textFieldCell>
                     <connections>
                         <binding destination="xJv-tv-U3k" name="value" keyPath="representedObject.subject" id="xto-X3-NWL"/>
+                        <binding destination="xJv-tv-U3k" name="textColor" keyPath="self.textColor" id="l8X-ly-UpC"/>
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="500" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="VyJ-g5-UI8" userLabel="Date">
@@ -54,6 +56,7 @@
                     </textFieldCell>
                     <connections>
                         <binding destination="xJv-tv-U3k" name="value" keyPath="representedObject.date" id="055-sJ-ucM"/>
+                        <binding destination="xJv-tv-U3k" name="textColor" keyPath="self.textColor" id="A3O-BQ-gav"/>
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="u8S-0m-dDu">
@@ -66,7 +69,13 @@
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
+                        <binding destination="xJv-tv-U3k" name="hidden" keyPath="self.threadHasReplies" id="Jys-7c-kGy">
+                            <dictionary key="options">
+                                <string key="NSValueTransformerName">NSNegateBoolean</string>
+                            </dictionary>
+                        </binding>
                         <binding destination="xJv-tv-U3k" name="value" keyPath="representedObject.threadCount" id="S3D-h5-9l5"/>
+                        <binding destination="xJv-tv-U3k" name="textColor" keyPath="self.textColor" id="EvW-85-U5u"/>
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fXI-e8-LZe">
@@ -77,6 +86,14 @@
                         <color key="textColor" red="0.24705882352941178" green="0.65098039215686276" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
+                    <connections>
+                        <binding destination="xJv-tv-U3k" name="hidden" keyPath="self.threadHasReplies" id="T7o-2d-JyB">
+                            <dictionary key="options">
+                                <string key="NSValueTransformerName">NSNegateBoolean</string>
+                            </dictionary>
+                        </binding>
+                        <binding destination="xJv-tv-U3k" name="textColor" keyPath="self.textColor" id="41e-AP-hWB"/>
+                    </connections>
                 </textField>
                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="D6s-1Z-1m2" customClass="UserBadgeView" customModule="NewsReader" customModuleProvider="target">
                     <rect key="frame" x="20" y="22" width="50" height="50"/>
@@ -100,6 +117,7 @@
                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="unread" id="A7Q-LL-c1g"/>
                     <connections>
                         <binding destination="xJv-tv-U3k" name="hidden" keyPath="representedObject.threadIsRead" id="QFe-5o-2I2"/>
+                        <binding destination="xJv-tv-U3k" name="value" keyPath="self.unreadImage" id="1pp-Gs-ztm"/>
                     </connections>
                 </imageView>
                 <textField horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jaw-9n-9Q0">
@@ -116,6 +134,7 @@
                                 <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
                             </dictionary>
                         </binding>
+                        <binding destination="xJv-tv-U3k" name="textColor" keyPath="self.textColor" id="rru-wL-iH3"/>
                     </connections>
                 </textField>
             </subviews>
@@ -157,25 +176,14 @@
         </view>
         <collectionViewItem id="xJv-tv-U3k" userLabel="Thread" customClass="ThreadViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
-                <outlet property="arrowCell" destination="nEL-CO-1fi" id="gx5-XK-brP"/>
-                <outlet property="arrowView" destination="fXI-e8-LZe" id="2Y8-7L-AIn"/>
-                <outlet property="dateCell" destination="pYd-cH-V96" id="VSF-ZP-WWy"/>
-                <outlet property="dateView" destination="VyJ-g5-UI8" id="Il4-Lu-mIY"/>
-                <outlet property="fromCell" destination="R0B-Gr-eRO" id="stc-p9-72m"/>
-                <outlet property="fromView" destination="3H7-xS-Nhz" id="Sll-k5-0SH"/>
-                <outlet property="subjectCell" destination="SJg-mb-8RF" id="EY4-vf-gIV"/>
-                <outlet property="subjectView" destination="JCw-Zv-VQf" id="Bjf-zl-0iY"/>
-                <outlet property="threadCountCell" destination="tf8-Nt-2Me" id="HNT-iN-xkj"/>
-                <outlet property="threadCountView" destination="u8S-0m-dDu" id="A2p-cn-8CL"/>
-                <outlet property="threadView" destination="n7b-Dz-1CF" id="DEE-PI-Bm2"/>
-                <outlet property="unreadMark" destination="2hk-4C-NpQ" id="A4Y-Sb-Pz7"/>
                 <outlet property="view" destination="n7b-Dz-1CF" id="jng-lQ-kgp"/>
             </connections>
         </collectionViewItem>
         <userDefaultsController representsSharedInstance="YES" id="rVX-2L-faB"/>
         <menu id="ZGe-4j-82b">
             <items>
-                <menuItem title="Toggle thread as read state" keyEquivalent="U" id="v8e-hI-FWd">
+                <menuItem title="Toggle thread as read state" id="v8e-hI-FWd">
+                    <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <binding destination="xJv-tv-U3k" name="target" keyPath="self.representedObject" id="uNy-ZX-N61">
                             <dictionary key="options">

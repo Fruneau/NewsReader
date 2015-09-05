@@ -17,14 +17,7 @@ class UnscrollableScrollView : NSScrollView {
 }
 
 class ArticleViewItem : NSCollectionViewItem {
-    @IBOutlet weak var fromView: NSTextField!
-    @IBOutlet weak var toView: NSTextField!
-    @IBOutlet weak var subjectView: NSTextField!
-    @IBOutlet weak var dateView: NSTextField!
-    @IBOutlet weak var contactPictureView: UserBadgeView!
-    @IBOutlet var bodyView: NSTextView!
-
-    private var articlePromise : Promise<NNTPPayload>?
+    private weak var articlePromise : Promise<NNTPPayload>?
 
     override dynamic var representedObject : AnyObject? {
         willSet {
@@ -47,18 +40,6 @@ class ArticleViewItem : NSCollectionViewItem {
                 if !self.view.hidden {
                     self.article?.isRead = true
                 }
-            }
-
-            self.fromView.objectValue = self.article?.from
-            self.toView.objectValue = self.article?.to
-            self.subjectView.objectValue = self.article?.subject
-            self.dateView.objectValue = self.article?.date
-            self.contactPictureView.objectValue = self.article?.contactPicture
-
-            if let body = self.article?.body {
-                self.bodyView.string = body
-            } else {
-                self.bodyView.string = "\nloading article content..."
             }
         }
     }

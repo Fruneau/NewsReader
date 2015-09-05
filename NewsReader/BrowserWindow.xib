@@ -385,8 +385,12 @@
         </window>
         <menu id="yAY-Lg-Pko">
             <items>
-                <menuItem title="Refresh" keyEquivalent="r" id="gQv-bG-JWF"/>
-                <menuItem title="Mark group as read" keyEquivalent="U" id="n3z-WP-OcF"/>
+                <menuItem title="Refresh" id="gQv-bG-JWF">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+                <menuItem title="Mark group as read" id="n3z-WP-OcF">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
                 <menuItem isSeparatorItem="YES" id="Zgg-o9-j8A"/>
                 <menuItem title="Notify on new messages" state="on" id="E5G-i6-waO">
                     <modifierMask key="keyEquivalentModifierMask"/>

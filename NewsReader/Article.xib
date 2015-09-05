@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8187.4" systemVersion="15A262e" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8187.4" systemVersion="15A278b" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8187.4"/>
@@ -155,10 +155,11 @@
                                         <size key="minSize" width="523" height="512"/>
                                         <size key="maxSize" width="4030" height="10000000"/>
                                         <connections>
-                                            <binding destination="ojD-sA-dGM" name="attributedString" keyPath="representedObject.body" id="Ulm-G0-gqx">
+                                            <binding destination="ojD-sA-dGM" name="attributedString" keyPath="representedObject.body" id="455-f6-X2M">
                                                 <dictionary key="options">
                                                     <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
                                                     <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                    <string key="NSNullPlaceholder">loading article content...</string>
                                                 </dictionary>
                                             </binding>
                                         </connections>
@@ -229,12 +230,6 @@
         </customView>
         <collectionViewItem id="ojD-sA-dGM" userLabel="Article" customClass="ArticleViewItem" customModule="NewsReader" customModuleProvider="target">
             <connections>
-                <outlet property="bodyView" destination="VAU-cY-XlL" id="b5F-Yt-QIp"/>
-                <outlet property="contactPictureView" destination="ZAn-dN-wjh" id="T6k-KE-tO2"/>
-                <outlet property="dateView" destination="ivL-TL-EAP" id="308-3L-UbZ"/>
-                <outlet property="fromView" destination="iIf-4K-Nvq" id="kpL-zk-rhm"/>
-                <outlet property="subjectView" destination="60R-w7-M2C" id="dCt-tj-9mz"/>
-                <outlet property="toView" destination="qKH-5K-Ror" id="hU9-yp-ALB"/>
                 <outlet property="view" destination="c22-O7-iKe" id="EpG-KY-mAD"/>
             </connections>
         </collectionViewItem>

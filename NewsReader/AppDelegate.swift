@@ -12,6 +12,10 @@ import News
 
 @IBDesignable
 class BackgroundView : NSView {
+    override class func initialize() {
+        self.exposeBinding("backgroundColor")
+    }
+
     @IBInspectable var backgroundColor : NSColor? {
         didSet {
             self.needsDisplay = true
