@@ -63,15 +63,14 @@ class ArticleViewController : NSViewController {
         return self.representedObject as? Article
     }
 
+    private var needToScroll = false
     override var representedObject : AnyObject? {
         didSet {
             self.articleView.reloadData()
 
-            guard let thread = self.currentThread else {
-                return
+            if self.currentThread != nil {
+                self.needToScroll = true
             }
-
-            self.scrollArticleToVisible(thread)
         }
     }
 
@@ -86,14 +85,6 @@ class ArticleViewController : NSViewController {
 
         self.articleView.superview?.scrollRectToVisible(rect)
         return true
-    }
-
-    @IBAction func scrollFirstUnreadArticleToVisible(sender: AnyObject?) {
-        guard let unread = self.currentThread?.threadFirstUnread else {
-            return
-        }
-
-        self.scrollArticleToVisible(unread)
     }
 
     private func articleForIndexPath(indexPath: NSIndexPath) -> Article? {
@@ -135,6 +126,21 @@ extension ArticleViewController : NSCollectionViewDataSource {
 }
 
 extension ArticleViewController : NSCollectionViewDelegateFlowLayout {
+    func collectionView(collectionView: NSCollectionView, didEndDisplayingItem item: NSCollectionViewItem, forRepresentedObjectAtIndexPath indexPath: NSIndexPath) {
+        if self.needToScroll {
+            guard let thread = self.currentThread else {
+                return
+            }
+
+            self.needToScroll = false
+            if let unread = thread.threadFirstUnread {
+                self.scrollArticleToVisible(unread)
+            } else {
+                self.scrollArticleToVisible(thread)
+            }
+        }
+    }
+
     func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
         let size = collectionView.superview!.superview!.frame.size
 
