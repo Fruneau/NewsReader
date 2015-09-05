@@ -54,10 +54,6 @@ class ThreadViewItem : NSCollectionViewItem {
 
     override var selected : Bool {
         didSet {
-            if oldValue == self.selected {
-                return
-            }
-
             if self.selected {
                 self.textColor = NSColor.alternateSelectedControlTextColor()
                 self.backgroundColor = NSColor.alternateSelectedControlColor()
@@ -76,19 +72,41 @@ class ThreadViewItem : NSCollectionViewItem {
     }
 }
 
-class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionViewDelegate {
-    @IBOutlet weak var threadView: NSCollectionView!
-    @IBOutlet weak var articleViewController: ArticleViewController!
+class ThreadViewController : NSViewController {
+    override class func initialize() {
+        self.exposeBinding("selection")
+    }
+
+    private var threadView : NSCollectionView {
+        return self.view as! NSCollectionView
+    }
 
     var currentGroup : Group? {
+        return self.representedObject as? Group
+    }
+
+    dynamic var selection : Article?
+
+    override dynamic var representedObject : AnyObject? {
         willSet {
             self.currentGroup?.delegate = nil
+            self.selection = nil
         }
 
         didSet {
             self.currentGroup?.delegate = self
             self.currentGroup?.load()
             self.threadView.reloadData()
+        }
+    }
+
+    private func updateCurrentThread() {
+        let selected = self.threadView.selectionIndexPaths
+
+        if selected.count == 0 {
+            self.selection = nil
+        } else {
+            self.selection = self.threadForIndexPath(selected.first!)
         }
     }
 
@@ -121,7 +139,9 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
         }
         return set
     }
+}
 
+extension ThreadViewController : NSCollectionViewDataSource {
     func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let roots = self.currentGroup?.roots else {
             return 0
@@ -142,17 +162,9 @@ class ThreadViewController : NSObject, NSCollectionViewDataSource, NSCollectionV
 
         return NSSize(width: size.width, height: 74)
     }
+}
 
-    private func updateCurrentThread() {
-        let selected = self.threadView.selectionIndexPaths
-
-        if selected.count == 0 {
-            self.articleViewController.currentThread = nil
-        } else {
-            self.articleViewController.currentThread = self.threadForIndexPath(selected.first!)
-        }
-    }
-
+extension ThreadViewController : NSCollectionViewDelegate {
     func collectionView(collectionView: NSCollectionView, didSelectItemsAtIndexPaths indexPaths: Set<NSIndexPath>) {
         self.updateCurrentThread()
     }

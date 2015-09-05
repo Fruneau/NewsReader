@@ -59,19 +59,17 @@ class GroupOutlineView : NSOutlineView {
 class BrowserWindowController : NSWindowController {
     weak var appDelegate: AppDelegate?
 
+    @IBOutlet weak var groupTreeController: NSTreeController!
     @IBOutlet weak var threadViewController: ThreadViewController!
+    @IBOutlet var articleViewController: NSViewController!
 
     /* Groups view */
-    @IBOutlet weak var groupTreeController: NSTreeController!
     dynamic var groupRoots : [AnyObject] = []
-    var groupIndexes : [NSIndexPath] = [] {
-        didSet {
-            if self.groupIndexes.count == 0 {
-                self.threadViewController.currentGroup = nil
-            } else {
-                self.threadViewController.currentGroup = self.groupTreeController.selectedObjects[0] as? Group
-            }
-        }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.threadViewController.bind("representedObject", toObject: self.groupTreeController, withKeyPath: "selection.self", options: nil)
+        self.articleViewController.bind("representedObject", toObject: self.threadViewController, withKeyPath: "selection", options: nil)
     }
 }
 

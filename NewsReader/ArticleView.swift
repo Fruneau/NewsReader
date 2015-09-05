@@ -54,11 +54,16 @@ class ArticleViewItem : NSCollectionViewItem {
     }
 }
 
-class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCollectionViewDataSource {
+class ArticleViewController : NSViewController {
+    private var articleView : NSCollectionView {
+        return self.view as! NSCollectionView
+    }
 
-    @IBOutlet weak var articleView: NSCollectionView!
+    private var currentThread : Article? {
+        return self.representedObject as? Article
+    }
 
-    var currentThread : Article? {
+    override var representedObject : AnyObject? {
         didSet {
             self.articleView.reloadData()
 
@@ -110,7 +115,9 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
 
         return NSIndexPath(forItem: idx, inSection: 0)
     }
+}
 
+extension ArticleViewController : NSCollectionViewDataSource {
     func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let thread = self.currentThread?.thread else {
             return 0
@@ -125,7 +132,9 @@ class ArticleViewController : NSObject, NSCollectionViewDelegateFlowLayout, NSCo
         item.representedObject = self.articleForIndexPath(indexPath)
         return item
     }
+}
 
+extension ArticleViewController : NSCollectionViewDelegateFlowLayout {
     func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
         let size = collectionView.superview!.superview!.frame.size
 
