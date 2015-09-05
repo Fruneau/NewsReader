@@ -319,7 +319,7 @@ class Article : NSObject {
             }
 
             self.headers = msg.headers
-            self.body = String.fromData(msg.body)
+            self.body = msg.getBodyAsPlainText()
             self.to = self.loadNewsgroups()
             self.loadRefs()
         })

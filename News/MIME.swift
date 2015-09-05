@@ -19,8 +19,11 @@ public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvert
     case MissingHeaderEndMark
     case UnexpectedHeaderEndMark
     case UnsupportedHeaderEncoding(encoding: String)
-    case UnsupportedHeaderCharset(charset: String)
-    case EncodingError(value: String)
+    case UnsupportedCharset(charset: String)
+    case HeaderEncodingError(value: String)
+    case BodyEncodingError(encoding: MIMEEncoding, body: NSData)
+    case BodyCharsetError(charset: String, body: NSData)
+
 
     public var description : String {
         return self.debugDescription
@@ -49,11 +52,17 @@ public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvert
         case .UnsupportedHeaderEncoding(let s):
             return "UnsupportedHeaderEncoding(\(s))"
 
-        case .UnsupportedHeaderCharset(let s):
-            return "UnsupportedHeaderCharset(\(s))"
+        case .UnsupportedCharset(let s):
+            return "UnsupportedCharset(\(s))"
 
-        case .EncodingError(let s):
-            return "EncodingError(\(s))"
+        case .HeaderEncodingError(let s):
+            return "HeaderEncodingError(\(s))"
+
+        case .BodyEncodingError(encoding: let enc, body: let s):
+            return "BodyEncodingError(\(enc), \(String.fromData(s)))"
+
+        case .BodyCharsetError(charset: let charset, body: let s):
+            return "BodyCharsetError(\(charset), \(String.fromData(s)))"
 
         case .MalformedDate(let s):
             return "MaformedDate(\(s))"
@@ -128,6 +137,37 @@ public struct MIMEAddress {
     }
 }
 
+public enum MIMEEncoding : CustomStringConvertible {
+    case Bit7
+    case Bit8
+    case Binary
+    case QuotedPrintable
+    case Base64
+    case Unsupported(String)
+
+    public init(encoding: String) {
+        switch encoding.lowercaseString {
+        case "7bit": self = .Bit7
+        case "8bit": self = .Bit8
+        case "binary": self = .Binary
+        case "quoted-printable": self = .QuotedPrintable
+        case "base64": self = .Base64
+        case let e: self = .Unsupported(e)
+        }
+    }
+
+    public var description : String {
+        switch self {
+        case .Bit7: return "7bit"
+        case .Bit8: return "8bit"
+        case .Binary: return "binary"
+        case .QuotedPrintable: return "quoted-printable"
+        case .Base64: return "base64"
+        case .Unsupported(let e): return e
+        }
+    }
+}
+
 public enum MIMEHeader {
     case Generic(name: String, content: String)
     case Address(name: String, address: MIMEAddress)
@@ -135,6 +175,8 @@ public enum MIMEHeader {
     case NewsgroupRef(group: String, number: Int)
     case MessageId(name: String, msgid: String)
     case Date(NSDate)
+    case ContentType(type: String, subtype: String, parameters: [String: String])
+    case ContentTransferEncoding(MIMEEncoding)
 
     private static let dateParser : NSDateFormatter = {
         let f = NSDateFormatter()
@@ -189,6 +231,12 @@ public enum MIMEHeader {
 
         case .Date(_):
             return "date"
+
+        case .ContentType(type: _, subtype: _, parameters: _):
+            return "content-type"
+
+        case .ContentTransferEncoding(_):
+            return "content-transfer-encoding"
         }
     }
 
@@ -211,6 +259,12 @@ public enum MIMEHeader {
 
         case .Date(let date):
             return NSDictionary(dictionary: [ "type": "date", "date": date ])
+
+        case .ContentType(type: let type, subtype: let subtype, parameters: let parameters):
+            return NSDictionary(dictionary: [ "type": "content-type", "content-type": type, "content-subtype": subtype, "parameters": parameters])
+
+        case .ContentTransferEncoding(let enc):
+            return NSDictionary(dictionary: [ "type": "content-transfer-encoding", "encoding": enc.description ])
         }
     }
 
@@ -254,6 +308,20 @@ public enum MIMEHeader {
             }
             self = .Date(date)
 
+        case "content-type"?:
+            guard let type = dictionary["content-type"] as? String,
+                  let subtype = dictionary["content-subtype"] as? String,
+                  let parameters = dictionary["parameters"] as? [String: String] else {
+                return nil
+            }
+            self = .ContentType(type: type, subtype: subtype, parameters: parameters)
+
+        case "content-transfer-encoding"?:
+            guard let enc = dictionary["encoding"] as? String else {
+                return nil
+            }
+            self = .ContentTransferEncoding(MIMEEncoding(encoding: enc))
+
         default:
             return nil
         }
@@ -269,7 +337,7 @@ public enum MIMEHeader {
 
         let cfCharset = CFStringConvertIANACharSetNameToEncoding(charset)
         if cfCharset == kCFStringEncodingInvalidId {
-            throw Error.UnsupportedHeaderCharset(charset: charset)
+            throw Error.UnsupportedCharset(charset: charset)
         }
 
         let charset = CFStringConvertEncodingToNSStringEncoding(cfCharset)
@@ -278,21 +346,21 @@ public enum MIMEHeader {
         case "b", "B":
             guard let data = NSData(base64EncodedString: chunk, options: []) else {
                 print("bad base64")
-                throw Error.EncodingError(value: chunk)
+                throw Error.HeaderEncodingError(value: chunk)
             }
             guard let decoded = String.fromData(data, encoding: charset) else {
                 print("bad charset")
-                throw Error.EncodingError(value: chunk)
+                throw Error.HeaderEncodingError(value: chunk)
             }
 
             return decoded as String
 
         case "q", "Q":
             guard let data = NSData(quotedPrintableString: chunk) else {
-                throw Error.EncodingError(value: chunk)
+                throw Error.HeaderEncodingError(value: chunk)
             }
             guard let decoded = String.fromData(data, encoding: charset) else {
-                throw Error.EncodingError(value: chunk)
+                throw Error.HeaderEncodingError(value: chunk)
             }
 
             return decoded as String
@@ -363,7 +431,7 @@ public enum MIMEHeader {
                 headers.append(.Newsgroup(name: lower, group: group))
             }
 
-        case "message-id", "in-reply-to":
+        case "message-id", "in-reply-to", "content-id":
             headers.append(.MessageId(name: lower, msgid: content))
 
         case "references":
@@ -388,6 +456,70 @@ public enum MIMEHeader {
             }
 
             headers.append(.Date(date))
+
+        case "content-type":
+            let cset = NSCharacterSet(charactersInString: " \t;")
+            let scanner = NSScanner(string: content)
+            var type : NSString?
+            var subtype : NSString?
+
+            scanner.charactersToBeSkipped = nil
+            scanner.skipCharactersFromSet(NSCharacterSet.whitespaceCharacterSet())
+
+            if !scanner.scanUpToString("/", intoString: &type)
+            || !scanner.skipString("/")
+            {
+                print("1")
+                throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
+            }
+
+            if !scanner.scanUpToCharactersFromSet(cset, intoString: &subtype) {
+                subtype = scanner.remainder as NSString
+                headers.append(.ContentType(type: type! as String, subtype: subtype! as String, parameters: [:]))
+                break
+            }
+
+            subtype = subtype?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+            var parameters : [String: String] = [:]
+            while scanner.skipString(";") {
+                scanner.skipCharactersFromSet(cset)
+
+                var attrName : NSString?
+                var attrValue : NSString?
+
+                if !scanner.scanUpToString("=", intoString: &attrName)
+                || !scanner.skipString("=")
+                {
+                    print("2")
+                    throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
+                }
+
+                if scanner.skipString("\"") {
+                    if !scanner.scanUpToString("\"", intoString: &attrValue)
+                    || !scanner.skipString("\"")
+                    {
+                        print("3")
+                        throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
+                    }
+                } else if !scanner.scanUpToCharactersFromSet(cset, intoString: &attrValue) {
+                    attrValue = scanner.remainder as NSString
+                } else {
+                    attrValue = attrValue?.stringByTrimmingCharactersInSet(cset)
+                }
+
+                parameters[(attrName! as String).lowercaseString] = attrValue! as String
+                scanner.skipCharactersFromSet(NSCharacterSet.whitespaceCharacterSet())
+            }
+
+            if !scanner.atEnd {
+                print("4: \(scanner.remainder) (\(type!) \(subtype!), \(parameters)")
+                throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
+            }
+
+            headers.append(.ContentType(type: type! as String, subtype: subtype! as String, parameters: parameters))
+
+        case "content-transfer-encoding":
+            headers.append(.ContentTransferEncoding(MIMEEncoding(encoding: content)))
 
         case "xref":
             let slices = content.characters.split(" ")
@@ -553,6 +685,30 @@ public struct MIMEHeaders {
         return self.headers[name.lowercaseString]
     }
 
+    public var contentType : (type: String, subtype: String, parameters: [String:String]) {
+        if case .ContentType(type: let type, subtype: let subtype, parameters: let parameters)? = self["content-type"]?.first {
+            return (type: type, subtype: subtype, parameters: parameters)
+        } else {
+            return (type: "text", subtype: "plain", parameters: [:])
+        }
+    }
+
+    public var contentTransferEncoding : MIMEEncoding {
+        if case .ContentTransferEncoding(let e)? = self["content-transfer-encoding"]?.first {
+            return e
+        } else {
+            return .Bit7
+        }
+    }
+
+    public var contentCharset : String {
+        if let charset = self.contentType.parameters["content-type"] {
+            return charset
+        } else {
+            return "us-ascii"
+        }
+    }
+
     static public func parse(data: NSData) throws -> MIMEHeaders {
         let headers = try MIMEHeader.parseHeaders(data)
 
@@ -604,16 +760,83 @@ public struct MIMEHeaders {
 
 public class MIMEPart {
     public let headers : MIMEHeaders
-    public let body : NSData
 
-    private init(headers: [MIMEHeader], body: NSData) {
-        self.headers = MIMEHeaders(headers: headers)
-        self.body = body
+    private init(headers: MIMEHeaders) {
+        self.headers = headers
+    }
+
+    public func getBodyAsPlainText() -> String {
+        assert (false)
     }
 
     static public func parse(data: NSData) throws -> MIMEPart {
-        let (headers, body) = try MIMEHeader.parseHeadersAndGetBody(data)
+        var (hdrs, body) = try MIMEHeader.parseHeadersAndGetBody(data)
+        let headers = MIMEHeaders(headers: hdrs)
 
-        return MIMEPart(headers: headers, body: body)
+        switch headers.contentTransferEncoding {
+        case .Bit7, .Bit8, .Binary, .Unsupported(_):
+            break
+
+        case .QuotedPrintable:
+            guard let decodedData = NSData(quotedPrintableData: body) else {
+                throw Error.BodyEncodingError(encoding: .QuotedPrintable, body: body)
+            }
+
+            body = decodedData
+
+        case .Base64:
+            guard let decodedData = NSData(base64EncodedData: body, options: [ .IgnoreUnknownCharacters ]) else {
+                throw Error.BodyEncodingError(encoding: .Base64, body: body)
+            }
+
+            body = decodedData
+        }
+
+        switch headers.contentType {
+        case (type: "text", subtype: _, parameters: _), (type: "message", subtype: _, parameters: _):
+            let strCharset = headers.contentCharset
+            let cfCharset = CFStringConvertIANACharSetNameToEncoding(strCharset)
+            
+            if cfCharset == kCFStringEncodingInvalidId {
+                throw Error.UnsupportedCharset(charset: strCharset)
+            }
+            
+            let charset = CFStringConvertEncodingToNSStringEncoding(cfCharset)
+            guard let strBody = String.fromData(body, encoding: charset) else {
+                throw Error.BodyCharsetError(charset: strCharset, body: body)
+            }
+
+            return MIMETextPart(headers: headers, body: strBody)
+
+        default:
+            return MIMEDataPart(headers: headers, body: body)
+        }
+
+    }
+}
+
+private class MIMETextPart : MIMEPart {
+    private let body : String
+
+    private init(headers: MIMEHeaders, body: String) {
+        self.body = body
+        super.init(headers: headers)
+    }
+
+    override func getBodyAsPlainText() -> String {
+        return self.body
+    }
+}
+
+private class MIMEDataPart : MIMEPart {
+    private let body : NSData
+
+    private init(headers: MIMEHeaders, body: NSData) {
+        self.body = body
+        super.init(headers: headers)
+    }
+
+    override func getBodyAsPlainText() -> String {
+        return String.fromData(body)!
     }
 }
