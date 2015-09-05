@@ -78,41 +78,65 @@ public extension NSData {
         return Int(str)
     }
 
-    public convenience init?(quotedPrintableString content: String) {
-        let utf8Data = content.utf8
-        guard let data = NSMutableData(capacity: utf8Data.count) else {
+    public convenience init?(quotedPrintableData content: NSData) {
+        let bytes = UnsafePointer<UInt8>(content.bytes)
+        var pos = 0
+        let end = content.length
+
+        guard let data = NSMutableData(capacity: content.length) else {
             return nil
         }
 
-        var pos = utf8Data.startIndex
-        let end = utf8Data.endIndex
-
         while pos != end {
-            var code = utf8Data[pos]
+            var code = bytes[pos]
 
             if code == 0x3d {
-                pos = pos.successor()
+                pos++
                 if pos == end {
-                    return nil
-                }
-                guard let first = charToHex(utf8Data[pos]) else {
                     return nil
                 }
 
-                pos = pos.successor()
+                if bytes[pos] == 0x0d {
+                    pos++
+                    if pos == end {
+                        break
+                    }
+
+                    if bytes[pos] == 0x0a {
+                        pos++
+                        continue
+                    }
+                } else if bytes[pos] == 0x0a {
+                    pos++
+                    continue
+                }
+
+                guard let first = charToHex(bytes[pos]) else {
+                    return nil
+                }
+
+                pos++
                 if pos == end {
                     return nil
                 }
-                guard let second = charToHex(utf8Data[pos]) else {
+                guard let second = charToHex(bytes[pos]) else {
                     return nil
                 }
 
                 code = (first << 4 + second)
             }
             data.appendBytes(&code, length: 1)
-            pos = pos.successor()
+            pos++
         }
         self.init(data: data)
+    }
+
+    public convenience init?(quotedPrintableString content: String) {
+        guard let utf8Data = (content as NSString).dataUsingEncoding(NSUTF8StringEncoding) else {
+            return nil
+        }
+
+        self.init(quotedPrintableData: utf8Data)
     }
 
     public func forEachChunk(separator: String, action: (NSData, Int) throws -> ()) rethrows {
