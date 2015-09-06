@@ -144,6 +144,8 @@ public struct MIMEAddress {
     }
 }
 
+/** MIME Encodings as described in RFC 2045.
+ */
 public enum MIMEEncoding : CustomStringConvertible {
     case Bit7
     case Bit8
@@ -175,6 +177,8 @@ public enum MIMEEncoding : CustomStringConvertible {
     }
 }
 
+/** MIME Dispositions as described in RFC 1806
+ */
 public enum MIMEDisposition : CustomStringConvertible {
     case Inline
     case Attachment
@@ -204,8 +208,17 @@ public enum MIMEHeader {
     case NewsgroupRef(group: String, number: Int)
     case MessageId(name: String, msgid: String)
     case Date(NSDate)
+
+    /** Content-Type header as described in RFC 2045
+     */
     case ContentType(type: String, subtype: String, parameters: [String: String])
+
+    /** Content-Transfer-Encoding header as described in RFC 2045.
+     */
     case ContentTransferEncoding(MIMEEncoding)
+
+    /** Content disposition header as described in RFC 1806.
+     */
     case ContentDisposition(disposition: MIMEDisposition, parameters: [String: String])
 
     private static let dateParser : NSDateFormatter = {
@@ -900,6 +913,8 @@ private class MIMETextPart : MIMEPart {
     }
 }
 
+/** Multipart MIME Type as described in RFC 2046.
+ */
 private class MIMEMultiPart : MIMEPart {
     private let parts : [MIMEPart]
 
