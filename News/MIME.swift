@@ -758,7 +758,7 @@ public struct MIMEHeaders {
     }
 }
 
-public class MIMEPart {
+public class MIMEPart : NSObject {
     public let headers : MIMEHeaders
 
     private init(headers: MIMEHeaders) {
@@ -792,26 +792,23 @@ public class MIMEPart {
             body = decodedData
         }
 
-        switch headers.contentType {
-        case (type: "text", subtype: _, parameters: _), (type: "message", subtype: _, parameters: _):
-            let strCharset = headers.contentCharset
-            let cfCharset = CFStringConvertIANACharSetNameToEncoding(strCharset)
-            
-            if cfCharset == kCFStringEncodingInvalidId {
-                throw Error.UnsupportedCharset(charset: strCharset)
-            }
-            
-            let charset = CFStringConvertEncodingToNSStringEncoding(cfCharset)
-            guard let strBody = String.fromData(body, encoding: charset) else {
-                throw Error.BodyCharsetError(charset: strCharset, body: body)
-            }
-
-            return MIMETextPart(headers: headers, body: strBody)
-
-        default:
-            return MIMEDataPart(headers: headers, body: body)
+        if let mimeClass = MIMEPart.registry[headers.contentType.type] {
+            return try mimeClass.parsePart(headers, body: body)
+        } else {
+            return try MIMEDataPart.parsePart(headers, body: body)
         }
+    }
 
+    public class func parsePart(headers: MIMEHeaders, body: NSData) throws -> MIMEPart {
+        assert (false)
+    }
+}
+
+extension MIMEPart {
+    static private var registry = [String: MIMEPart.Type]()
+
+    public class func handleType(type: String) {
+        MIMEPart.registry[type] = self
     }
 }
 
@@ -826,6 +823,44 @@ private class MIMETextPart : MIMEPart {
     override func getBodyAsPlainText() -> String {
         return self.body
     }
+
+    override class func parsePart(headers: MIMEHeaders, body: NSData) throws -> MIMEPart {
+        let strCharset = headers.contentCharset
+        let cfCharset = CFStringConvertIANACharSetNameToEncoding(strCharset)
+
+        if cfCharset == kCFStringEncodingInvalidId {
+            throw Error.UnsupportedCharset(charset: strCharset)
+        }
+
+        let charset = CFStringConvertEncodingToNSStringEncoding(cfCharset)
+        guard let strBody = String.fromData(body, encoding: charset) else {
+            throw Error.BodyCharsetError(charset: strCharset, body: body)
+        }
+
+        return MIMETextPart(headers: headers, body: strBody)
+    }
+
+    override class func initialize() {
+        self.handleType("text")
+        self.handleType("message")
+    }
+}
+
+private class MIMEMultiPart : MIMEPart {
+    private let parts : [MIMEPart]
+
+    private init(headers: MIMEHeaders, parts: [MIMEPart]) {
+        self.parts = parts
+        super.init(headers: headers)
+    }
+
+    override class func parsePart(headers: MIMEHeaders, body: NSData) throws -> MIMEPart {
+        return MIMEDataPart(headers: headers, body: body)
+    }
+
+    override class func initialize() {
+        self.handleType("multipart")
+    }
 }
 
 private class MIMEDataPart : MIMEPart {
@@ -838,5 +873,15 @@ private class MIMEDataPart : MIMEPart {
 
     override func getBodyAsPlainText() -> String {
         return String.fromData(body)!
+    }
+
+    override class func parsePart(headers: MIMEHeaders, body: NSData) throws -> MIMEPart {
+        return MIMEDataPart(headers: headers, body: body)
+    }
+
+    override class func initialize() {
+        self.handleType("audio")
+        self.handleType("video")
+        self.handleType("image")
     }
 }
