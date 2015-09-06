@@ -702,7 +702,7 @@ public struct MIMEHeaders {
     }
 
     public var contentCharset : String {
-        if let charset = self.contentType.parameters["content-type"] {
+        if let charset = self.contentType.parameters["charset"] {
             return charset
         } else {
             return "us-ascii"
