@@ -23,7 +23,8 @@ public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvert
     case HeaderEncodingError(value: String)
     case BodyEncodingError(encoding: MIMEEncoding, body: NSData)
     case BodyCharsetError(charset: String, body: NSData)
-
+    case InvalidRfc1521Parameter
+    case InvalidContentType
 
     public var description : String {
         return self.debugDescription
@@ -66,6 +67,12 @@ public enum Error : ErrorType, CustomStringConvertible, CustomDebugStringConvert
 
         case .MalformedDate(let s):
             return "MaformedDate(\(s))"
+
+        case .InvalidRfc1521Parameter:
+            return "InvalidRfc1521Parameter"
+
+        case .InvalidContentType:
+            return "InvalidContentType"
         }
     }
 }
@@ -168,6 +175,28 @@ public enum MIMEEncoding : CustomStringConvertible {
     }
 }
 
+public enum MIMEDisposition : CustomStringConvertible {
+    case Inline
+    case Attachment
+    case Unsupported(String)
+
+    public init(disposition: String) {
+        switch disposition.lowercaseString {
+        case "inline": self = .Inline
+        case "attachment": self = .Attachment
+        case let e: self = .Unsupported(e)
+        }
+    }
+
+    public var description : String {
+        switch self {
+        case .Inline: return "inline"
+        case .Attachment: return "attachment"
+        case .Unsupported(let e): return e
+        }
+    }
+}
+
 public enum MIMEHeader {
     case Generic(name: String, content: String)
     case Address(name: String, address: MIMEAddress)
@@ -177,6 +206,7 @@ public enum MIMEHeader {
     case Date(NSDate)
     case ContentType(type: String, subtype: String, parameters: [String: String])
     case ContentTransferEncoding(MIMEEncoding)
+    case ContentDisposition(disposition: MIMEDisposition, parameters: [String: String])
 
     private static let dateParser : NSDateFormatter = {
         let f = NSDateFormatter()
@@ -237,6 +267,9 @@ public enum MIMEHeader {
 
         case .ContentTransferEncoding(_):
             return "content-transfer-encoding"
+
+        case .ContentDisposition(disposition: _, parameters: _):
+            return "content-disposition"
         }
     }
 
@@ -265,6 +298,9 @@ public enum MIMEHeader {
 
         case .ContentTransferEncoding(let enc):
             return NSDictionary(dictionary: [ "type": "content-transfer-encoding", "encoding": enc.description ])
+
+        case .ContentDisposition(disposition: let disposition, parameters: let parameters):
+            return NSDictionary(dictionary: [ "type": "content-disposition", "disposition": disposition.description, "parameters": parameters])
         }
     }
 
@@ -321,6 +357,13 @@ public enum MIMEHeader {
                 return nil
             }
             self = .ContentTransferEncoding(MIMEEncoding(encoding: enc))
+
+        case "content-disposition"?:
+            guard let disposition = dictionary["disposition"] as? String,
+                  let parameters = dictionary["parameters"] as? [String: String] else {
+                return nil
+            }
+            self = .ContentDisposition(disposition: MIMEDisposition(disposition: disposition), parameters: parameters)
 
         default:
             return nil
@@ -394,6 +437,55 @@ public enum MIMEHeader {
         return content
     }
 
+    static private func parseRfc1521Parameters(header: String) throws -> (String, [String: String]) {
+        let cset = NSCharacterSet(charactersInString: " \t;")
+        let scanner = NSScanner(string: header)
+        var payload : NSString?
+
+        scanner.charactersToBeSkipped = nil
+        scanner.skipCharactersFromSet(NSCharacterSet.whitespaceCharacterSet())
+
+        if !scanner.scanUpToCharactersFromSet(cset, intoString: &payload) {
+            return (header, [:])
+        }
+
+        payload = payload?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+        var parameters : [String: String] = [:]
+        while scanner.skipString(";") {
+            scanner.skipCharactersFromSet(cset)
+
+            var attrName : NSString?
+            var attrValue : NSString?
+
+            if !scanner.scanUpToString("=", intoString: &attrName)
+            || !scanner.skipString("=")
+            {
+                throw Error.InvalidRfc1521Parameter
+            }
+
+            if scanner.skipString("\"") {
+                if !scanner.scanUpToString("\"", intoString: &attrValue)
+                || !scanner.skipString("\"")
+                {
+                    throw Error.InvalidRfc1521Parameter
+                }
+            } else if !scanner.scanUpToCharactersFromSet(cset, intoString: &attrValue) {
+                attrValue = scanner.remainder as NSString
+            } else {
+                attrValue = attrValue?.stringByTrimmingCharactersInSet(cset)
+            }
+
+            parameters[(attrName! as String).lowercaseString] = attrValue! as String
+            scanner.skipCharactersFromSet(NSCharacterSet.whitespaceCharacterSet())
+        }
+
+        if !scanner.atEnd {
+            throw Error.InvalidRfc1521Parameter
+        }
+
+        return (payload! as String, parameters)
+    }
+
     static func appendHeader(inout headers : [MIMEHeader], name: NSData, encodedContent : NSData) throws {
         let cset = NSCharacterSet.whitespaceCharacterSet()
         var content : String
@@ -458,68 +550,30 @@ public enum MIMEHeader {
             headers.append(.Date(date))
 
         case "content-type":
-            let cset = NSCharacterSet(charactersInString: " \t;")
-            let scanner = NSScanner(string: content)
-            var type : NSString?
-            var subtype : NSString?
+            do {
+                let (payload, parameters) = try MIMEHeader.parseRfc1521Parameters(content)
+                let parts = payload.characters.split("/")
 
-            scanner.charactersToBeSkipped = nil
-            scanner.skipCharactersFromSet(NSCharacterSet.whitespaceCharacterSet())
-
-            if !scanner.scanUpToString("/", intoString: &type)
-            || !scanner.skipString("/")
-            {
-                print("1")
-                throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
-            }
-
-            if !scanner.scanUpToCharactersFromSet(cset, intoString: &subtype) {
-                subtype = scanner.remainder as NSString
-                headers.append(.ContentType(type: type! as String, subtype: subtype! as String, parameters: [:]))
-                break
-            }
-
-            subtype = subtype?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
-            var parameters : [String: String] = [:]
-            while scanner.skipString(";") {
-                scanner.skipCharactersFromSet(cset)
-
-                var attrName : NSString?
-                var attrValue : NSString?
-
-                if !scanner.scanUpToString("=", intoString: &attrName)
-                || !scanner.skipString("=")
-                {
-                    print("2")
-                    throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
+                if parts.count != 2 {
+                    throw Error.InvalidRfc1521Parameter
                 }
 
-                if scanner.skipString("\"") {
-                    if !scanner.scanUpToString("\"", intoString: &attrValue)
-                    || !scanner.skipString("\"")
-                    {
-                        print("3")
-                        throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
-                    }
-                } else if !scanner.scanUpToCharactersFromSet(cset, intoString: &attrValue) {
-                    attrValue = scanner.remainder as NSString
-                } else {
-                    attrValue = attrValue?.stringByTrimmingCharactersInSet(cset)
-                }
-
-                parameters[(attrName! as String).lowercaseString] = attrValue! as String
-                scanner.skipCharactersFromSet(NSCharacterSet.whitespaceCharacterSet())
+                headers.append(.ContentType(type: String(parts[0]), subtype: String(parts[1]), parameters: parameters))
+            } catch let e {
+                throw Error.MalformedHeader(name: name, content: encodedContent, error: e)
             }
-
-            if !scanner.atEnd {
-                print("4: \(scanner.remainder) (\(type!) \(subtype!), \(parameters)")
-                throw Error.MalformedHeader(name: name, content: encodedContent, error: nil)
-            }
-
-            headers.append(.ContentType(type: type! as String, subtype: subtype! as String, parameters: parameters))
 
         case "content-transfer-encoding":
             headers.append(.ContentTransferEncoding(MIMEEncoding(encoding: content)))
+
+        case "content-disposition":
+            do {
+                let (payload, parameters) = try MIMEHeader.parseRfc1521Parameters(content)
+
+                headers.append(.ContentDisposition(disposition: MIMEDisposition(disposition: payload), parameters: parameters))
+            } catch let e {
+                throw Error.MalformedHeader(name: name, content: encodedContent, error: e)
+            }
 
         case "xref":
             let slices = content.characters.split(" ")
