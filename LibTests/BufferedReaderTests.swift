@@ -40,6 +40,7 @@ class BufferedReaderTests: XCTestCase {
         let buf = BufferedReader(fromString: "a\r\nbcd\r\ne\r\n\r\n")
 
         XCTAssertNotNil(buf)
+        XCTAssertNotNil(try? buf?.fillBuffer())
         self.checkLine(buf!, exp: "a")
         self.checkLine(buf!, exp: "bcd")
         self.checkLine(buf!, exp: "e")
@@ -51,6 +52,7 @@ class BufferedReaderTests: XCTestCase {
         let buf = BufferedReader(fromString: "a\r\nbcd\r\ne")
 
         XCTAssertNotNil(buf)
+        XCTAssertNotNil(try? buf?.fillBuffer())
         self.checkLine(buf!, exp: "a")
         self.checkLine(buf!, exp: "bcd")
         self.checkLine(buf!, exp: "e")

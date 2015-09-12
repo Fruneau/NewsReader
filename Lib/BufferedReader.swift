@@ -70,9 +70,7 @@ public class BufferedReader {
     }
 
     public func readDataUpTo(bound: String, keepBound: Bool, endOfStreamIsBound: Bool) throws -> NSData? {
-        let boundChars = bound.utf8
-
-        assert (boundChars.count > 0)
+        assert (!bound.isEmpty)
         if self.ended {
             return nil
         }
@@ -83,35 +81,41 @@ public class BufferedReader {
         }
 
         var res : NSData?
-        self.buffer.read() {
-            (buffer, maxLength) in
+        bound.withCString {
+            (boundChars) in
 
-            assert (maxLength >= self.lastReadTo)
+            let boundLen = Int(strlen(boundChars))
 
-            let end = memfind(buffer + self.lastReadTo, length: maxLength - self.lastReadTo, str: boundChars)
-            self.lastReadTo = max(maxLength - boundChars.count, 0)
-
-            if end != nil {
-                let len = end - buffer
-
-                if len + 1 < maxLength {
-                    if keepBound {
-                        res = NSData(bytes: buffer, length: len + boundChars.count)
-                    } else {
-                        res = NSData(bytes: buffer, length: len)
+            self.buffer.read() {
+                (buffer, maxLength) in
+                
+                assert (maxLength >= self.lastReadTo)
+                
+                let end = UnsafePointer<Void>(memmem(buffer + self.lastReadTo, maxLength - self.lastReadTo, boundChars, boundLen))
+                self.lastReadTo = max(maxLength - boundLen, 0)
+                
+                if end != nil {
+                    let len = end - buffer
+                    
+                    if len + 1 < maxLength {
+                        if keepBound {
+                            res = NSData(bytes: buffer, length: len + boundLen)
+                        } else {
+                            res = NSData(bytes: buffer, length: len)
+                        }
+                        return len + boundLen
                     }
-                    return len + boundChars.count
+                } else if self.stream.streamStatus == NSStreamStatus.AtEnd {
+                    assert (!self.stream.hasBytesAvailable)
+                    if maxLength > 0 && endOfStreamIsBound {
+                        res = NSData(bytes: buffer, length: maxLength)
+                    }
+                    self.ended = true
+                    return maxLength
                 }
-            } else if self.stream.streamStatus == NSStreamStatus.AtEnd {
-                assert (!self.stream.hasBytesAvailable)
-                if maxLength > 0 {
-                    res = NSData(bytes: buffer, length: maxLength)
-                }
-                self.ended = true
-                return maxLength
+                
+                return 0
             }
-
-            return 0
         }
 
         if res != nil {
