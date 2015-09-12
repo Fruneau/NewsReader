@@ -315,8 +315,17 @@ class Group : NSObject {
 
             for (key, val) in overviews {
                 guard let key = key as? String,
-                    let num = Int(key),
-                    let dict = val as? NSDictionary,
+                    let num = Int(key) else
+                {
+                    throw Error.InvalidCache;
+                }
+
+                guard NSLocationInRange(num, self.groupRange!) else {
+                    print("skipping deleted article \(num)")
+                    continue
+                }
+
+                guard let dict = val as? NSDictionary,
                     let headers = MIMEHeaders(fromDictionary: dict) else
                 {
                     throw Error.InvalidCache
@@ -436,6 +445,15 @@ extension Group {
                 self.groupRange = NSMakeRange(lowest, highest - lowest + 1)
                 if self.fetchedRange == nil {
                     self.fetchedRange = NSMakeRange(highest + 1, 0)
+                } else if self.fetchedRange!.location < lowest {
+                    let overviews = self.rootDataCache?["overviews"] as? NSMutableDictionary
+
+                    for num in self.fetchedRange!.location..<lowest {
+                        print("forgetting article \(num)")
+                        overviews?.removeObjectForKey(String(num))
+                    }
+
+                    self.fetchedRange = NSIntersectionRange(self.fetchedRange!, self.groupRange!)
                 }
                 if self.notifiedRange == nil {
                     self.notifiedRange = self.groupRange
