@@ -38,7 +38,16 @@ class Article : NSObject {
         }
     }
 
-    var replies : [Article] = []
+    var replies : [Article] = [] {
+        willSet {
+            threadCountWillChange()
+        }
+
+        didSet {
+            threadCountDidChange()
+        }
+    }
+
     weak var inReplyTo : Article? {
         willSet {
             if let previousParent = self.inReplyTo {
