@@ -292,6 +292,7 @@ public enum NNTPPayload {
     case GroupList([(String, String)])
     case Date(NSDate)
     case Overview([NNTPOverview])
+    case SendArticle
 }
 
 public enum NNTPCommand : CustomStringConvertible {
@@ -1010,6 +1011,9 @@ private class NNTPOperation {
                 throw NNTPError.ServerProtocolError
             }
 
+        case ("3", "4", "0"):
+            return .SendArticle
+
         case ("4", "0", "0"):
             throw NNTPError.ServiceTemporarilyUnvailable
 
@@ -1258,7 +1262,7 @@ private class NNTPConnection {
             let cmd = self.pendingCommands.pop()!
 
             if !cmd.isCancelled() {
-                //print(">>> \(cmd.command)")
+                print(">>> \(cmd.command)")
                 cmd.command.pack(self.outBuffer)
                 self.sentCommands.push(cmd)
             }
@@ -1693,9 +1697,17 @@ public class NNTPClient {
     }
 
     public func post(message: String) -> Promise<NNTPPayload> {
-        return self.sendCommand(.Post).thenChain() {
+        print("sending POST")
+
+        let send = self.sendCommand(.Post)
+        send.otherwise {
+            print("\($0)")
+        }
+
+        return send.thenChain() {
             (payload) in
 
+            print("sending body")
             return self.sendCommand(.PostBody(message))
         }
     }

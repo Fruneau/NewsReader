@@ -45,6 +45,9 @@ class Account : NSObject {
     var groups : [String: Group] = [:]
     var subscriptions : [Group] = []
 
+    var userName : String
+    var userEmail : String
+
     var articleByMsgid : [String: Article] = [:]
     var orphanArticles : [String: Set<Article>] = [:]
 
@@ -58,7 +61,7 @@ class Account : NSObject {
     private static func getAccountParameters(account: AnyObject)
         -> (name: String, host: String, port: Int, useSSL: Bool,
             login: String?, password: String?,
-            subscriptions: Set<String>)?
+        subscriptions: Set<String>, userName: String, userEmail: String)?
     {
         guard let name = account.valueForKey("name") as? String else {
             return nil
@@ -91,9 +94,23 @@ class Account : NSObject {
             subscriptions = Set<String>()
         }
 
+        var userName : String
+        if let storedUserName = account.valueForKey("userName") as? String {
+            userName = storedUserName
+        } else {
+            userName = "Anonymous Coward"
+        }
+
+        var userEmail : String
+        if let storedUserEmail = account.valueForKey("userEmail") as? String {
+            userEmail = storedUserEmail
+        } else {
+            userEmail = "anonymous@example.com"
+        }
+
         return (name: name, host: host, port: port, useSSL: useSSL,
             login: login, password: password,
-            subscriptions: subscriptions)
+            subscriptions: subscriptions, userName: userName, userEmail: userEmail)
     }
 
     private var groupUnreadCountContext = 0
@@ -159,6 +176,8 @@ class Account : NSObject {
         self.useSSL = params.useSSL
         self.login = params.login
         self.password = params.password
+        self.userName = params.userName
+        self.userEmail = params.userEmail
         super.init()
 
         if cacheRoot != nil {
@@ -189,6 +208,11 @@ class Account : NSObject {
 
         guard let params = Account.getAccountParameters(account) else {
             return false
+        }
+
+        if params.userName != self.userName || params.userEmail != self.userEmail {
+            self.userName = params.userName
+            self.userEmail = params.userEmail
         }
 
         if params.host != self.host || params.port != self.port || params.useSSL != self.useSSL
