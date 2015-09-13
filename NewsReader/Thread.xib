@@ -13,7 +13,7 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3H7-xS-Nhz">
-                    <rect key="frame" x="73" y="58" width="270" height="16"/>
+                    <rect key="frame" x="73" y="56" width="270" height="16"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="From" id="R0B-Gr-eRO">
                         <font key="font" metaFont="systemBold" size="12"/>
@@ -33,7 +33,7 @@
                     <font key="titleFont" metaFont="system"/>
                 </box>
                 <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JCw-Zv-VQf">
-                    <rect key="frame" x="73" y="42" width="256" height="16"/>
+                    <rect key="frame" x="73" y="40" width="256" height="16"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Subject" id="SJg-mb-8RF">
                         <font key="font" metaFont="cellTitle"/>
@@ -46,7 +46,7 @@
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="500" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="VyJ-g5-UI8" userLabel="Date">
-                    <rect key="frame" x="344" y="58" width="31" height="16"/>
+                    <rect key="frame" x="344" y="56" width="31" height="16"/>
                     <animations/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" placeholderString="Date" id="pYd-cH-V96" userLabel="Date">
                         <customFormatter key="formatter" id="cpg-36-txV" customClass="ShortDateFormatter" customModule="NewsReader" customModuleProvider="target"/>
@@ -60,7 +60,7 @@
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="u8S-0m-dDu">
-                    <rect key="frame" x="330" y="44" width="33" height="14"/>
+                    <rect key="frame" x="330" y="42" width="33" height="14"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" alignment="right" title="Label" id="tf8-Nt-2Me">
                         <numberFormatter key="formatter" formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="FMM-df-ZIS"/>
@@ -79,7 +79,7 @@
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fXI-e8-LZe">
-                    <rect key="frame" x="361" y="42" width="14" height="19"/>
+                    <rect key="frame" x="361" y="40" width="14" height="19"/>
                     <animations/>
                     <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" alignment="right" title="»" id="nEL-CO-1fi">
                         <font key="font" metaFont="system" size="15"/>
@@ -96,7 +96,7 @@
                     </connections>
                 </textField>
                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="D6s-1Z-1m2" customClass="UserBadgeView" customModule="NewsReader" customModuleProvider="target">
-                    <rect key="frame" x="20" y="22" width="50" height="50"/>
+                    <rect key="frame" x="20" y="19" width="50" height="50"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="50" id="5pf-TB-yGP"/>
                         <constraint firstAttribute="width" constant="50" id="aI2-Mi-JbK"/>
@@ -108,7 +108,7 @@
                     </connections>
                 </imageView>
                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="2hk-4C-NpQ">
-                    <rect key="frame" x="2" y="56" width="16" height="16"/>
+                    <rect key="frame" x="2" y="53" width="16" height="16"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="16" id="22s-wh-Fqc"/>
                         <constraint firstAttribute="width" constant="16" id="jIZ-xe-7gx"/>
@@ -121,7 +121,7 @@
                     </connections>
                 </imageView>
                 <textField horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jaw-9n-9Q0">
-                    <rect key="frame" x="73" y="7" width="302" height="35"/>
+                    <rect key="frame" x="73" y="7" width="302" height="33"/>
                     <animations/>
                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" title="Multiline Label" id="YW8-k8-0Id">
                         <font key="font" metaFont="system"/>
@@ -144,7 +144,7 @@
                 <constraint firstItem="D6s-1Z-1m2" firstAttribute="top" secondItem="2hk-4C-NpQ" secondAttribute="top" id="6RK-A5-x69"/>
                 <constraint firstItem="u8S-0m-dDu" firstAttribute="leading" secondItem="JCw-Zv-VQf" secondAttribute="trailing" constant="5" id="6Zr-Dp-74w"/>
                 <constraint firstItem="JCw-Zv-VQf" firstAttribute="leading" secondItem="3H7-xS-Nhz" secondAttribute="leading" id="COj-l5-AdF"/>
-                <constraint firstItem="3H7-xS-Nhz" firstAttribute="top" secondItem="n7b-Dz-1CF" secondAttribute="top" id="IN9-8o-omI"/>
+                <constraint firstItem="3H7-xS-Nhz" firstAttribute="top" secondItem="n7b-Dz-1CF" secondAttribute="top" constant="2" id="IN9-8o-omI"/>
                 <constraint firstItem="u8S-0m-dDu" firstAttribute="top" secondItem="JCw-Zv-VQf" secondAttribute="top" id="Or1-CM-pdA"/>
                 <constraint firstAttribute="trailing" secondItem="VyJ-g5-UI8" secondAttribute="trailing" constant="3" id="VfS-XP-WAu"/>
                 <constraint firstItem="fXI-e8-LZe" firstAttribute="trailing" secondItem="Jaw-9n-9Q0" secondAttribute="trailing" id="VgM-7l-7q9"/>
@@ -152,11 +152,11 @@
                 <constraint firstItem="JCw-Zv-VQf" firstAttribute="leading" secondItem="D6s-1Z-1m2" secondAttribute="trailing" constant="5" id="aez-Z3-NOb"/>
                 <constraint firstAttribute="bottom" secondItem="QTO-b1-Wk0" secondAttribute="bottom" id="eK9-t0-ir2"/>
                 <constraint firstItem="fXI-e8-LZe" firstAttribute="leading" secondItem="u8S-0m-dDu" secondAttribute="trailing" constant="2" id="f9Q-ot-lk7"/>
-                <constraint firstItem="D6s-1Z-1m2" firstAttribute="top" secondItem="n7b-Dz-1CF" secondAttribute="top" constant="2" id="gfd-Rq-Plm"/>
+                <constraint firstItem="D6s-1Z-1m2" firstAttribute="top" secondItem="n7b-Dz-1CF" secondAttribute="top" constant="5" id="gfd-Rq-Plm"/>
                 <constraint firstItem="VyJ-g5-UI8" firstAttribute="leading" secondItem="3H7-xS-Nhz" secondAttribute="trailing" constant="5" id="ic0-fX-xhs"/>
                 <constraint firstItem="Jaw-9n-9Q0" firstAttribute="top" secondItem="JCw-Zv-VQf" secondAttribute="bottom" id="iqO-yd-jIj"/>
                 <constraint firstItem="VyJ-g5-UI8" firstAttribute="trailing" secondItem="fXI-e8-LZe" secondAttribute="trailing" id="jxs-E7-ORk"/>
-                <constraint firstItem="VyJ-g5-UI8" firstAttribute="top" secondItem="n7b-Dz-1CF" secondAttribute="top" id="kEL-6A-GrA"/>
+                <constraint firstItem="VyJ-g5-UI8" firstAttribute="top" secondItem="n7b-Dz-1CF" secondAttribute="top" constant="2" id="kEL-6A-GrA"/>
                 <constraint firstItem="QTO-b1-Wk0" firstAttribute="leading" secondItem="n7b-Dz-1CF" secondAttribute="leading" constant="13" id="ogW-eX-GUX"/>
                 <constraint firstItem="2hk-4C-NpQ" firstAttribute="leading" secondItem="n7b-Dz-1CF" secondAttribute="leading" constant="2" id="rJT-Pp-Zhs"/>
                 <constraint firstItem="Jaw-9n-9Q0" firstAttribute="leading" secondItem="JCw-Zv-VQf" secondAttribute="leading" id="riJ-tD-t24"/>

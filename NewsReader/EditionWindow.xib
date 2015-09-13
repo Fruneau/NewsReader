@@ -8,6 +8,10 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="EditionWindow" customModule="NewsReader" customModuleProvider="target">
             <connections>
+                <outlet property="bodyField" destination="047-JM-6fK" id="98H-eD-7nV"/>
+                <outlet property="followupToField" destination="tjt-UP-gih" id="Au5-tG-fS8"/>
+                <outlet property="subjectField" destination="JwN-9G-Sox" id="C25-LA-W99"/>
+                <outlet property="toField" destination="vba-HP-FR7" id="zHZ-cJ-54U"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="Lnd-4g-rQn"/>
             </connections>
         </customObject>
@@ -31,111 +35,130 @@
                                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="dBd-nN-su9">
                                         <rect key="frame" x="0.0" y="616" width="666" height="137"/>
                                         <subviews>
-                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="rA7-Vh-yVz">
-                                                <rect key="frame" x="18" y="137" width="23" height="17"/>
-                                                <animations/>
-                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="To:" id="xDL-OY-uO3">
-                                                    <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                </textFieldCell>
-                                            </textField>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FnQ-7i-A5I">
                                                 <rect key="frame" x="18" y="112" width="82" height="17"/>
                                                 <animations/>
-                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="To:" id="eeA-aq-aJT">
+                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="To:" id="eeA-aq-aJT">
                                                     <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                 </textFieldCell>
                                             </textField>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="8l9-h2-6Sy">
                                                 <rect key="frame" x="18" y="75" width="82" height="17"/>
                                                 <animations/>
-                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Followup-To:" id="V2O-fG-8IB">
+                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Followup-To:" id="V2O-fG-8IB">
                                                     <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                 </textFieldCell>
                                             </textField>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oT7-Pd-l9L">
                                                 <rect key="frame" x="18" y="38" width="82" height="17"/>
                                                 <animations/>
-                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Subject:" id="nMo-EI-QIK">
+                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Subject:" id="nMo-EI-QIK">
                                                     <font key="font" metaFont="system"/>
-                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                 </textFieldCell>
                                             </textField>
-                                            <tokenField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vba-HP-FR7">
-                                                <rect key="frame" x="106" y="109" width="560" height="22"/>
+                                            <tokenField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vba-HP-FR7">
+                                                <rect key="frame" x="106" y="112" width="557" height="17"/>
                                                 <animations/>
-                                                <tokenFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" allowsUndo="NO" borderStyle="bezel" alignment="left" drawsBackground="YES" allowsEditingTextAttributes="YES" usesSingleLineMode="YES" id="EO1-p5-Nmq">
+                                                <tokenFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" allowsUndo="NO" focusRingType="none" alignment="left" drawsBackground="YES" allowsEditingTextAttributes="YES" usesSingleLineMode="YES" id="EO1-p5-Nmq">
                                                     <font key="font" metaFont="system"/>
                                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                 </tokenFieldCell>
                                             </tokenField>
-                                            <tokenField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tjt-UP-gih">
-                                                <rect key="frame" x="106" y="72" width="560" height="22"/>
+                                            <tokenField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tjt-UP-gih">
+                                                <rect key="frame" x="106" y="75" width="557" height="17"/>
                                                 <animations/>
-                                                <tokenFieldCell key="cell" selectable="YES" editable="YES" borderStyle="bezel" alignment="left" drawsBackground="YES" allowsEditingTextAttributes="YES" id="oHb-dj-2an">
+                                                <tokenFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" focusRingType="none" alignment="left" drawsBackground="YES" allowsEditingTextAttributes="YES" usesSingleLineMode="YES" id="oHb-dj-2an">
                                                     <font key="font" metaFont="system"/>
                                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                 </tokenFieldCell>
                                             </tokenField>
-                                            <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="JwN-9G-Sox">
-                                                <rect key="frame" x="106" y="35" width="560" height="22"/>
+                                            <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="JwN-9G-Sox">
+                                                <rect key="frame" x="106" y="38" width="557" height="17"/>
                                                 <animations/>
-                                                <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="AWD-J2-RZu">
+                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" focusRingType="none" drawsBackground="YES" usesSingleLineMode="YES" id="AWD-J2-RZu">
                                                     <font key="font" metaFont="system"/>
                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                 </textFieldCell>
                                             </textField>
+                                            <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="NqY-NV-LNM">
+                                                <rect key="frame" x="20" y="101" width="646" height="5"/>
+                                                <animations/>
+                                                <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                                                <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                <font key="titleFont" metaFont="system"/>
+                                            </box>
+                                            <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="83a-fj-bBp">
+                                                <rect key="frame" x="20" y="64" width="646" height="5"/>
+                                                <animations/>
+                                                <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                                                <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                <font key="titleFont" metaFont="system"/>
+                                            </box>
+                                            <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="c60-Wy-RBh">
+                                                <rect key="frame" x="0.0" y="27" width="666" height="5"/>
+                                                <animations/>
+                                                <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                                                <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                <font key="titleFont" metaFont="system"/>
+                                            </box>
                                         </subviews>
                                         <constraints>
                                             <constraint firstItem="oT7-Pd-l9L" firstAttribute="top" secondItem="8l9-h2-6Sy" secondAttribute="bottom" constant="20" id="2aG-W9-k8I"/>
                                             <constraint firstItem="oT7-Pd-l9L" firstAttribute="leading" secondItem="FnQ-7i-A5I" secondAttribute="leading" id="3g9-6z-ePy"/>
                                             <constraint firstItem="JwN-9G-Sox" firstAttribute="leading" secondItem="tjt-UP-gih" secondAttribute="leading" id="3sw-Uz-dye"/>
                                             <constraint firstItem="FnQ-7i-A5I" firstAttribute="top" secondItem="dBd-nN-su9" secondAttribute="top" constant="8" id="7mB-O4-vDj"/>
+                                            <constraint firstItem="83a-fj-bBp" firstAttribute="top" secondItem="tjt-UP-gih" secondAttribute="bottom" constant="8" id="Ah5-xp-WAV"/>
                                             <constraint firstItem="oT7-Pd-l9L" firstAttribute="trailing" secondItem="FnQ-7i-A5I" secondAttribute="trailing" id="E9P-vY-H1x"/>
-                                            <constraint firstItem="rA7-Vh-yVz" firstAttribute="leading" secondItem="dBd-nN-su9" secondAttribute="leading" constant="20" id="Es2-1v-9Y2"/>
                                             <constraint firstItem="JwN-9G-Sox" firstAttribute="trailing" secondItem="tjt-UP-gih" secondAttribute="trailing" id="G3O-CO-HTN"/>
                                             <constraint firstItem="vba-HP-FR7" firstAttribute="baseline" secondItem="FnQ-7i-A5I" secondAttribute="baseline" id="GSZ-CA-eno"/>
+                                            <constraint firstAttribute="trailing" secondItem="c60-Wy-RBh" secondAttribute="trailing" id="GqS-Tu-DmR"/>
                                             <constraint firstItem="vba-HP-FR7" firstAttribute="trailing" secondItem="tjt-UP-gih" secondAttribute="trailing" id="HIz-rx-FJ7"/>
                                             <constraint firstAttribute="bottom" secondItem="FnQ-7i-A5I" secondAttribute="bottom" constant="112" id="HwW-9x-j51"/>
+                                            <constraint firstItem="c60-Wy-RBh" firstAttribute="leading" secondItem="dBd-nN-su9" secondAttribute="leading" id="Jch-cj-9GV"/>
                                             <constraint firstItem="tjt-UP-gih" firstAttribute="baseline" secondItem="8l9-h2-6Sy" secondAttribute="baseline" id="JzQ-6E-MlW"/>
-                                            <constraint firstItem="FnQ-7i-A5I" firstAttribute="top" secondItem="rA7-Vh-yVz" secondAttribute="bottom" constant="8" symbolic="YES" id="KGt-7Y-b0S"/>
                                             <constraint firstItem="vba-HP-FR7" firstAttribute="leading" secondItem="FnQ-7i-A5I" secondAttribute="trailing" constant="8" symbolic="YES" id="Ljh-aX-VTF"/>
                                             <constraint firstItem="FnQ-7i-A5I" firstAttribute="leading" secondItem="dBd-nN-su9" secondAttribute="leading" constant="20" id="M7b-QZ-1tv"/>
-                                            <constraint firstAttribute="trailing" secondItem="vba-HP-FR7" secondAttribute="trailing" id="Tq0-7y-OfT"/>
+                                            <constraint firstItem="83a-fj-bBp" firstAttribute="leading" secondItem="FnQ-7i-A5I" secondAttribute="leading" id="RKA-DF-em4"/>
+                                            <constraint firstItem="NqY-NV-LNM" firstAttribute="top" secondItem="vba-HP-FR7" secondAttribute="bottom" constant="8" id="TiX-DW-PdB"/>
+                                            <constraint firstAttribute="trailing" secondItem="vba-HP-FR7" secondAttribute="trailing" constant="3" id="Tq0-7y-OfT"/>
                                             <constraint firstItem="8l9-h2-6Sy" firstAttribute="trailing" secondItem="FnQ-7i-A5I" secondAttribute="trailing" id="Ud7-Xn-AtD"/>
+                                            <constraint firstItem="c60-Wy-RBh" firstAttribute="top" secondItem="JwN-9G-Sox" secondAttribute="bottom" constant="8" id="Y0d-RY-ZvL"/>
+                                            <constraint firstItem="NqY-NV-LNM" firstAttribute="leading" secondItem="FnQ-7i-A5I" secondAttribute="leading" id="bKh-jk-FpO"/>
                                             <constraint firstItem="8l9-h2-6Sy" firstAttribute="top" secondItem="FnQ-7i-A5I" secondAttribute="bottom" constant="20" id="c7d-ur-jST"/>
                                             <constraint firstItem="tjt-UP-gih" firstAttribute="trailing" secondItem="vba-HP-FR7" secondAttribute="trailing" id="cix-hc-OFy"/>
                                             <constraint firstItem="JwN-9G-Sox" firstAttribute="baseline" secondItem="oT7-Pd-l9L" secondAttribute="baseline" id="f3J-YR-VFu"/>
                                             <constraint firstItem="vba-HP-FR7" firstAttribute="leading" secondItem="tjt-UP-gih" secondAttribute="leading" id="h6Y-oq-u0q"/>
+                                            <constraint firstAttribute="trailing" secondItem="83a-fj-bBp" secondAttribute="trailing" id="uCP-wu-GfM"/>
                                             <constraint firstItem="8l9-h2-6Sy" firstAttribute="leading" secondItem="FnQ-7i-A5I" secondAttribute="leading" id="vJf-wS-QeP"/>
+                                            <constraint firstAttribute="trailing" secondItem="NqY-NV-LNM" secondAttribute="trailing" id="xYC-ly-44R"/>
                                             <constraint firstItem="tjt-UP-gih" firstAttribute="leading" secondItem="vba-HP-FR7" secondAttribute="leading" id="zXB-3D-qc3"/>
                                         </constraints>
                                         <animations/>
                                     </customView>
-                                    <scrollView misplaced="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TJk-zK-LEn">
+                                    <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TJk-zK-LEn">
                                         <rect key="frame" x="20" y="0.0" width="646" height="616"/>
                                         <clipView key="contentView" id="oTl-Fh-bBD">
-                                            <rect key="frame" x="1" y="1" width="644" height="614"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="646" height="616"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <textView importsGraphics="NO" richText="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="047-JM-6fK">
-                                                    <rect key="frame" x="0.0" y="0.0" width="644" height="614"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="646" height="616"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <animations/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <size key="minSize" width="644" height="614"/>
+                                                    <size key="minSize" width="646" height="616"/>
                                                     <size key="maxSize" width="664" height="10000000"/>
                                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                    <size key="minSize" width="644" height="614"/>
+                                                    <size key="minSize" width="646" height="616"/>
                                                     <size key="maxSize" width="664" height="10000000"/>
                                                 </textView>
                                             </subviews>
@@ -149,7 +172,7 @@
                                             <animations/>
                                         </scroller>
                                         <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="W6X-gi-z14">
-                                            <rect key="frame" x="629" y="1" width="16" height="614"/>
+                                            <rect key="frame" x="630" y="0.0" width="16" height="616"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <animations/>
                                         </scroller>
@@ -217,6 +240,7 @@
             </toolbar>
             <point key="canvasLocation" x="406" y="462.5"/>
         </window>
+        <userDefaultsController representsSharedInstance="YES" id="Jut-td-Ri7"/>
     </objects>
     <resources>
         <image name="TB_SendArticle" width="17" height="13"/>
