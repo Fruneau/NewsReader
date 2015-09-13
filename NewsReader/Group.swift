@@ -388,9 +388,16 @@ class Group : NSObject {
         }, otherwise: {
             (error) in
 
-            print("error : \(error)")
             self.loadHistoryPromise = nil
-            try self.loadHistory()
+            print("error while fetching overviews for group \(self.fullName) for range \(NSStringFromRange(toFetch)) with group range \(NSStringFromRange(self.groupRange!)): \(error)")
+            switch error {
+            case NNTPError.NoArticleWithThatNumber:
+                self.fetchedRange = NSUnionRange(self.fetchedRange!, toFetch)
+                try self.loadHistory()
+
+            default:
+                break
+            }
         })
         self.loadHistoryPromise = promise
         return promise

@@ -18,29 +18,39 @@ class UnscrollableScrollView : NSScrollView {
 
 class ArticleViewItem : NSCollectionViewItem {
     private weak var articlePromise : Promise<NNTPPayload>?
+    private var bodyWatchContext = 0;
+
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        switch context {
+        case &self.bodyWatchContext:
+            guard let article = self.article, let _ = article.body else {
+                return
+            }
+
+            guard let indexPath = self.collectionView.indexPathForItem(self) else {
+                return
+            }
+
+            self.collectionView.reloadItemsAtIndexPaths([indexPath])
+            if !self.view.hidden {
+                article.isRead = true;
+            }
+
+        default:
+            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+        }
+    }
 
     override dynamic var representedObject : AnyObject? {
         willSet {
+            self.article?.removeObserver(self, forKeyPath: "body", context: &self.bodyWatchContext)
             self.articlePromise?.cancel()
             self.articlePromise = nil
         }
 
         didSet {
+            self.article?.addObserver(self, forKeyPath: "body", options: [], context: &self.bodyWatchContext)
             self.articlePromise = self.article?.load()
-            self.articlePromise?.then {
-                (_) in
-
-                self.articlePromise = nil
-                guard let _ = self.collectionView.indexPathForItem(self) else {
-                    return
-                }
-
-                self.collectionView.reloadData()
-                //self.collectionView.reloadItemsAtIndexPaths([indexPath])
-                if !self.view.hidden {
-                    self.article?.isRead = true
-                }
-            }
         }
     }
     var article : Article? {
