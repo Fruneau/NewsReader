@@ -80,6 +80,7 @@ class ShortDateFormatter : NSFormatter {
 class AppDelegate: NSObject, NSApplicationDelegate {
     var browserWindowController: BrowserWindowController?
     var preferenceWindowController : PreferenceWindowController?
+    var editionWindowControllers : [EditionWindow] = []
     var applicationCache : NSURL!
 
     /* Model handling */
@@ -257,5 +258,28 @@ extension AppDelegate {
         for account in self.accounts {
             account.1.refreshSubscriptions()
         }
+    }
+
+    private func buildEditionWindow(sender: AnyObject?) -> EditionWindow {
+        switch sender {
+        case let a as Account:
+            return EditionWindow(newMessageForAccount: a)
+
+        case let g as Group:
+            return EditionWindow(newMessageInGroup: g)
+
+        case let a as Article:
+            return EditionWindow(replyToArticle: a)
+
+        default:
+            return EditionWindow(newMessageForAccount: self.accounts.first!.1)
+        }
+    }
+
+    @IBAction func newMessage(sender: AnyObject?) {
+        let editorWindow = self.buildEditionWindow(sender)
+
+        editorWindow.showWindow(self)
+        self.editionWindowControllers.append(editorWindow)
     }
 }

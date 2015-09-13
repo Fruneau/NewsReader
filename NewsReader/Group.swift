@@ -19,7 +19,7 @@ import News
 }
 
 class Group : NSObject {
-    private weak var account : Account!
+    weak var account : Account!
     private weak var promise : Promise<NNTPPayload>?
     private weak var loadHistoryPromise : Promise<NNTPPayload>?
     weak var delegate : GroupDelegate?
@@ -321,7 +321,6 @@ class Group : NSObject {
                 }
 
                 guard NSLocationInRange(num, self.groupRange!) else {
-                    print("skipping deleted article \(num)")
                     continue
                 }
 

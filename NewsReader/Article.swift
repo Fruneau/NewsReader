@@ -17,7 +17,7 @@ private struct ArticleRef {
 }
 
 class Article : NSObject {
-    private weak var account : Account!
+    weak var account : Account!
     private weak var promise : Promise<NNTPPayload>?
     private weak var notification : NSUserNotification?
 

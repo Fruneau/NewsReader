@@ -89,4 +89,8 @@ extension BrowserWindowController {
     @IBAction func refreshGroups(sender: AnyObject?) {
         self.appDelegate?.refreshGroups(sender)
     }
+
+    @IBAction func newMessage(sender: AnyObject?) {
+        self.appDelegate?.newMessage(self.threadViewController.currentGroup)
+    }
 }

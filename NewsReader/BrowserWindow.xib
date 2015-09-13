@@ -324,7 +324,7 @@
                 </constraints>
                 <animations/>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="DFB5DBAD-7F18-4071-9472-417612AB962E" autosavesConfiguration="NO" displayMode="iconOnly" sizeMode="regular" id="wPr-Rr-HZq">
+            <toolbar key="toolbar" implicitIdentifier="BBC13ADC-9AC2-4CD3-AD01-851C65C40F68" autosavesConfiguration="NO" displayMode="iconOnly" sizeMode="regular" id="wPr-Rr-HZq">
                 <allowedToolbarItems>
                     <toolbarItem implicitItemIdentifier="FE609631-10D3-4929-890F-A2A7342DF11B" label="Refresh" paletteLabel="Refresh groups" image="NSRefreshTemplate" id="Rg9-eK-qba">
                         <nil key="toolTip"/>
@@ -334,12 +334,29 @@
                             <rect key="frame" x="21" y="14" width="47" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <animations/>
-                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YgD-f5-gee">
+                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRefreshTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YgD-f5-gee">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
                             <connections>
                                 <action selector="refreshGroups:" target="-2" id="CVz-Bc-VzX"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="D6D8F159-C876-4CFC-84BD-907B724148BE" label="New Article" paletteLabel="New Article" image="TB_SendArticle" id="uhX-en-8eM">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="47" height="32"/>
+                        <size key="maxSize" width="47" height="32"/>
+                        <button key="view" verticalHuggingPriority="750" id="dBR-NP-VsV">
+                            <rect key="frame" x="11" y="14" width="47" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <animations/>
+                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="TB_SendArticle" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="fbY-LJ-CtO">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="newMessage:" target="-2" id="q96-uq-tBJ"/>
                             </connections>
                         </button>
                     </toolbarItem>
@@ -363,6 +380,7 @@
                 </allowedToolbarItems>
                 <defaultToolbarItems>
                     <toolbarItem reference="Rg9-eK-qba"/>
+                    <toolbarItem reference="uhX-en-8eM"/>
                     <toolbarItem reference="aw8-HS-3nf"/>
                     <toolbarItem reference="TWc-71-Q7y"/>
                 </defaultToolbarItems>
@@ -400,6 +418,7 @@
     </objects>
     <resources>
         <image name="NSRefreshTemplate" width="11" height="15"/>
+        <image name="TB_SendArticle" width="17" height="13"/>
         <image name="newsgroup" width="22" height="22"/>
     </resources>
 </document>
