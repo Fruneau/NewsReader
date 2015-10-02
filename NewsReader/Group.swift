@@ -283,8 +283,10 @@ class Group : NSObject {
                 }
 
                 if !article.isRead {
-                    if !NSLocationInRange(msg.num, self.notifiedRange!) {
-                        notNotified.append(article)
+                    if let range = self.notifiedRange {
+                        if !NSLocationInRange(msg.num, range) {
+                            notNotified.append(article)
+                        }
                     }
                 }
 
