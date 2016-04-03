@@ -974,7 +974,7 @@ private class NNTPOperation {
                         headers.appendData(chunk)
                         headers.appendString("\r\n")
                     }
-                    pos++
+                    pos += 1
                 }
 
                 let overview = NNTPOverview(num: num!, headers: try MIMEHeaders.parse(headers), bytes: bytes, lines: lines)
@@ -1105,7 +1105,7 @@ private class NNTPOperation {
             default:
                 throw NNTPError.ServerProtocolError
             }
-            pos++
+            pos += 1
         }
         
         throw NNTPError.ServerProtocolError
@@ -1380,7 +1380,7 @@ public class NNTPClient {
 
                         print("auto reconnect in \(reconnectionDelay)s")
                         NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(reconnectionDelay),
-                            target: self, selector: "reconnect", userInfo: nil, repeats: false)
+                            target: self, selector: #selector(StreamDelegate.reconnect), userInfo: nil, repeats: false)
                         self.nntp!.reconnectionDelay = min((reconnectionDelay + 1) * 2, 60)
                     } else {
                         print("no auto-reconn")
@@ -1579,13 +1579,14 @@ public class NNTPClient {
 
             var commands = immutableCommands
             var isCancelled = false
+            var i = 0
 
-            for var i = 0; i < commands.count; i++ {
+            while i < commands.count {
                 switch commands[i] {
                 case .Group(let group):
                     if group == self.currentGroup && i < commands.count - 1 {
                         commands.removeAtIndex(i)
-                        i--
+                        i -= 1
                     } else {
                         self.currentGroup = group
                     }
@@ -1593,7 +1594,7 @@ public class NNTPClient {
                 case .ListGroup(let group, _):
                     if group != self.currentGroup && i < commands.count - 1 {
                         commands.removeAtIndex(i)
-                        i--
+                        i -= 1
                     } else {
                         self.currentGroup = group
                     }
@@ -1607,6 +1608,7 @@ public class NNTPClient {
                     }
                     break
                 }
+                i += 1
             }
 
             let promise = Promise<NNTPPayload>(action: {
@@ -1634,7 +1636,7 @@ public class NNTPClient {
                     }
                 }
 
-                for var i = 0; i < commands.count - 1; i++ {
+                for i in 0 ..< commands.count - 1 {
                     try self.queue(NNTPOperation(command: commands[i],
                         onSuccess: { (_) in () }, onError: actualOnError,
                         isCancelled: { isCancelled }))

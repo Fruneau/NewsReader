@@ -46,13 +46,13 @@ class GroupOutlineView : NSOutlineView {
         super.awakeFromNib()
 
         self.refreshItem = self.menu?.itemWithTitle("Refresh")
-        self.refreshItem?.action = "refresh"
+        self.refreshItem?.action = #selector(Group.refresh)
 
         self.markAsReadItem = self.menu?.itemWithTitle("Mark group as read")
-        self.markAsReadItem?.action = "markGroupAsRead"
+        self.markAsReadItem?.action = #selector(Group.markGroupAsRead)
 
         self.silentItem = self.menu?.itemWithTitle("Notify on new messages")
-        self.silentItem?.action = "toggleNotificationState"
+        self.silentItem?.action = #selector(Group.toggleNotificationState)
     }
 }
 

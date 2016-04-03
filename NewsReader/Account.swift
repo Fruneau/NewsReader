@@ -190,8 +190,8 @@ class Account : NSObject {
         self.connect()
         self.reloadSubscriptions(params.subscriptions)
 
-        self.reloadCron = NSTimer.scheduledTimerWithTimeInterval(60, target: self, selector: "refreshSubscriptions", userInfo: nil, repeats: true)
-        self.synchronizeCacheCron = NSTimer.scheduledTimerWithTimeInterval(30, target: self, selector: "synchronizeCache", userInfo: nil, repeats: true)
+        self.reloadCron = NSTimer.scheduledTimerWithTimeInterval(60, target: self, selector: #selector(Account.refreshSubscriptions), userInfo: nil, repeats: true)
+        self.synchronizeCacheCron = NSTimer.scheduledTimerWithTimeInterval(30, target: self, selector: #selector(Group.synchronizeCache), userInfo: nil, repeats: true)
     }
 
     deinit {

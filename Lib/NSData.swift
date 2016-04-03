@@ -62,23 +62,23 @@ public extension NSData {
             var code = bytes[pos]
 
             if code == 0x3d {
-                pos++
+                pos += 1
                 if pos == end {
                     return nil
                 }
 
                 if bytes[pos] == 0x0d {
-                    pos++
+                    pos += 1
                     if pos == end {
                         break
                     }
 
                     if bytes[pos] == 0x0a {
-                        pos++
+                        pos += 1
                         continue
                     }
                 } else if bytes[pos] == 0x0a {
-                    pos++
+                    pos += 1
                     continue
                 }
 
@@ -86,7 +86,7 @@ public extension NSData {
                     return nil
                 }
 
-                pos++
+                pos += 1
                 if pos == end {
                     return nil
                 }
@@ -97,7 +97,7 @@ public extension NSData {
                 code = (first << 4 + second)
             }
             data.appendBytes(&code, length: 1)
-            pos++
+            pos += 1
         }
         self.init(data: data)
     }

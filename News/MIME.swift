@@ -650,8 +650,8 @@ public enum MIMEHeader {
 
 
                     while len > 0 && cset.characterIsMember(unichar(bytes[0])) {
-                        bytes++
-                        len--
+                        bytes = bytes.successor()
+                        len -= 1
                     }
 
                     if len == 0 {
@@ -681,8 +681,8 @@ public enum MIMEHeader {
                                 var len = line.length - pos
 
                                 while len > 0 && cset.characterIsMember(unichar(bytes[0])) {
-                                    bytes++
-                                    len--
+                                    bytes = bytes.successor()
+                                    len -= 1
                                 }
 
                                 if len == 0 {

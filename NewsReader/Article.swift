@@ -162,7 +162,7 @@ class Article : NSObject {
     private func threadCountWillChange() {
         let root = self.threadRoot
 
-        root.threadCountChanging++
+        root.threadCountChanging += 1
         if root.threadCountChanging != 1 {
             return
         }
@@ -175,7 +175,7 @@ class Article : NSObject {
     private func threadCountDidChange() {
         let root = self.threadRoot
 
-        root.threadCountChanging--
+        root.threadCountChanging -= 1
         if root.threadCountChanging != 0 {
             return
         }
@@ -396,7 +396,7 @@ extension Article {
         }
 
         if !self.isRead {
-            count++
+            count += 1
         }
         return count
     }

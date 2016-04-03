@@ -114,7 +114,7 @@ public struct GroupReadState : CustomStringConvertible {
     /// - parameter num: The article number to mark
     /// - returns: The previous state for the article
     public mutating func markAsRead(num: Int) -> Bool {
-        for var i = 0; i < self.ranges.count; i++ {
+        for i in 0 ..< self.ranges.count {
             let range = self.ranges[i]
 
             switch num {
@@ -157,7 +157,7 @@ public struct GroupReadState : CustomStringConvertible {
 
         for i in range.location..<NSMaxRange(range) {
             if !self.markAsRead(i) {
-                count++
+                count += 1
             }
         }
         return count
@@ -171,7 +171,7 @@ public struct GroupReadState : CustomStringConvertible {
     /// - parameter num: The article number to unmark
     /// - returns: The previous state of the article
     public mutating func unmarkAsRead(num: Int) -> Bool {
-        for var i = 0; i < self.ranges.count; i++ {
+        for i in 0 ..< self.ranges.count {
             let range = self.ranges[i]
 
             switch (num) {
@@ -214,7 +214,7 @@ public struct GroupReadState : CustomStringConvertible {
 
         for i in range.location..<NSMaxRange(range) {
             if self.unmarkAsRead(i) {
-                count++
+                count += 1
             }
         }
         return count
