@@ -9,11 +9,11 @@
 import Foundation
 
 extension String {
-    public func startsWith(other: String) -> Bool {
-        return self.characters.startsWith(other.characters)
+    public func startsWith(_ other: String) -> Bool {
+        return self.characters.starts(with: other.characters)
     }
 
-    public func endsWith(other: String) -> Bool {
+    public func endsWith(_ other: String) -> Bool {
         let myChars = self.characters
         let otherChars = other.characters
 
@@ -29,8 +29,8 @@ extension String {
         let otherStart = otherChars.startIndex
 
         repeat {
-            myPos = myPos.predecessor()
-            otherPos = otherPos.predecessor()
+            myPos = myChars.index(before: myPos)
+            otherPos = myChars.index(before: otherPos)
 
             if self[myPos] != other[otherPos] {
                 return false
@@ -39,33 +39,33 @@ extension String {
         return true
     }
 
-    public static func fromBytes(bytes: UnsafePointer<Void>, length: Int, encoding: UInt) -> String? {
+    public static func fromBytes(_ bytes: UnsafeRawPointer, length: Int, encoding: UInt) -> String? {
         if let encString = NSString(bytes: bytes, length: length, encoding: encoding) {
             return encString as String
         }
 
-        if encoding != NSUTF8StringEncoding {
-            if let utf8String = NSString(bytes: bytes, length: length, encoding: NSUTF8StringEncoding) {
+        if encoding != String.Encoding.utf8.rawValue {
+            if let utf8String = NSString(bytes: bytes, length: length, encoding: String.Encoding.utf8.rawValue) {
                 return utf8String as String
             }
         }
 
-        let charset = CFStringConvertEncodingToNSStringEncoding(CFStringBuiltInEncodings.ISOLatin1.rawValue)
+        let charset = CFStringConvertEncodingToNSStringEncoding(CFStringBuiltInEncodings.isoLatin1.rawValue)
         if let latin1String = NSString(bytes: bytes, length: length, encoding: charset) {
             return latin1String as String
         }
         return nil
     }
 
-    public static func fromBytes(bytes: UnsafePointer<Void>, length: Int) -> String? {
-        return String.fromBytes(bytes, length: length, encoding: NSUTF8StringEncoding)
+    public static func fromBytes(_ bytes: UnsafeRawPointer, length: Int) -> String? {
+        return String.fromBytes(bytes, length: length, encoding: String.Encoding.utf8.rawValue)
     }
 
-    public static func fromData(data: NSData, encoding: UInt) -> String? {
-        return String.fromBytes(data.bytes, length: data.length, encoding: encoding)
+    public static func fromData(_ data: Data, encoding: UInt) -> String? {
+        return String.fromBytes((data as NSData).bytes, length: data.count, encoding: encoding)
     }
 
-    public static func fromData(data: NSData) -> String? {
-        return String.fromBytes(data.bytes, length: data.length)
+    public static func fromData(_ data: Data) -> String? {
+        return String.fromBytes((data as NSData).bytes, length: data.count)
     }
 }

@@ -8,7 +8,7 @@
 
 import Foundation
 
-private func charToHex(char: UInt8) -> UInt8? {
+private func charToHex(_ char: UInt8) -> UInt8? {
     switch (char) {
     case 0x30...0x39:
         return char - 0x30
@@ -36,9 +36,9 @@ private func charToHex(char: UInt8) -> UInt8? {
     }
 }
 
-public extension NSData {
+public extension Data {
     public var utf8String : String? {
-        return NSString(bytes: self.bytes, length: self.length, encoding: NSUTF8StringEncoding) as String?
+        return NSString(bytes: (self as NSData).bytes, length: self.count, encoding: String.Encoding.utf8.rawValue) as String?
     }
 
     public var intValue : Int? {
@@ -49,12 +49,36 @@ public extension NSData {
         return Int(str)
     }
 
-    public convenience init?(quotedPrintableData content: NSData) {
-        let bytes = UnsafePointer<UInt8>(content.bytes)
-        var pos = 0
-        let end = content.length
+    public func forEachChunk(separator: String, action: (Data, Int) throws -> ()) rethrows {
+        try separator.withCString {
+            let separatorLen = Int(strlen($0))
+            let bytes = (self as NSData).bytes
+            let length = self.count
+            var pos = 0
 
-        guard let data = NSMutableData(capacity: content.length) else {
+            while pos < length {
+                let begin = bytes + pos
+                let end = UnsafeRawPointer(memmem(begin, length - pos, $0, separatorLen))
+
+                if let end = end {
+                    try action(Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: begin), count: end - begin, deallocator: .none), pos)
+                } else {
+                    try action(Data(bytesNoCopy: UnsafeMutableRawPointer(mutating: begin), count: length - pos, deallocator: .none), pos)
+                    break
+                }
+                pos += (end! - begin) + separatorLen
+            }
+        }
+    }
+}
+
+public extension NSData {
+    public convenience init?(quotedPrintableData content: Data) {
+        let bytes = (content as NSData).bytes.bindMemory(to: UInt8.self, capacity: content.count)
+        var pos = 0
+        let end = content.count
+
+        guard let data = NSMutableData(capacity: content.count) else {
             return nil
         }
 
@@ -96,62 +120,40 @@ public extension NSData {
 
                 code = (first << 4 + second)
             }
-            data.appendBytes(&code, length: 1)
+            data.append(&code, length: 1)
             pos += 1
         }
-        self.init(data: data)
+        self.init(data: data as Data)
     }
 
     public convenience init?(quotedPrintableString content: String) {
-        guard let utf8Data = (content as NSString).dataUsingEncoding(NSUTF8StringEncoding) else {
+        guard let utf8Data = (content as NSString).data(using: String.Encoding.utf8.rawValue) else {
             return nil
         }
 
         self.init(quotedPrintableData: utf8Data)
     }
-
-    public func forEachChunk(separator: String, action: (NSData, Int) throws -> ()) rethrows {
-        try separator.withCString {
-            let separatorLen = Int(strlen($0))
-            let bytes = self.bytes
-            let length = self.length
-            var pos = 0
-
-            while pos < length {
-                let begin = bytes + pos
-                let end = UnsafePointer<Void>(memmem(begin, length - pos, $0, separatorLen))
-
-                if end == nil {
-                    try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: length - pos, freeWhenDone: false), pos)
-                    break
-                } else {
-                    try action(NSData(bytesNoCopy: UnsafeMutablePointer<Void>(begin), length: end - begin, freeWhenDone: false), pos)
-                }
-                pos += (end - begin) + separatorLen
-            }
-        }
-    }
 }
 
 extension NSMutableData {
-    public func appendString(string: String) {
+    public func appendString(_ string: String) {
         string.withCString {
-            self.appendBytes($0, length: Int(strlen($0)))
+            self.append($0, length: Int(strlen($0)))
         }
     }
 }
 
-public func ~=(pattern: String, value: NSData) -> Bool {
+public func ~=(pattern: String, value: Data) -> Bool {
     let chars = pattern.utf8
-    let bytes = value.bytes
+    let bytes = (value as NSData).bytes
 
-    if chars.count != value.length {
+    if chars.count != value.count {
         return false
     }
 
     var res = false
     pattern.withCString {
-        res = memcmp(bytes, $0, value.length) == 0
+        res = memcmp(bytes, $0, value.count) == 0
     }
     return res
 }

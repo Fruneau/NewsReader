@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct KeychainError : ErrorType {
+public struct KeychainError : Error {
     public let status : OSStatus
     public let textualStatus : String
 
@@ -16,18 +16,18 @@ public struct KeychainError : ErrorType {
         self.status = status
 
         let str = SecCopyErrorMessageString(status, nil)
-        self.textualStatus = String(str)
+        self.textualStatus = String(describing: str)
     }
 }
 
-public enum PasswordError : ErrorType {
-    case BadEncoding
+public enum PasswordError : Error {
+    case badEncoding
 }
 
 public struct KeychainItem {
-    private let item : SecKeychainItem
+    fileprivate let item : SecKeychainItem
 
-    public func changePassword(password: String) throws {
+    public func changePassword(_ password: String) throws {
         var status : OSStatus = 0
 
         password.withCString {
@@ -47,7 +47,7 @@ public struct KeychainItem {
 }
 
 public struct Keychain {
-    static public func addGenericPassword(serviceName: String, accountName: String, password: String) throws -> KeychainItem {
+    static public func addGenericPassword(_ serviceName: String, accountName: String, password: String) throws -> KeychainItem {
         var status : OSStatus = 0
         var item : SecKeychainItem? = nil
 
@@ -74,11 +74,11 @@ public struct Keychain {
         }
     }
 
-    static public func findGenericPassowrd(serviceName: String, accountName: String) throws -> (String, KeychainItem) {
+    static public func findGenericPassowrd(_ serviceName: String, accountName: String) throws -> (String, KeychainItem) {
         var status : OSStatus = 0
         var item : SecKeychainItem? = nil
         var passwordLength : UInt32 = 0
-        var passwordData : UnsafeMutablePointer<Void> = nil
+        var passwordData : UnsafeMutableRawPointer? = nil
 
         serviceName.withCString {
             (cService) in
@@ -92,11 +92,11 @@ public struct Keychain {
 
         switch status {
         case 0:
-            let password = NSString(bytes: passwordData, length: Int(passwordLength), encoding: NSUTF8StringEncoding)
+            let password = NSString(bytes: passwordData!, length: Int(passwordLength), encoding: String.Encoding.utf8.rawValue)
 
             SecKeychainItemFreeContent(nil, passwordData)
             if password == nil {
-                throw PasswordError.BadEncoding
+                throw PasswordError.badEncoding
             }
 
 

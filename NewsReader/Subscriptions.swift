@@ -22,9 +22,9 @@ class SubscriptionController : NSObject {
     @IBOutlet weak var accountTabs: NSTabView!
     @IBOutlet weak var subscriptionsTab: NSTabViewItem!
 
-    private func reloadAccount() {
+    fileprivate func reloadAccount() {
         if self.account != nil {
-            if self.account?.id == self.accountListController.selectionIndexes.firstIndex {
+            if self.account?.id == self.accountListController.selectionIndexes.first {
                 return
             }
         }
@@ -42,20 +42,20 @@ class SubscriptionController : NSObject {
             return
         }
 
-        self.account = Account(accountId: self.accountListController.selectionIndexes.firstIndex,
-                               account: self.accountListController.selection,
+        self.account = Account(accountId: self.accountListController.selectionIndexes.first!,
+                               account: self.accountListController.selection as AnyObject,
                                cacheRoot: nil)
-        self.promise = self.account?.client?.sendCommand(.ListNewsgroups(nil))
+        self.promise = self.account?.client?.sendCommand(.listNewsgroups(nil))
         self.promise?.then({
             (payload) in
 
-            guard case .GroupList(let list) = payload else {
-                throw NNTPError.ServerProtocolError
+            guard case .groupList(let list) = payload else {
+                throw NNTPError.serverProtocolError
             }
 
             self.data["children"] = NSMutableDictionary()
             for (groupName, shortDesc) in list {
-                let leaf = groupName.characters.split(".").reduce(self.data) {
+                let leaf = groupName.characters.split { $0 == "."}.reduce(self.data) {
                     (table, token) in
 
                     let str = String(token)
@@ -82,33 +82,33 @@ class SubscriptionController : NSObject {
 
     }
 
-    private var accountListContext = 0
+    fileprivate var accountListContext = 0
     override func awakeFromNib() {
         super.awakeFromNib()
 
         self.accountListController.addObserver(self, forKeyPath: "selectionIndexes", options: [], context: &self.accountListContext)
     }
 
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch context {
-        case &self.accountListContext:
+        case (&self.accountListContext)?:
             self.reloadAccount()
 
         default:
-            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 }
 
 extension SubscriptionController : NSTabViewDelegate {
-    func tabView(tabView: NSTabView, didSelectTabViewItem tabViewItem: NSTabViewItem?) {
+    func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
         print("reload because tab changed")
         self.reloadAccount()
     }
 }
 
 extension SubscriptionController : NSOutlineViewDataSource {
-    private func getDict(item: AnyObject?) -> NSDictionary {
+    fileprivate func getDict(_ item: Any?) -> NSDictionary {
         if item == nil {
             return self.data
         } else {
@@ -116,24 +116,24 @@ extension SubscriptionController : NSOutlineViewDataSource {
         }
     }
 
-    private func getChildren(item: AnyObject?) -> NSDictionary {
+    fileprivate func getChildren(_ item: Any?) -> NSDictionary {
         return self.getDict(item)["children"] as! NSDictionary
     }
 
-    func outlineView(outlineView: NSOutlineView, child index: Int, ofItem item: AnyObject?) -> AnyObject {
-        return self.getChildren(item).allValues.sort({ ($0["name"] as! String) < ($1["name"] as! String) })[index]
+    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
+        return self.getChildren(item as AnyObject?).allValues.sorted(by: { (($0 as AnyObject)["name"] as! String) < (($1 as AnyObject)["name"] as! String) })[index]
     }
 
-    func outlineView(outlineView: NSOutlineView, isItemExpandable item: AnyObject) -> Bool {
-        return self.getChildren(item).count != 0
+    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
+        return self.getChildren(item as AnyObject?).count != 0
     }
 
-    func outlineView(outlineView: NSOutlineView, numberOfChildrenOfItem item: AnyObject?) -> Int {
-        return self.getChildren(item).count
+    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
+        return self.getChildren(item as AnyObject?).count
     }
 
-    func outlineView(outlineView: NSOutlineView, objectValueForTableColumn tableColumn: NSTableColumn?, byItem item: AnyObject?) -> AnyObject? {
-        let dict = self.getDict(item)
+    func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) -> Any? {
+        let dict = self.getDict(item as AnyObject?)
 
         if dict["fullname"] != nil || tableColumn === self.groupColumn {
             return item
@@ -144,7 +144,7 @@ extension SubscriptionController : NSOutlineViewDataSource {
 }
 
 extension SubscriptionController : NSOutlineViewDelegate {
-    @IBAction func changeSubscription(sender: NSButton) {
+    @IBAction func changeSubscription(_ sender: NSButton) {
         guard let cell = sender.superview as? NSTableCellView else {
             return
         }
@@ -159,22 +159,22 @@ extension SubscriptionController : NSOutlineViewDelegate {
             return
         }
 
-        guard let subscriptions = self.accountListController.selection.valueForKey("subscriptions") as? NSMutableArray else {
+        guard let subscriptions = (self.accountListController.selection as AnyObject).value(forKey: "subscriptions") as? NSMutableArray else {
             assert (false)
             return
         }
 
-        let pos = subscriptions.indexOfObject(fullname)
+        let pos = subscriptions.index(of: fullname)
 
         switch sender.state {
         case NSOnState:
             if pos == NSNotFound {
-                subscriptions.addObject(fullname)
+                subscriptions.add(fullname)
             }
 
         case NSOffState:
             if pos != NSNotFound {
-                subscriptions.removeObjectAtIndex(pos)
+                subscriptions.removeObject(at: pos)
             }
 
         default:

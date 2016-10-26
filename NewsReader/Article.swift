@@ -18,22 +18,22 @@ private struct ArticleRef {
 
 class Article : NSObject {
     weak var account : Account!
-    private weak var promise : Promise<NNTPPayload>?
-    private weak var notification : NSUserNotification?
+    fileprivate weak var promise : Promise<NNTPPayload>?
+    fileprivate weak var notification : NSUserNotification?
 
     var headers : MIMEHeaders
     dynamic var body : String? {
         willSet {
             let root = self.threadRoot
             if self === root || self === root.threadFirstUnread {
-                self.threadRoot.willChangeValueForKey("threadPreviewBody")
+                self.threadRoot.willChangeValue(forKey: "threadPreviewBody")
             }
         }
 
         didSet {
             let root = self.threadRoot
             if self === root || self === root.threadFirstUnread {
-                self.threadRoot.didChangeValueForKey("threadPreviewBody")
+                self.threadRoot.didChangeValue(forKey: "threadPreviewBody")
             }
         }
     }
@@ -51,8 +51,8 @@ class Article : NSObject {
     weak var inReplyTo : Article? {
         willSet {
             if let previousParent = self.inReplyTo {
-                if let pos = previousParent.replies.indexOf(self) {
-                    previousParent.replies.removeAtIndex(pos)
+                if let pos = previousParent.replies.index(of: self) {
+                    previousParent.replies.remove(at: pos)
                 }
             } else {
                 for ref in self.refs {
@@ -77,7 +77,7 @@ class Article : NSObject {
     }
 
     lazy var msgid : String? = {
-        if case .MessageId(name: _, msgid: let val)? = self.headers["message-id"]?.first {
+        if case .messageId(name: _, msgid: let val)? = self.headers["message-id"]?.first {
             return val
         }
         return nil
@@ -87,15 +87,15 @@ class Article : NSObject {
         if let contact = self.contact {
             var res = ""
 
-            if let firstName = contact.valueForProperty(kABFirstNameProperty) as? String {
-                res.appendContentsOf(firstName)
+            if let firstName = contact.value(forProperty: kABFirstNameProperty) as? String {
+                res.append(firstName)
             }
 
-            if let lastName = contact.valueForProperty(kABLastNameProperty) as? String {
+            if let lastName = contact.value(forProperty: kABLastNameProperty) as? String {
                 if !res.isEmpty {
                     res.append(Character(" "))
                 }
-                res.appendContentsOf(lastName)
+                res.append(lastName)
             }
 
             if !res.isEmpty {
@@ -103,7 +103,7 @@ class Article : NSObject {
             }
         }
 
-        if case .Address(name: _, address: let a)? = self.headers["from"]?.first {
+        if case .address(name: _, address: let a)? = self.headers["from"]?.first {
             return a.name == nil ? a.email : a.name
         }
 
@@ -111,21 +111,21 @@ class Article : NSObject {
     }()
 
     lazy var email : String? = {
-        if case .Address(name: _, address: let a)? = self.headers["from"]?.first {
+        if case .address(name: _, address: let a)? = self.headers["from"]?.first {
             return a.email
         }
         return nil
     }()
 
     lazy var subject : String? = {
-        if case .Generic(name: _, content: let c)? = self.headers["subject"]?.first  {
+        if case .generic(name: _, content: let c)? = self.headers["subject"]?.first  {
             return c
         }
         return nil
     }()
 
-    lazy var date : NSDate? = {
-        if case .Date(let d)? = self.headers["date"]?.first {
+    lazy var date : Date? = {
+        if case .date(let d)? = self.headers["date"]?.first {
             return d
         }
         return nil
@@ -136,13 +136,13 @@ class Article : NSObject {
             return nil
         }
 
-        guard let ab = ABAddressBook.sharedAddressBook() else {
+        guard let ab = ABAddressBook.shared() else {
             return nil
         }
 
-        let pattern = ABPerson.searchElementForProperty(kABEmailProperty, label: nil, key: nil, value: email as NSString, comparison: CFIndex(kABPrefixMatchCaseInsensitive.rawValue))
+        let pattern = ABPerson.searchElement(forProperty: kABEmailProperty, label: nil, key: nil, value: email as NSString, comparison: CFIndex(kABPrefixMatchCaseInsensitive.rawValue))
 
-        return ab.recordsMatchingSearchElement(pattern).first as? ABPerson
+        return ab.records(matching: pattern).first as? ABPerson
     }()
 
     var lines : Int {
@@ -150,16 +150,16 @@ class Article : NSObject {
             return 0
         }
 
-        return body.utf8.reduce(0, combine: { $1 == 0x0a ? $0 + 1 : $0 })
+        return body.utf8.reduce(0, { $1 == 0x0a ? $0 + 1 : $0 })
     }
 
     var previewBody : String? {
-        return self.body?.stringByReplacingOccurrencesOfString("\r\n", withString: " ")
-                         .stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+        return self.body?.replacingOccurrences(of: "\r\n", with: " ")
+                         .trimmingCharacters(in: CharacterSet.whitespaces)
     }
 
-    private var threadCountChanging = 0
-    private func threadCountWillChange() {
+    fileprivate var threadCountChanging = 0
+    fileprivate func threadCountWillChange() {
         let root = self.threadRoot
 
         root.threadCountChanging += 1
@@ -167,12 +167,12 @@ class Article : NSObject {
             return
         }
 
-        root.willChangeValueForKey("threadIsRead")
-        root.willChangeValueForKey("threadUnreadCount")
-        root.willChangeValueForKey("threadPreviewBody")
+        root.willChangeValue(forKey: "threadIsRead")
+        root.willChangeValue(forKey: "threadUnreadCount")
+        root.willChangeValue(forKey: "threadPreviewBody")
     }
 
-    private func threadCountDidChange() {
+    fileprivate func threadCountDidChange() {
         let root = self.threadRoot
 
         root.threadCountChanging -= 1
@@ -180,9 +180,9 @@ class Article : NSObject {
             return
         }
 
-        root.didChangeValueForKey("threadIsRead")
-        root.didChangeValueForKey("threadUnreadCount")
-        root.didChangeValueForKey("threadPreviewBody")
+        root.didChangeValue(forKey: "threadIsRead")
+        root.didChangeValue(forKey: "threadUnreadCount")
+        root.didChangeValue(forKey: "threadPreviewBody")
     }
 
     dynamic var isRead : Bool = false {
@@ -203,7 +203,7 @@ class Article : NSObject {
 
             if self.isRead {
                 if let notification = self.notification {
-                    let center = NSUserNotificationCenter.defaultUserNotificationCenter()
+                    let center = NSUserNotificationCenter.default
 
                     center.removeDeliveredNotification(notification)
                     center.removeScheduledNotification(notification)
@@ -220,25 +220,25 @@ class Article : NSObject {
         }
     }
 
-    private func loadNewsgroups() -> String? {
+    fileprivate func loadNewsgroups() -> String? {
         guard let dest = self.headers["newsgroups"] else {
             return nil
         }
 
         var out : [String] = []
-        for case .Newsgroup(name: _, group: let v) in dest {
+        for case .newsgroup(name: _, group: let v) in dest {
             out.append(v)
         }
-        return out.joinWithSeparator(", ")
+        return out.joined(separator: ", ")
     }
 
-    private func loadRefs() {
+    fileprivate func loadRefs() {
         guard let dest = self.headers["xref"] else {
             return
         }
 
         var refs : [ArticleRef] = []
-        for case .NewsgroupRef(group: let name, number: let num) in dest {
+        for case .newsgroupRef(group: let name, number: let num) in dest {
             let group = self.account.group(name)
 
             if group.readState.isMarkedAsRead(num) {
@@ -266,17 +266,17 @@ class Article : NSObject {
             var parents : [String] = []
 
             // print("references \(references)")
-            for case .MessageId(name: _, msgid: let ref) in references {
+            for case .messageId(name: _, msgid: let ref) in references {
                 parents.append(ref)
             }
             return parents
-        } else if case .MessageId(name: _, msgid: let inReplyTo)? = self.headers["in-reply-to"]?.first {
+        } else if case .messageId(name: _, msgid: let inReplyTo)? = self.headers["in-reply-to"]?.first {
             return [ inReplyTo ]
         }
         return nil
     }
 
-    private var refs : [ArticleRef]
+    fileprivate var refs : [ArticleRef]
     dynamic lazy var to : String? = self.loadNewsgroups()
 
     lazy var contactPicture : NSImage? = {
@@ -307,23 +307,23 @@ class Article : NSObject {
         return nil
     }
 
-    func load() -> Promise<NNTPPayload>? {
+    @discardableResult func load() -> Promise<NNTPPayload>? {
         if self.promise != nil || self.body != nil {
             return self.promise
         }
 
         if let msg = self.readFromFile() {
-            self.promise = Promise<NNTPPayload>(success: .Article(0, "", msg))
+            self.promise = Promise<NNTPPayload>(success: .article(0, "", msg))
         } else if let msgid = self.msgid  {
-            self.promise = self.account?.client?.sendCommand(.ArticleByMsgid(msgid: msgid))
+            self.promise = self.account?.client?.sendCommand(.articleByMsgid(msgid: msgid))
         } else {
-            self.promise = self.account?.client?.sendCommand(.Article(group: self.refs[0].group.fullName, article: self.refs[0].num))
+            self.promise = self.account?.client?.sendCommand(.article(group: self.refs[0].group.fullName, article: self.refs[0].num))
         }
 
         self.promise?.then({
             (payload) in
 
-            guard case .Article(_, _, let msg) = payload else {
+            guard case .article(_, _, let msg) = payload else {
                 return
             }
 
@@ -341,7 +341,7 @@ class Article : NSObject {
 }
 
 extension Article {
-    private func doSendUserNotification() {
+    fileprivate func doSendUserNotification() {
         if self.notification != nil {
             return
         }
@@ -361,7 +361,7 @@ extension Article {
         notification.userInfo = [ "type": "article", "account": self.account.name ]
         self.notification = notification
 
-        NSUserNotificationCenter.defaultUserNotificationCenter()
+        NSUserNotificationCenter.default
                                 .scheduleNotification(notification)
     }
 
@@ -414,7 +414,7 @@ extension Article {
         var thread : [Article] = [self]
 
         for article in self.replies {
-            thread.appendContentsOf(article.thread)
+            thread.append(contentsOf: article.thread)
         }
         return thread
     }

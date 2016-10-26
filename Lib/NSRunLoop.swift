@@ -8,12 +8,12 @@
 
 import Foundation
 
-public extension NSRunLoop {
-    public func runUntilDate(date: NSDate, orCondition condition: () -> Bool) -> Bool {
+public extension RunLoop {
+    public func runUntilDate(_ date: Date, orCondition condition: () -> Bool) -> Bool {
         var cond = condition()
 
-        while !cond && date.compare(NSDate()) == .OrderedDescending {
-            self.runMode(NSDefaultRunLoopMode, beforeDate: date)
+        while !cond && date.compare(Date()) == .orderedDescending {
+            self.run(mode: RunLoopMode.defaultRunLoopMode, before: date)
 
             cond = condition()
         }
@@ -21,7 +21,7 @@ public extension NSRunLoop {
         return cond
     }
 
-    public func runUntilTimeout(to: NSTimeInterval, orCondition condition: () -> Bool) -> Bool {
-        return self.runUntilDate(NSDate(timeIntervalSinceNow: to), orCondition: condition)
+    public func runUntilTimeout(_ to: TimeInterval, orCondition condition: () -> Bool) -> Bool {
+        return self.runUntilDate(Date(timeIntervalSinceNow: to), orCondition: condition)
     }
 }

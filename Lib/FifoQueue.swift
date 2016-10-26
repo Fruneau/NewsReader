@@ -17,18 +17,18 @@ private class FifoNode<T> {
     }
 }
 
-public class FifoQueue<T> {
-    private var headNode : FifoNode<T>?
-    private var tailNode : FifoNode<T>?
+open class FifoQueue<T> {
+    fileprivate var headNode : FifoNode<T>?
+    fileprivate var tailNode : FifoNode<T>?
 
     public init() {
     }
 
-    public var isEmpty : Bool {
+    open var isEmpty : Bool {
         return self.headNode == nil
     }
 
-    public func push(object: T) {
+    open func push(_ object: T) {
         let node = FifoNode(object: object)
 
         if self.headNode == nil {
@@ -40,7 +40,7 @@ public class FifoQueue<T> {
         }
     }
 
-    public func pop() -> T? {
+    open func pop() -> T? {
         if let node = self.headNode {
             self.headNode = node.next
 
@@ -52,16 +52,16 @@ public class FifoQueue<T> {
         return nil
     }
 
-    public func clear() {
+    open func clear() {
         self.headNode = nil
         self.tailNode = nil
     }
 
-    public var head : T? {
+    open var head : T? {
         return self.headNode?.object
     }
 
-    public var tail : T? {
+    open var tail : T? {
         return self.tailNode?.object
     }
 }

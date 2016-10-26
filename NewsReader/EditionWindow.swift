@@ -10,8 +10,8 @@ import Foundation
 import Cocoa
 
 class EditionWindow: NSWindowController {
-    private let account : Account
-    private let inReplyTo : Article?
+    fileprivate let account : Account
+    fileprivate let inReplyTo : Article?
 
     @IBOutlet weak var toField: NSTokenField!
     @IBOutlet weak var followupToField: NSTokenField!
@@ -19,12 +19,12 @@ class EditionWindow: NSWindowController {
     @IBOutlet var bodyField: NSTextView!
 
 
-    private init(newMessageForAccount account: Account, inReplyTo article: Article?) {
+    fileprivate init(newMessageForAccount account: Account, inReplyTo article: Article?) {
         self.account = account
         self.inReplyTo = article
         super.init(window: nil)
 
-        NSBundle.mainBundle().loadNibNamed("EditionWindow", owner: self, topLevelObjects: nil)
+        Bundle.main.loadNibNamed("EditionWindow", owner: self, topLevelObjects: nil)
 
         if article == nil {
             self.bodyField.string = "\n-- \n\(self.account.userName)"
@@ -50,23 +50,23 @@ class EditionWindow: NSWindowController {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.window?.titleVisibility = .Hidden
-        self.toField.setDelegate(self.account)
-        self.followupToField.setDelegate(self.account)
+        self.window?.titleVisibility = .hidden
+        self.toField.delegate = self.account
+        self.followupToField.delegate = self.account
     }
 }
 
 extension EditionWindow {
-    private func formatNewsgroupHeader(header: String, groups: AnyObject?) -> String? {
+    fileprivate func formatNewsgroupHeader(_ header: String, groups: Any?) -> String? {
         guard let list = groups as? [String] else {
             return nil
         }
 
-        let content = list.joinWithSeparator(", ")
+        let content = list.joined(separator: ", ")
         return "\(header): \(content)"
     }
 
-    @IBAction func send(sender: AnyObject?) {
+    @IBAction func send(_ sender: AnyObject?) {
         var article : [String] = []
 
         self.window?.close()
@@ -93,11 +93,11 @@ extension EditionWindow {
         article.append("")
 
         if let body = self.bodyField.string {
-            article.appendContentsOf(body.characters.split("\n").map(String.init))
+            article.append(contentsOf: body.characters.split(separator: "\n").map(String.init))
         }
 
         print("posting message: \(article)")
-        self.account.client?.post(article.joinWithSeparator("\r\n")).then({
+        _ = self.account.client?.post(article.joined(separator: "\r\n")).then({
             print("posting success: \($0)")
         }, otherwise: {
             print("posting error: \($0)")

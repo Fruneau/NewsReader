@@ -9,15 +9,15 @@
 import Cocoa
 
 class GroupOutlineView : NSOutlineView {
-    private weak var refreshItem : NSMenuItem?
-    private weak var markAsReadItem : NSMenuItem?
-    private weak var silentItem : NSMenuItem?
+    fileprivate weak var refreshItem : NSMenuItem?
+    fileprivate weak var markAsReadItem : NSMenuItem?
+    fileprivate weak var silentItem : NSMenuItem?
 
-    override func menuForEvent(event: NSEvent) -> NSMenu? {
-        let point = self.convertPoint(event.locationInWindow, fromView: nil)
-        let row = self.rowAtPoint(point)
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let point = self.convert(event.locationInWindow, from: nil)
+        let row = self.row(at: point)
 
-        guard let view = self.viewAtColumn(0, row: row, makeIfNecessary: false) as? NSTableCellView else {
+        guard let view = self.view(atColumn: 0, row: row, makeIfNecessary: false) as? NSTableCellView else {
             return nil
         }
 
@@ -30,13 +30,13 @@ class GroupOutlineView : NSOutlineView {
         }
 
         self.refreshItem?.target = group
-        self.refreshItem?.enabled = true
+        self.refreshItem?.isEnabled = true
 
         self.markAsReadItem?.target = group
-        self.markAsReadItem?.enabled = !group.isRead
+        self.markAsReadItem?.isEnabled = !group.isRead
 
         self.silentItem?.target = group
-        self.silentItem?.enabled = true
+        self.silentItem?.isEnabled = true
         self.silentItem?.state = group.isSilent ? NSOffState : NSOnState
 
         return self.menu
@@ -45,13 +45,13 @@ class GroupOutlineView : NSOutlineView {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        self.refreshItem = self.menu?.itemWithTitle("Refresh")
+        self.refreshItem = self.menu?.item(withTitle: "Refresh")
         self.refreshItem?.action = #selector(Group.refresh)
 
-        self.markAsReadItem = self.menu?.itemWithTitle("Mark group as read")
+        self.markAsReadItem = self.menu?.item(withTitle: "Mark group as read")
         self.markAsReadItem?.action = #selector(Group.markGroupAsRead)
 
-        self.silentItem = self.menu?.itemWithTitle("Notify on new messages")
+        self.silentItem = self.menu?.item(withTitle: "Notify on new messages")
         self.silentItem?.action = #selector(Group.toggleNotificationState)
     }
 }
@@ -68,17 +68,17 @@ class BrowserWindowController : NSWindowController {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.threadViewController.bind("representedObject", toObject: self.groupTreeController, withKeyPath: "selection.self", options: nil)
-        self.articleViewController.bind("representedObject", toObject: self.threadViewController, withKeyPath: "selection", options: nil)
+        self.threadViewController.bind("representedObject", to: self.groupTreeController, withKeyPath: "selection.self", options: nil)
+        self.articleViewController.bind("representedObject", to: self.threadViewController, withKeyPath: "selection", options: nil)
     }
 }
 
 extension BrowserWindowController : NSOutlineViewDelegate {
-    func outlineView(outlineView: NSOutlineView, viewForTableColumn tableColumn: NSTableColumn?, item: AnyObject) -> NSView? {
-        if item.representedObject is Group {
-            return outlineView.makeViewWithIdentifier("DataCell", owner: self)
-        } else if item.representedObject is Account {
-            return outlineView.makeViewWithIdentifier("HeaderCell", owner: self)
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        if (item as AnyObject).representedObject is Group {
+            return outlineView.make(withIdentifier: "DataCell", owner: self)
+        } else if (item as AnyObject).representedObject is Account {
+            return outlineView.make(withIdentifier: "HeaderCell", owner: self)
         } else {
             return nil
         }
@@ -86,11 +86,11 @@ extension BrowserWindowController : NSOutlineViewDelegate {
 }
 
 extension BrowserWindowController {
-    @IBAction func refreshGroups(sender: AnyObject?) {
+    @IBAction func refreshGroups(_ sender: AnyObject?) {
         self.appDelegate?.refreshGroups(sender)
     }
 
-    @IBAction func newMessage(sender: AnyObject?) {
+    @IBAction func newMessage(_ sender: AnyObject?) {
         self.appDelegate?.newMessage(self.threadViewController.currentGroup)
     }
 }

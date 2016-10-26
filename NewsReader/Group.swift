@@ -11,20 +11,20 @@ import Lib
 import News
 
 @objc protocol GroupDelegate : class {
-    optional func group(group: Group, willHaveNewThreads: [Article])
-    optional func group(group: Group, hasNewThreads: [Article], atBottom: Bool)
+    @objc optional func group(_ group: Group, willHaveNewThreads: [Article])
+    @objc optional func group(_ group: Group, hasNewThreads: [Article], atBottom: Bool)
 
-    optional func group(group: Group, willLoseThreads: [Article])
-    optional func group(group: Group, hasLostThreads: [Article])
+    @objc optional func group(_ group: Group, willLoseThreads: [Article])
+    @objc optional func group(_ group: Group, hasLostThreads: [Article])
 }
 
 class Group : NSObject {
     weak var account : Account!
-    private weak var promise : Promise<NNTPPayload>?
-    private weak var loadHistoryPromise : Promise<NNTPPayload>?
+    fileprivate weak var promise : Promise<NNTPPayload>?
+    fileprivate weak var loadHistoryPromise : Promise<NNTPPayload>?
     weak var delegate : GroupDelegate?
 
-    let children : [AnyObject] = []
+    let children : [Any] = []
     let isLeaf : Bool = true
 
     let fullName : String
@@ -33,10 +33,10 @@ class Group : NSObject {
     var subscribed : Bool = false
     var readState = GroupReadState()
 
-    private var initDone = false
-    private let rootDataCacheURL : NSURL?
-    private var rootDataCache : NSMutableDictionary?
-    private var rootDataCacheDirty = false
+    fileprivate var initDone = false
+    fileprivate let rootDataCacheURL : URL?
+    fileprivate var rootDataCache : NSMutableDictionary?
+    fileprivate var rootDataCacheDirty = false
 
     var isSilent : Bool = false {
         didSet {
@@ -69,19 +69,19 @@ class Group : NSObject {
         return self.unreadCount == 0
     }
 
-    private func readConfigurationForKey(key: String) -> AnyObject? {
-        let defaults = NSUserDefaults.standardUserDefaults()
+    fileprivate func readConfigurationForKey(_ key: String) -> Any? {
+        let defaults = UserDefaults.standard
         return defaults.objectAtPath("\(self.keyConfName).\(key)")
     }
 
-    private func setConfiguration(object: AnyObject, forKey key: String) {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        defaults.setObject(object, atPath: "\(self.keyConfName).\(key)")
+    fileprivate func setConfiguration(_ object: Any, forKey key: String) {
+        let defaults = UserDefaults.standard
+        defaults.set(object, forKey: "\(self.keyConfName).\(key)")
     }
 
-    private func loadConfigurationParameters() {
+    fileprivate func loadConfigurationParameters() {
         if let line = self.readConfigurationForKey("readState") as? String,
-               readState = GroupReadState(line: line) {
+               let readState = GroupReadState(line: line) {
             self.readState = readState
         } else {
             self.readState = GroupReadState()
@@ -96,7 +96,7 @@ class Group : NSObject {
         }
     }
 
-    private func loadCachedParameters() {
+    fileprivate func loadCachedParameters() {
         if let groupRange = self.rootDataCache?["groupRange"] as? String {
             self.groupRange = NSRangeFromString(groupRange)
         }
@@ -116,13 +116,13 @@ class Group : NSObject {
         self.account = account
         self.fullName = fullName
 
-        let normalizedGroup = fullName.stringByReplacingOccurrencesOfString(".", withString: "@")
+        let normalizedGroup = fullName.replacingOccurrences(of: ".", with: "@")
         self.keyConfName = "accounts[\(self.account.id)].groups.\(normalizedGroup)"
         self.shortDesc = shortDesc
 
-        self.rootDataCacheURL = account.cacheGroups?.URLByAppendingPathComponent("\(self.fullName).plist", isDirectory: false)
+        self.rootDataCacheURL = account.cacheGroups?.appendingPathComponent("\(self.fullName).plist", isDirectory: false)
         if let url = self.rootDataCacheURL {
-            self.rootDataCache = NSMutableDictionary(contentsOfURL: url)
+            self.rootDataCache = NSMutableDictionary(contentsOf: url)
 
             if self.rootDataCache == nil {
                 self.rootDataCache = NSMutableDictionary()
@@ -141,34 +141,34 @@ class Group : NSObject {
         self.initDone = true
     }
 
-    private var inBatchMarking = false
-    private func notifyUnreadCountChange(action: (() -> ())?) {
+    fileprivate var inBatchMarking = false
+    fileprivate func notifyUnreadCountChange(_ action: (() -> ())?) {
         if self.inBatchMarking {
             action?()
             return
         }
 
-        self.willChangeValueForKey("unreadCount")
-        self.willChangeValueForKey("unreadCountText")
-        self.willChangeValueForKey("isRead")
+        self.willChangeValue(forKey: "unreadCount")
+        self.willChangeValue(forKey: "unreadCountText")
+        self.willChangeValue(forKey: "isRead")
 
         self.inBatchMarking = true
         action?()
         self.inBatchMarking = false
         self.setConfiguration(self.readState.description, forKey: "readState")
 
-        self.didChangeValueForKey("unreadCount")
-        self.didChangeValueForKey("unreadCountText")
-        self.didChangeValueForKey("isRead")
+        self.didChangeValue(forKey: "unreadCount")
+        self.didChangeValue(forKey: "unreadCountText")
+        self.didChangeValue(forKey: "isRead")
     }
 
-    func markAsRead(num: Int) {
+    func markAsRead(_ num: Int) {
         if !self.readState.markAsRead(num) {
             self.notifyUnreadCountChange(nil)
         }
     }
 
-    func unmarkAsRead(num: Int) {
+    func unmarkAsRead(_ num: Int) {
         if self.readState.unmarkAsRead(num) {
             self.notifyUnreadCountChange(nil)
         }
@@ -176,8 +176,8 @@ class Group : NSObject {
 
     dynamic var roots : [Article] = []
 
-    private var fetchedCount = 0
-    private var groupRange : NSRange? {
+    fileprivate var fetchedCount = 0
+    fileprivate var groupRange : NSRange? {
         didSet {
             if !self.initDone {
                 return
@@ -192,7 +192,7 @@ class Group : NSObject {
             self.rootDataCache?["groupRange"] = NSStringFromRange(self.groupRange!)
         }
     }
-    private var fetchedRange : NSRange? {
+    fileprivate var fetchedRange : NSRange? {
         didSet {
             if !self.initDone {
                 return
@@ -207,7 +207,7 @@ class Group : NSObject {
             self.rootDataCache?["fetchedRange"] = NSStringFromRange(self.fetchedRange!)
         }
     }
-    private var notifiedRange : NSRange? {
+    fileprivate var notifiedRange : NSRange? {
         didSet {
             if !self.initDone {
                 return
@@ -222,31 +222,31 @@ class Group : NSObject {
         }
     }
 
-    func getIndexOfThread(thread: Article) -> Int? {
-        return self.roots.indexOf(thread)
+    func getIndexOfThread(_ thread: Article) -> Int? {
+        return self.roots.index(of: thread)
     }
 
-    func addThreads(threads: [Article], atBottom: Bool) {
+    func addThreads(_ threads: [Article], atBottom: Bool) {
         self.delegate?.group?(self, willHaveNewThreads: threads)
 
         self.notifyUnreadCountChange {
             if !atBottom {
-                self.roots.insertContentsOf(threads, at: 0)
+                self.roots.insert(contentsOf: threads, at: 0)
             } else {
-                self.roots.appendContentsOf(threads)
+                self.roots.append(contentsOf: threads)
             }
         }
 
         self.delegate?.group?(self, hasNewThreads: roots, atBottom: atBottom)
     }
 
-    func removeThreads(threads: [Article]) {
+    func removeThreads(_ threads: [Article]) {
         self.delegate?.group?(self, willLoseThreads: threads)
 
         self.notifyUnreadCountChange {
             for thread in threads {
-                if let pos = self.roots.indexOf(thread) {
-                    self.roots.removeAtIndex(pos)
+                if let pos = self.roots.index(of: thread) {
+                    self.roots.remove(at: pos)
                 }
             }
         }
@@ -259,16 +259,16 @@ class Group : NSObject {
             return
         }
         self.rootDataCacheDirty = false
-        self.rootDataCache?.writeToURL(self.rootDataCacheURL!, atomically: true)
+        self.rootDataCache?.write(to: self.rootDataCacheURL!, atomically: true)
     }
 
-    private enum Error : ErrorType {
-        case InvalidCache
+    fileprivate enum Error : Swift.Error {
+        case invalidCache
     }
 
-    private func loadOverview(payload: NNTPPayload, atBottom: Bool) throws {
-        guard case .Overview(let messages) = payload else {
-            throw NNTPError.ServerProtocolError
+    fileprivate func loadOverview(_ payload: NNTPPayload, atBottom: Bool) throws {
+        guard case .overview(let messages) = payload else {
+            throw NNTPError.serverProtocolError
         }
 
         var notNotified : [Article] = []
@@ -296,7 +296,7 @@ class Group : NSObject {
 
             self.fetchedCount += messages.count
 
-            self.addThreads(roots.reverse(), atBottom: atBottom)
+            self.addThreads(roots.reversed(), atBottom: atBottom)
         }
         if notNotified.count > 0 {
             for article in notNotified {
@@ -305,7 +305,7 @@ class Group : NSObject {
         }
     }
 
-    private func loadFromCache() -> Promise<NNTPPayload>? {
+    fileprivate func loadFromCache() -> Promise<NNTPPayload>? {
         guard let overviews = self.rootDataCache?["overviews"] as? NSDictionary else {
             return nil
         }
@@ -319,7 +319,7 @@ class Group : NSObject {
                 guard let key = key as? String,
                     let num = Int(key) else
                 {
-                    throw Error.InvalidCache;
+                    throw Error.invalidCache;
                 }
 
                 guard NSLocationInRange(num, self.groupRange!) else {
@@ -329,21 +329,21 @@ class Group : NSObject {
                 guard let dict = val as? NSDictionary,
                     let headers = MIMEHeaders(fromDictionary: dict) else
                 {
-                    throw Error.InvalidCache
+                    throw Error.invalidCache
                 }
 
                 res.append(NNTPOverview(num: num, headers: headers, bytes: nil, lines: nil))
             }
 
-            res.sortInPlace { $0.num < $1.num }
-            return .Overview(res)
+            res.sort { $0.num < $1.num }
+            return .overview(res)
         }
     }
 
-    private func loadHistory() throws -> Promise<NNTPPayload> {
+    @discardableResult fileprivate func loadHistory() throws -> Promise<NNTPPayload> {
         if NSEqualRanges(self.groupRange!, self.fetchedRange!) {
             self.synchronizeCache()
-            return Promise<NNTPPayload>(success: .Overview([]))
+            return Promise<NNTPPayload>(success: .overview([]))
         }
 
         if let promise = self.loadHistoryPromise {
@@ -363,7 +363,7 @@ class Group : NSObject {
             toFetch = NSMakeRange(lowest, min(100, highest - lowest))
         } else if self.fetchedCount > 10000 {
             self.synchronizeCache()
-            return Promise<NNTPPayload>(success: .Overview([]))
+            return Promise<NNTPPayload>(success: .overview([]))
         } else {
             let highest = self.fetchedRange!.location
             let lowest = self.groupRange!.location
@@ -372,10 +372,10 @@ class Group : NSObject {
         }
 
         guard let client = self.account?.client else {
-            throw NNTPError.ServerProtocolError
+            throw NNTPError.serverProtocolError
         }
 
-        let promise = client.sendCommand(.Over(group: self.fullName, range: NNTPCommand.ArticleRange.InRange(toFetch)))
+        let promise = client.sendCommand(.over(group: self.fullName, range: NNTPCommand.ArticleRange.inRange(toFetch)))
         promise.then({
             (payload) throws in
 
@@ -392,7 +392,7 @@ class Group : NSObject {
             self.loadHistoryPromise = nil
             print("error while fetching overviews for group \(self.fullName) for range \(NSStringFromRange(toFetch)) with group range \(NSStringFromRange(self.groupRange!)): \(error)")
             switch error {
-            case NNTPError.NoArticleWithThatNumber:
+            case NNTPError.noArticleWithThatNumber:
                 self.fetchedRange = NSUnionRange(self.fetchedRange!, toFetch)
                 try self.loadHistory()
 
@@ -404,7 +404,7 @@ class Group : NSObject {
         return promise
     }
 
-    private var loaded = false
+    fileprivate var loaded = false
     func load() {
         if self.loaded || self.promise != nil {
             return
@@ -412,7 +412,7 @@ class Group : NSObject {
 
         if let promise = self.loadFromCache() {
             self.promise = promise
-            self.promise?.otherwise({
+            _ = self.promise?.otherwise({
                 (_) in
 
                 self.rootDataCache = NSMutableDictionary()
@@ -424,7 +424,7 @@ class Group : NSObject {
                 self.loaded = true
                 self.refresh()
             })
-            self.promise?.then({
+            _ = self.promise?.then({
                 (payload) throws in
 
                 try self.loadOverview(payload, atBottom: true)
@@ -445,11 +445,11 @@ extension Group {
             return
         }
 
-        self.promise = self.account.client?.sendCommand(.Group(group: self.fullName)).thenChain({
+        self.promise = self.account.client?.sendCommand(.group(group: self.fullName)).thenChain({
             (payload) throws in
 
             switch payload {
-            case .GroupContent(_, _, let lowest, let highest, _):
+            case .groupContent(_, _, let lowest, let highest, _):
                 self.groupRange = NSMakeRange(lowest, highest - lowest + 1)
                 if self.fetchedRange == nil {
                     self.fetchedRange = NSMakeRange(highest + 1, 0)
@@ -458,7 +458,7 @@ extension Group {
 
                     for num in self.fetchedRange!.location..<lowest {
                         print("forgetting article \(num)")
-                        overviews?.removeObjectForKey(String(num))
+                        overviews?.removeObject(forKey: String(num))
                     }
 
                     self.fetchedRange = NSIntersectionRange(self.fetchedRange!, self.groupRange!)
@@ -468,7 +468,7 @@ extension Group {
                 }
 
             default:
-                throw NNTPError.ServerProtocolError
+                throw NNTPError.serverProtocolError
             }
 
             return try self.loadHistory()

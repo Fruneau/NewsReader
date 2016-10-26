@@ -41,9 +41,9 @@
 		B45A820A1B6507B2005323EC /* MIME.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A82091B6507B2005323EC /* MIME.swift */; };
 		B45A820C1B652B89005323EC /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820B1B652B89005323EC /* String.swift */; };
 		B45A820E1B652D0C005323EC /* StringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B45A820D1B652D0C005323EC /* StringTests.swift */; };
-		B47505C31BA5AD8A00B9BDFD /* EditionWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B47505C21BA5AD8A00B9BDFD /* EditionWindow.xib */; settings = {ASSET_TAGS = (); }; };
-		B47505C51BA5B5EC00B9BDFD /* EditionWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47505C41BA5B5EC00B9BDFD /* EditionWindow.swift */; settings = {ASSET_TAGS = (); }; };
-		B47505C71BA6052300B9BDFD /* GroupTokenDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47505C61BA6052300B9BDFD /* GroupTokenDelegate.swift */; settings = {ASSET_TAGS = (); }; };
+		B47505C31BA5AD8A00B9BDFD /* EditionWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B47505C21BA5AD8A00B9BDFD /* EditionWindow.xib */; };
+		B47505C51BA5B5EC00B9BDFD /* EditionWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47505C41BA5B5EC00B9BDFD /* EditionWindow.swift */; };
+		B47505C71BA6052300B9BDFD /* GroupTokenDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47505C61BA6052300B9BDFD /* GroupTokenDelegate.swift */; };
 		B47A75AD1B80A2CB008A35E6 /* Article.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A75AC1B80A2CB008A35E6 /* Article.swift */; };
 		B47A75AF1B80AD5C008A35E6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A75AE1B80AD5C008A35E6 /* Account.swift */; };
 		B47A75B11B80C494008A35E6 /* Subscriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47A75B01B80C494008A35E6 /* Subscriptions.swift */; };
@@ -574,32 +574,39 @@
 		B442B9311B5519E60088FA0F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Florent Bruneau";
 				TargetAttributes = {
 					B442B9381B5519E60088FA0F = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 					};
 					B442B9471B5519E60088FA0F = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 						TestTargetID = B442B9381B5519E60088FA0F;
 					};
 					B442B9521B5519E60088FA0F = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 						TestTargetID = B442B9381B5519E60088FA0F;
 					};
 					B45A81BB1B6502F5005323EC = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 					};
 					B45A81C41B6502F5005323EC = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 						TestTargetID = B442B9381B5519E60088FA0F;
 					};
 					B45A81DE1B6503A4005323EC = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 					};
 					B45A81E71B6503A4005323EC = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 						TestTargetID = B442B9381B5519E60088FA0F;
 					};
 				};
@@ -839,11 +846,13 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -862,7 +871,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -883,11 +892,13 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -900,35 +911,38 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
 		B442B95D1B5519E60088FA0F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				INFOPLIST_FILE = NewsReader/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsReader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
 		B442B95E1B5519E60088FA0F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				INFOPLIST_FILE = NewsReader/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsReader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -941,6 +955,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsReaderTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NewsReader.app/Contents/MacOS/NewsReader";
 			};
 			name = Debug;
@@ -954,6 +969,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsReaderTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NewsReader.app/Contents/MacOS/NewsReader";
 			};
 			name = Release;
@@ -966,6 +982,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsReaderUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = NewsReader;
 				USES_XCTRUNNER = YES;
 			};
@@ -979,6 +996,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsReaderUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = NewsReader;
 				USES_XCTRUNNER = YES;
 			};
@@ -987,6 +1005,7 @@
 		B45A81D31B6502F5005323EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -1000,6 +1019,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.Lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1008,6 +1028,7 @@
 		B45A81D41B6502F5005323EC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -1021,6 +1042,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.Lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1034,6 +1056,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.LibTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NewsReader.app/Contents/MacOS/NewsReader";
 			};
 			name = Debug;
@@ -1046,6 +1069,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.LibTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NewsReader.app/Contents/MacOS/NewsReader";
 			};
 			name = Release;
@@ -1053,6 +1077,7 @@
 		B45A81F71B6503A4005323EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -1066,6 +1091,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.News;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1074,6 +1100,7 @@
 		B45A81F81B6503A4005323EC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -1087,6 +1114,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.News;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1100,6 +1128,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NewsReader.app/Contents/MacOS/NewsReader";
 			};
 			name = Debug;
@@ -1112,6 +1141,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.mymind.NewsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NewsReader.app/Contents/MacOS/NewsReader";
 			};
 			name = Release;

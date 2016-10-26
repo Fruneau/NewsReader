@@ -10,7 +10,7 @@ import XCTest
 import Lib
 
 class BufferedReaderTests: XCTestCase {
-    private func checkLine(buf: BufferedReader, exp: String?) {
+    fileprivate func checkLine(_ buf: BufferedReader, exp: String?) {
         do {
             let line = try buf.readDataUpTo("\r\n", keepBound: false, endOfStreamIsBound: true)
 
@@ -18,16 +18,16 @@ class BufferedReaderTests: XCTestCase {
                 XCTAssertNil(line)
             } else {
                 XCTAssertNotNil(line)
-                XCTAssertEqual(line!, (exp! as NSString).dataUsingEncoding(NSUTF8StringEncoding))
+                XCTAssertEqual(line!, (exp! as NSString).data(using: String.Encoding.utf8.rawValue))
             }
-        } catch BufferedReader.Error.ReadError {
+        } catch BufferedReader.Error.readError {
             XCTAssert(false)
         } catch {
             XCTAssert(false)
         }
     }
 
-    private func assertThrow(fc: (Void) throws -> Void) {
+    fileprivate func assertThrow(_ fc: (Void) throws -> Void) {
         do {
             try fc()
             XCTAssert(false)

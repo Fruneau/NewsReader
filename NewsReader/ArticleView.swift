@@ -11,37 +11,37 @@ import Lib
 import News
 
 class UnscrollableScrollView : NSScrollView {
-    override func scrollWheel(theEvent: NSEvent) {
-        self.superview?.scrollWheel(theEvent)
+    override func scrollWheel(with theEvent: NSEvent) {
+        self.superview?.scrollWheel(with: theEvent)
     }
 }
 
 class ArticleViewItem : NSCollectionViewItem {
-    private weak var articlePromise : Promise<NNTPPayload>?
-    private var bodyWatchContext = 0;
+    fileprivate weak var articlePromise : Promise<NNTPPayload>?
+    fileprivate var bodyWatchContext = 0;
 
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch context {
-        case &self.bodyWatchContext:
+        case (&self.bodyWatchContext)?:
             guard let article = self.article, let _ = article.body else {
                 return
             }
 
-            guard let indexPath = self.collectionView.indexPathForItem(self) else {
+            guard let indexPath = self.collectionView.indexPath(for: self) else {
                 return
             }
 
-            self.collectionView.reloadItemsAtIndexPaths([indexPath])
-            if !self.view.hidden {
+            self.collectionView.reloadItems(at: [indexPath])
+            if !self.view.isHidden {
                 article.isRead = true;
             }
 
         default:
-            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 
-    override dynamic var representedObject : AnyObject? {
+    override dynamic var representedObject : Any? {
         willSet {
             self.article?.removeObserver(self, forKeyPath: "body", context: &self.bodyWatchContext)
             self.articlePromise?.cancel()
@@ -65,16 +65,16 @@ class ArticleViewItem : NSCollectionViewItem {
 }
 
 class ArticleViewController : NSViewController {
-    private var articleView : NSCollectionView {
+    fileprivate var articleView : NSCollectionView {
         return self.view as! NSCollectionView
     }
 
-    private var currentThread : Article? {
+    fileprivate var currentThread : Article? {
         return self.representedObject as? Article
     }
 
-    private var needToScroll = false
-    override var representedObject : AnyObject? {
+    fileprivate var needToScroll = false
+    override var representedObject : Any? {
         didSet {
             self.articleView.reloadData()
 
@@ -84,21 +84,21 @@ class ArticleViewController : NSViewController {
         }
     }
 
-    private func scrollArticleToVisible(article: Article) -> Bool {
+    fileprivate func scrollArticleToVisible(_ article: Article) -> Bool {
         guard let indexPath = self.indexPathForArticle(article) else {
             return false
         }
         
-        guard let rect = self.articleView.layoutAttributesForItemAtIndexPath(indexPath)?.frame else {
+        guard let rect = self.articleView.layoutAttributesForItem(at: indexPath)?.frame else {
             return false
         }
 
-        self.articleView.superview?.scrollRectToVisible(rect)
+        self.articleView.superview?.scrollToVisible(rect)
         return true
     }
 
-    private func articleForIndexPath(indexPath: NSIndexPath) -> Article? {
-        guard indexPath.section == 0 else {
+    fileprivate func articleForIndexPath(_ indexPath: IndexPath) -> Article? {
+        guard (indexPath as NSIndexPath).section == 0 else {
             return nil
         }
 
@@ -106,20 +106,20 @@ class ArticleViewController : NSViewController {
             return nil
         }
 
-        return thread[indexPath.item]
+        return thread[(indexPath as NSIndexPath).item]
     }
 
-    private func indexPathForArticle(article: Article) -> NSIndexPath? {
-        guard let idx = self.currentThread?.thread.indexOf(article) else {
+    fileprivate func indexPathForArticle(_ article: Article) -> IndexPath? {
+        guard let idx = self.currentThread?.thread.index(of: article) else {
             return nil
         }
 
-        return NSIndexPath(forItem: idx, inSection: 0)
+        return IndexPath(item: idx, section: 0)
     }
 }
 
 extension ArticleViewController : NSCollectionViewDataSource {
-    func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let thread = self.currentThread?.thread else {
             return 0
         }
@@ -127,8 +127,8 @@ extension ArticleViewController : NSCollectionViewDataSource {
         return thread.count
     }
 
-    func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
-        let item = collectionView.makeItemWithIdentifier("Article", forIndexPath: indexPath)
+    func collectionView(_ collectionView: NSCollectionView, itemForRepresentedObjectAt indexPath: IndexPath) -> NSCollectionViewItem {
+        let item = collectionView.makeItem(withIdentifier: "Article", for: indexPath)
 
         item.representedObject = self.articleForIndexPath(indexPath)
         return item
@@ -136,7 +136,7 @@ extension ArticleViewController : NSCollectionViewDataSource {
 }
 
 extension ArticleViewController : NSCollectionViewDelegateFlowLayout {
-    func collectionView(collectionView: NSCollectionView, didEndDisplayingItem item: NSCollectionViewItem, forRepresentedObjectAtIndexPath indexPath: NSIndexPath) {
+    func collectionView(_ collectionView: NSCollectionView, didEndDisplaying item: NSCollectionViewItem, forRepresentedObjectAt indexPath: IndexPath) {
         if self.needToScroll {
             guard let thread = self.currentThread else {
                 return
@@ -144,14 +144,14 @@ extension ArticleViewController : NSCollectionViewDelegateFlowLayout {
 
             self.needToScroll = false
             if let unread = thread.threadFirstUnread {
-                self.scrollArticleToVisible(unread)
+                _ = self.scrollArticleToVisible(unread)
             } else {
-                self.scrollArticleToVisible(thread)
+                _ = self.scrollArticleToVisible(thread)
             }
         }
     }
 
-    func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
+    func collectionView(_ collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> NSSize {
         let size = collectionView.superview!.superview!.frame.size
 
         guard let article = self.articleForIndexPath(indexPath) else {

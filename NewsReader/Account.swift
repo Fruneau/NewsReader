@@ -10,8 +10,8 @@ import Foundation
 import Lib
 import News
 
-private enum Error : ErrorType {
-    case NotConnected
+private enum Error : Swift.Error {
+    case notConnected
 }
 
 class Account : NSObject {
@@ -25,7 +25,7 @@ class Account : NSObject {
     var password : String?
 
     var client : NNTPClient?
-    var connectionError : ErrorType?
+    var connectionError : Swift.Error?
     var isDisconnected = false {
         didSet {
             if !self.isDisconnected {
@@ -39,7 +39,7 @@ class Account : NSObject {
         return "\(host):\(port)"
     }
 
-    let children : [AnyObject] = []
+    let children : [Any] = []
     let isLeaf : Bool = true
 
     var groups : [String: Group] = [:]
@@ -51,32 +51,32 @@ class Account : NSObject {
     var articleByMsgid : [String: Article] = [:]
     var orphanArticles : [String: Set<Article>] = [:]
 
-    let cacheRoot : NSURL?
-    let cacheGroups : NSURL?
-    let cacheMessages : NSURL?
-    var reloadCron : NSTimer?
-    var synchronizeCacheCron : NSTimer?
-    let processingQueue = NSOperationQueue()
+    let cacheRoot : URL?
+    let cacheGroups : URL?
+    let cacheMessages : URL?
+    var reloadCron : Timer?
+    var synchronizeCacheCron : Timer?
+    let processingQueue = OperationQueue()
 
-    private static func getAccountParameters(account: AnyObject)
+    fileprivate static func getAccountParameters(_ account: AnyObject)
         -> (name: String, host: String, port: Int, useSSL: Bool,
             login: String?, password: String?,
         subscriptions: Set<String>, userName: String, userEmail: String)?
     {
-        guard let name = account.valueForKey("name") as? String else {
+        guard let name = account.value(forKey: "name") as? String else {
             return nil
         }
-        guard let host = account.valueForKey("hostname") as? String else {
+        guard let host = account.value(forKey: "hostname") as? String else {
             return nil
         }
-        guard let port = account.valueForKey("port") as? Int else {
+        guard let port = account.value(forKey: "port") as? Int else {
             return nil
         }
-        guard let useSSL = account.valueForKey("useSSL") as? Bool else {
+        guard let useSSL = account.value(forKey: "useSSL") as? Bool else {
             return nil
         }
 
-        let login = account.valueForKey("login") as? String
+        let login = account.value(forKey: "login") as? String
         var password : String? = nil
 
         if let alogin = login {
@@ -88,21 +88,21 @@ class Account : NSObject {
         }
 
         var subscriptions : Set<String>
-        if let asubscriptions = account.valueForKey("subscriptions") as? NSArray {
+        if let asubscriptions = account.value(forKey: "subscriptions") as? NSArray {
             subscriptions = Set<String>(asubscriptions.map { $0 as! String })
         } else {
             subscriptions = Set<String>()
         }
 
         var userName : String
-        if let storedUserName = account.valueForKey("userName") as? String {
+        if let storedUserName = account.value(forKey: "userName") as? String {
             userName = storedUserName
         } else {
             userName = "Anonymous Coward"
         }
 
         var userEmail : String
-        if let storedUserEmail = account.valueForKey("userEmail") as? String {
+        if let storedUserEmail = account.value(forKey: "userEmail") as? String {
             userEmail = storedUserEmail
         } else {
             userEmail = "anonymous@example.com"
@@ -113,20 +113,20 @@ class Account : NSObject {
             subscriptions: subscriptions, userName: userName, userEmail: userEmail)
     }
 
-    private var groupUnreadCountContext = 0
+    fileprivate var groupUnreadCountContext = 0
 
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch context {
-        case &self.groupUnreadCountContext:
-            self.willChangeValueForKey("unreadCount")
-            self.didChangeValueForKey("unreadCount")
+        case (&self.groupUnreadCountContext)?:
+            self.willChangeValue(forKey: "unreadCount")
+            self.didChangeValue(forKey: "unreadCount")
 
         default:
-            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 
-    private func reloadSubscriptions(subscriptions: Set<String>) {
+    fileprivate func reloadSubscriptions(_ subscriptions: Set<String>) {
         self.subscriptions.forEach {
             $0.subscribed = false
             $0.removeObserver(self, forKeyPath: "unreadCount")
@@ -135,19 +135,19 @@ class Account : NSObject {
             let group = self.group($0)
 
             group.subscribed = true
-            group.addObserver(self, forKeyPath: "unreadCount", options: .New, context: &self.groupUnreadCountContext)
+            group.addObserver(self, forKeyPath: "unreadCount", options: .new, context: &self.groupUnreadCountContext)
             group.load()
             return group
         }
 
-        self.subscriptions.sortInPlace { $0.fullName < $1.fullName }
+        self.subscriptions.sort { $0.fullName < $1.fullName }
     }
 
-    private func connect() {
+    fileprivate func connect() {
         self.client = NNTPClient(host: host, port: port, ssl: useSSL)
         self.client?.delegate = self
         self.client?.setCredentials(login, password: password)
-        self.client?.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+        self.client?.scheduleInRunLoop(RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode.rawValue)
         self.client?.connect()
     }
 
@@ -163,12 +163,12 @@ class Account : NSObject {
         }
     }
 
-    init(accountId: Int, account: AnyObject, cacheRoot: NSURL?) {
+    init(accountId: Int, account: AnyObject, cacheRoot: URL?) {
         let params = Account.getAccountParameters(account)!
         
         self.cacheRoot = cacheRoot
-        self.cacheGroups = cacheRoot?.URLByAppendingPathComponent("Groups", isDirectory: true)
-        self.cacheMessages = cacheRoot?.URLByAppendingPathComponent("Messages", isDirectory: true)
+        self.cacheGroups = cacheRoot?.appendingPathComponent("Groups", isDirectory: true)
+        self.cacheMessages = cacheRoot?.appendingPathComponent("Messages", isDirectory: true)
         self.id = accountId
         self.name = params.name
         self.host = params.host
@@ -181,17 +181,17 @@ class Account : NSObject {
         super.init()
 
         if cacheRoot != nil {
-            let fileManager = NSFileManager.defaultManager()
-            try! fileManager.createDirectoryAtURL(self.cacheRoot!, withIntermediateDirectories: true, attributes: nil)
-            try! fileManager.createDirectoryAtURL(self.cacheGroups!, withIntermediateDirectories: true, attributes: nil)
-            try! fileManager.createDirectoryAtURL(self.cacheMessages!, withIntermediateDirectories: true, attributes: nil)
+            let fileManager = FileManager.default
+            try! fileManager.createDirectory(at: self.cacheRoot!, withIntermediateDirectories: true, attributes: nil)
+            try! fileManager.createDirectory(at: self.cacheGroups!, withIntermediateDirectories: true, attributes: nil)
+            try! fileManager.createDirectory(at: self.cacheMessages!, withIntermediateDirectories: true, attributes: nil)
         }
 
         self.connect()
         self.reloadSubscriptions(params.subscriptions)
 
-        self.reloadCron = NSTimer.scheduledTimerWithTimeInterval(60, target: self, selector: #selector(Account.refreshSubscriptions), userInfo: nil, repeats: true)
-        self.synchronizeCacheCron = NSTimer.scheduledTimerWithTimeInterval(30, target: self, selector: #selector(Group.synchronizeCache), userInfo: nil, repeats: true)
+        self.reloadCron = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(Account.refreshSubscriptions), userInfo: nil, repeats: true)
+        self.synchronizeCacheCron = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(Group.synchronizeCache), userInfo: nil, repeats: true)
     }
 
     deinit {
@@ -203,7 +203,7 @@ class Account : NSObject {
         self.client = nil
     }
 
-    func update(accountId: Int, account: AnyObject) -> Bool {
+    func update(_ accountId: Int, account: AnyObject) -> Bool {
         self.id = accountId
 
         guard let params = Account.getAccountParameters(account) else {
@@ -235,7 +235,7 @@ class Account : NSObject {
         return false
     }
 
-    func group(name: String) -> Group {
+    func group(_ name: String) -> Group {
         if let group = self.groups[name] {
             return group
         } else {
@@ -246,14 +246,14 @@ class Account : NSObject {
         }
     }
 
-    private func findArticleParent(article: Article) -> Article? {
+    fileprivate func findArticleParent(_ article: Article) -> Article? {
         assert (article.inReplyTo == nil)
 
         guard let parentIds = article.parentsIds else {
             return nil
         }
 
-        for parentId in parentIds.reverse() {
+        for parentId in parentIds.reversed() {
             guard let parent = self.articleByMsgid[parentId] else {
                 var orphans = self.orphanArticles[parentId]
 
@@ -274,7 +274,7 @@ class Account : NSObject {
         return nil
     }
 
-    private func relocateArticle(child: Article, asReplyTo article: Article) {
+    fileprivate func relocateArticle(_ child: Article, asReplyTo article: Article) {
         child.inReplyTo = article
 
         guard let parentIds = article.parentsIds else {
@@ -282,17 +282,17 @@ class Account : NSObject {
         }
 
         var foundArticleId = false
-        for parentId in parentIds.reverse() {
+        for parentId in parentIds.reversed() {
             if foundArticleId {
-                self.orphanArticles[parentId]?.remove(child)
+                _ = self.orphanArticles[parentId]?.remove(child)
             } else if parentId == article.msgid {
                 foundArticleId = true
             }
         }
     }
 
-    func article(ref: (group: String, num: Int), headers: MIMEHeaders) -> Article {
-        guard case .MessageId(name: _, msgid: let msgid)? = headers["message-id"]?.first else {
+    func article(_ ref: (group: String, num: Int), headers: MIMEHeaders) -> Article {
+        guard case .messageId(name: _, msgid: let msgid)? = headers["message-id"]?.first else {
             return Article(account: self, ref: ref, headers: headers)
         }
 
@@ -303,7 +303,7 @@ class Account : NSObject {
         let article = Article(account: self, ref: ref, headers: headers)
 
         self.articleByMsgid[msgid] = article
-        if let articles = self.orphanArticles.removeValueForKey(msgid) {
+        if let articles = self.orphanArticles.removeValue(forKey: msgid) {
             for child in articles {
                 self.relocateArticle(child, asReplyTo: article)
             }
@@ -324,17 +324,17 @@ class Account : NSObject {
 }
 
 extension Account : NNTPClientDelegate {
-    func nntpClient(client: NNTPClient, onEvent event: NNTPClientEvent) {
+    func nntpClient(_ client: NNTPClient, onEvent event: NNTPClientEvent) {
         switch event {
-        case .Connected:
+        case .connected:
             self.isDisconnected = false
             self.refreshSubscriptions()
 
-        case .Disconnected:
+        case .disconnected:
             self.isDisconnected = true
-            self.connectionError = Error.NotConnected
+            self.connectionError = Error.notConnected
 
-        case .Error(let error):
+        case .error(let error):
             self.isDisconnected = true
             self.connectionError = error
         }

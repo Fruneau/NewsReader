@@ -10,24 +10,24 @@ import XCTest
 import News
 
 class NNTPTests : XCTestCase {
-    let runLoop = NSRunLoop.currentRunLoop()
+    let runLoop = RunLoop.current
     var nntp : NNTPClient?
 
     override func setUp() {
         super.setUp()
 
         self.nntp = nil
-        if var rcContent = NSData(contentsOfFile: ("~/.newsreaderrc" as NSString).stringByStandardizingPath)?.utf8String {
-            if let idx = rcContent.characters.indexOf("\n") {
-                rcContent = rcContent.substringToIndex(idx)
+        if var rcContent = (try? Data(contentsOf: URL(fileURLWithPath: ("~/.newsreaderrc" as NSString).standardizingPath)))?.utf8String {
+            if let idx = rcContent.characters.index(of: "\n") {
+                rcContent = rcContent.substring(to: idx)
             }
 
-            if let url = NSURL(string: rcContent) {
+            if let url = URL(string: rcContent) {
                 self.nntp = NNTPClient(url: url)
 
                 XCTAssertNotNil(self.nntp, "unsupported news server url")
-                self.nntp?.scheduleInRunLoop(self.runLoop, forMode: NSDefaultRunLoopMode)
-                self.nntp?.connect()
+                self.nntp?.scheduleInRunLoop(self.runLoop, forMode: RunLoopMode.defaultRunLoopMode.rawValue)
+                _ = self.nntp?.connect()
             } else {
                 XCTAssert(false, "invalid URL provided in ~/.newsreaderrc file")
             }
@@ -38,7 +38,7 @@ class NNTPTests : XCTestCase {
 
     override func tearDown() {
         self.nntp?.disconnect()
-        self.nntp?.removeFromRunLoop(self.runLoop, forMode: NSDefaultRunLoopMode)
+        self.nntp?.removeFromRunLoop(self.runLoop, forMode: RunLoopMode.defaultRunLoopMode.rawValue)
         self.nntp = nil
 
         super.tearDown()
@@ -46,30 +46,30 @@ class NNTPTests : XCTestCase {
 
     func testConnect() {
         let nntp = self.nntp!
-        let date = NSDate(timeIntervalSinceNow: -18 * 86400)
+        let date = Date(timeIntervalSinceNow: -18 * 86400)
 
-        nntp.sendCommand(.Group(group: "corp.software.general")).then({
+        nntp.sendCommand(.group(group: "corp.software.general")).then({
             (payload) throws in
 
             switch (payload) {
-            case .GroupContent(_, let count, let low, let high, _):
+            case .groupContent(_, let count, let low, let high, _):
                 print("group has \(count), numbers between \(low) and \(high)")
 
             default:
-                throw NNTPError.ServerProtocolError
+                throw NNTPError.serverProtocolError
             }
         })
         nntp.listArticles("corp.software.general", since: date).then({
             (payload) in
 
             switch (payload) {
-            case .MessageIds(let msgids):
+            case .messageIds(let msgids):
                 for msg in msgids {
                     print("got msgid \(msg)")
                 }
 
             default:
-                throw NNTPError.ServerProtocolError
+                throw NNTPError.serverProtocolError
             }
         }).otherwise({
             (error) in
@@ -77,6 +77,6 @@ class NNTPTests : XCTestCase {
             print("got error \(error)")
         })
 
-        self.runLoop.runUntilTimeout(10, orCondition: { !nntp.hasPendingCommands })
+        _ = self.runLoop.runUntilTimeout(10, orCondition: { !nntp.hasPendingCommands })
     }
 }

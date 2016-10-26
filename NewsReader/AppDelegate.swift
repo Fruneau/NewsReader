@@ -22,7 +22,7 @@ class BackgroundView : NSView {
         }
     }
 
-    override func drawRect(dirtyRect: NSRect) {
+    override func draw(_ dirtyRect: NSRect) {
         if let background = self.backgroundColor {
             background.set()
             NSRectFill(dirtyRect)
@@ -44,34 +44,34 @@ class UserBadgeView : NSImageView {
     }
 }
 
-class ShortDateFormatter : NSFormatter {
-    private static let todayFormatter : NSDateFormatter = {
-        let f = NSDateFormatter();
+class ShortDateFormatter : Formatter {
+    fileprivate static let todayFormatter : DateFormatter = {
+        let f = DateFormatter();
 
         f.doesRelativeDateFormatting = true
-        f.dateStyle = .NoStyle
-        f.timeStyle = .ShortStyle
+        f.dateStyle = .none
+        f.timeStyle = .short
         return f
     }();
 
-    private static let oldFormatter : NSDateFormatter = {
-        let f = NSDateFormatter()
+    fileprivate static let oldFormatter : DateFormatter = {
+        let f = DateFormatter()
 
         f.doesRelativeDateFormatting = true
-        f.dateStyle = .ShortStyle
-        f.timeStyle = .NoStyle
+        f.dateStyle = .short
+        f.timeStyle = .none
         return f
     }()
 
-    override func stringForObjectValue(obj: AnyObject) -> String? {
-        guard let date = obj as? NSDate else {
+    override func string(for obj: Any?) -> String? {
+        guard let date = obj as? Date else {
             return nil
         }
 
-        if date.compare(NSDate(timeIntervalSinceNow: -44200)) == .OrderedAscending {
-            return ShortDateFormatter.oldFormatter.stringForObjectValue(obj)
+        if date.compare(Date(timeIntervalSinceNow: -44200)) == .orderedAscending {
+            return ShortDateFormatter.oldFormatter.string(for: obj)
         } else {
-            return ShortDateFormatter.todayFormatter.stringForObjectValue(obj)
+            return ShortDateFormatter.todayFormatter.string(for: obj)
         }
     }
 }
@@ -81,7 +81,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var browserWindowController: BrowserWindowController?
     var preferenceWindowController : PreferenceWindowController?
     var editionWindowControllers : [EditionWindow] = []
-    var applicationCache : NSURL!
+    var applicationCache : URL!
 
     /* Model handling */
     var accounts : [String: Account] = [:]
@@ -92,21 +92,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.browserWindowController?.appDelegate = self
     }
 
-    func loadAccount(accountId: Int, account: AnyObject) -> Account? {
-        guard let enabled = account.valueForKey("enabled") as? Bool else {
+    func loadAccount(_ accountId: Int, account: AnyObject) -> Account? {
+        guard let enabled = account.value(forKey: "enabled") as? Bool else {
             return nil
         }
         if !enabled {
             return nil
         }
 
-        let cacheRoot = self.applicationCache.URLByAppendingPathComponent("\(accountId)", isDirectory: true)
+        let cacheRoot = self.applicationCache.appendingPathComponent("\(accountId)", isDirectory: true)
 
 
         return Account(accountId: accountId, account: account, cacheRoot: cacheRoot)
     }
 
-    private func refreshApplicationUnreadCount() {
+    fileprivate func refreshApplicationUnreadCount() {
         var unreadCount = 0
 
         for account in self.accounts.values {
@@ -121,7 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func reloadAccounts() {
-        guard let accounts = NSUserDefaults.standardUserDefaults().arrayForKey("accounts") as? [[String: AnyObject]] else {
+        guard let accounts = UserDefaults.standard.array(forKey: "accounts") as? [[String: Any]] else {
             return
         }
 
@@ -135,14 +135,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 continue
             }
 
-            if let old = oldAccounts.removeValueForKey(name) {
-                hasChanges = hasChanges || old.update(id, account: account)
+            if let old = oldAccounts.removeValue(forKey: name) {
+                hasChanges = hasChanges || old.update(id, account: account as AnyObject)
                 newAccounts[name] = old
             } else {
-                guard let client = self.loadAccount(id, account: account) else {
+                guard let client = self.loadAccount(id, account: account as AnyObject) else {
                     continue
                 }
-                client.addObserver(self, forKeyPath: "unreadCount", options: .New, context: &self.accountUnreadCountChangeContext)
+                client.addObserver(self, forKeyPath: "unreadCount", options: .new, context: &self.accountUnreadCountChangeContext)
                 newAccounts[name] = client
                 hasChanges = true
             }
@@ -169,44 +169,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private var accountUnreadCountChangeContext = 0
-    private var accountUpdateContext = 0
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    fileprivate var accountUnreadCountChangeContext = 0
+    fileprivate var accountUpdateContext = 0
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch context {
-        case &self.accountUpdateContext:
+        case (&self.accountUpdateContext)?:
             self.reloadAccounts()
 
-        case &self.accountUnreadCountChangeContext:
+        case (&self.accountUnreadCountChangeContext)?:
             self.refreshApplicationUnreadCount()
 
         default:
-            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 
-    func applicationDidFinishLaunching(aNotification: NSNotification) {
-        NSUserDefaultsController.sharedUserDefaultsController().appliesImmediately = false
-        NSUserDefaults.standardUserDefaults().registerDefaults([
-            "accounts": [[String: AnyObject]]()
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        NSUserDefaultsController.shared().appliesImmediately = false
+        UserDefaults.standard.register(defaults: [
+            "accounts": [[String: Any]]()
         ])
 
-        let fileManager = NSFileManager.defaultManager()
-        let cacheRoot = try! fileManager.URLForDirectory(.CachesDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
+        let fileManager = FileManager.default
+        let cacheRoot = try! fileManager.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
 
-        self.applicationCache = cacheRoot.URLByAppendingPathComponent("fr.mymind.NewsReader", isDirectory: true)
+        self.applicationCache = cacheRoot.appendingPathComponent("fr.mymind.NewsReader", isDirectory: true)
 
-        try! fileManager.createDirectoryAtURL(self.applicationCache, withIntermediateDirectories: true, attributes: nil)
+        try! fileManager.createDirectory(at: self.applicationCache, withIntermediateDirectories: true, attributes: nil)
 
 
-        NSUserDefaults.standardUserDefaults().addObserver(self, forKeyPath: "accounts",
-            options: NSKeyValueObservingOptions.New, context: &self.accountUpdateContext)
+        UserDefaults.standard.addObserver(self, forKeyPath: "accounts",
+            options: NSKeyValueObservingOptions.new, context: &self.accountUpdateContext)
         self.reloadAccounts()
         self.browserWindowController?.showWindow(self)
 
-        NSUserNotificationCenter.defaultUserNotificationCenter().delegate = self
+        NSUserNotificationCenter.default.delegate = self
     }
 
-    func applicationShouldHandleReopen(sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if flag {
             return false
         } else {
@@ -215,14 +215,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationWillTerminate(notification: NSNotification) {
+    func applicationWillTerminate(_ notification: Notification) {
         for account in self.accounts {
             account.1.client?.disconnect()
             account.1.synchronizeCache()
         }
     }
 
-    @IBAction func openPreferences(sender: AnyObject) {
+    @IBAction func openPreferences(_ sender: Any) {
         if self.preferenceWindowController == nil {
             self.preferenceWindowController = PreferenceWindowController(windowNibName: "PreferenceWindow")
         }
@@ -232,7 +232,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 extension AppDelegate : NSUserNotificationCenterDelegate {
-    func userNotificationCenter(center: NSUserNotificationCenter, shouldPresentNotification notification: NSUserNotification) -> Bool {
+    func userNotificationCenter(_ center: NSUserNotificationCenter, shouldPresent notification: NSUserNotification) -> Bool {
         guard let name = notification.userInfo?["account"] as? String else {
             return false
         }
@@ -254,13 +254,13 @@ extension AppDelegate : NSUserNotificationCenterDelegate {
 }
 
 extension AppDelegate {
-    @IBAction func refreshGroups(sender: AnyObject?) {
+    @IBAction func refreshGroups(_ sender: Any?) {
         for account in self.accounts {
             account.1.refreshSubscriptions()
         }
     }
 
-    private func buildEditionWindow(sender: AnyObject?) -> EditionWindow {
+    fileprivate func buildEditionWindow(_ sender: Any?) -> EditionWindow {
         switch sender {
         case let a as Account:
             return EditionWindow(newMessageForAccount: a)
@@ -276,7 +276,7 @@ extension AppDelegate {
         }
     }
 
-    @IBAction func newMessage(sender: AnyObject?) {
+    @IBAction func newMessage(_ sender: Any?) {
         let editorWindow = self.buildEditionWindow(sender)
 
         editorWindow.showWindow(self)

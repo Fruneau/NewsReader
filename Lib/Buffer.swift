@@ -8,16 +8,16 @@
 
 import Foundation
 
-public class Buffer {
-    private let buffer : NSMutableData
-    private var skipped = 0
-    private var stored = 0
+open class Buffer {
+    fileprivate let buffer : NSMutableData
+    fileprivate var skipped = 0
+    fileprivate var stored = 0
 
     public init(capacity: Int) {
         self.buffer = NSMutableData(capacity: capacity)!
     }
 
-    public func append(maxLength: Int, writer: (UnsafeMutablePointer<Void>, Int) throws -> Int) rethrows {
+    open func append(maxLength: Int, writer: (UnsafeMutableRawPointer, Int) throws -> Int) rethrows {
         assert (self.buffer.length == self.skipped + self.stored)
         if self.skipped > maxLength {
             let begin = self.buffer.mutableBytes
@@ -35,23 +35,23 @@ public class Buffer {
         self.buffer.length = self.skipped + self.stored
     }
 
-    public func appendBytes(bytes: UnsafePointer<Void>, length: Int) {
-        self.buffer.appendBytes(bytes, length: length)
+    open func appendBytes(_ bytes: UnsafeRawPointer, length: Int) {
+        self.buffer.append(bytes, length: length)
         self.stored += length
     }
 
-    public func appendData(data: NSData) {
-        self.buffer.appendData(data)
-        self.stored += data.length
+    open func appendData(_ data: Data) {
+        self.buffer.append(data)
+        self.stored += data.count
     }
 
-    public func appendString(string: String) {
-        if let data = (string as NSString).dataUsingEncoding(NSUTF8StringEncoding) {
+    open func appendString(_ string: String) {
+        if let data = (string as NSString).data(using: String.Encoding.utf8.rawValue) {
             self.appendData(data)
         }
     }
 
-    public func read(reader: (UnsafePointer<Void>, Int) throws -> Int) rethrows {
+    open func read(reader: (UnsafeRawPointer, Int) throws -> Int) rethrows {
         let read = try reader(self.buffer.bytes + self.skipped, self.stored)
 
         assert (self.stored >= read)
@@ -59,7 +59,7 @@ public class Buffer {
         self.stored -= read
     }
 
-    public var length : Int {
+    open var length : Int {
         return self.stored
     }
 }

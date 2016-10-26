@@ -24,7 +24,7 @@ public struct GroupReadState : CustomStringConvertible {
     /// We do guarantee that `NSMaxRange(read[i]) < read[i + 1].location`
     /// which means that entries are sorted and that two successive entries
     /// are merged if they immediately follow each other.
-    private var ranges : [NSRange]
+    fileprivate var ranges : [NSRange]
 
     /// Build a group for testing purpose.
     ///
@@ -37,21 +37,21 @@ public struct GroupReadState : CustomStringConvertible {
     ///
     /// - parameter line: the textual representation of the read state
     public init?(line: String) {
-        let scanner = NSScanner(string: line)
+        let scanner = Scanner(string: line)
         var ranges : [NSRange] = []
 
         scanner.charactersToBeSkipped = nil
-        while !scanner.atEnd {
+        while !scanner.isAtEnd {
             var start : Int = 0
 
-            if !scanner.scanInteger(&start) {
+            if !scanner.scanInt(&start) {
                 return nil
             }
 
             if scanner.skipString("-") {
                 var end : Int = 0
 
-                if !scanner.scanInteger(&end) {
+                if !scanner.scanInt(&end) {
                     return nil
                 }
 
@@ -64,7 +64,7 @@ public struct GroupReadState : CustomStringConvertible {
                 ranges.append(NSMakeRange(start, 1))
             }
 
-            if !scanner.atEnd {
+            if !scanner.isAtEnd {
                 if !scanner.skipString(",") {
                     return nil
                 }
@@ -93,7 +93,7 @@ public struct GroupReadState : CustomStringConvertible {
     /// range if they strictly follow each other.
     ///
     /// - parameter pos: the index to try to merge in the next one
-    private mutating func optimizeAt(pos: Int) {
+    fileprivate mutating func optimizeAt(_ pos: Int) {
         if pos < 0 || pos >= self.ranges.count - 1 {
             return
         }
@@ -102,7 +102,7 @@ public struct GroupReadState : CustomStringConvertible {
         let second = self.ranges[pos + 1]
         if NSMaxRange(first) == second.location {
             self.ranges[pos] = NSUnionRange(first, second)
-            self.ranges.removeAtIndex(pos + 1)
+            self.ranges.remove(at: pos + 1)
         }
     }
 
@@ -113,7 +113,7 @@ public struct GroupReadState : CustomStringConvertible {
     ///
     /// - parameter num: The article number to mark
     /// - returns: The previous state for the article
-    public mutating func markAsRead(num: Int) -> Bool {
+    public mutating func markAsRead(_ num: Int) -> Bool {
         for i in 0 ..< self.ranges.count {
             let range = self.ranges[i]
 
@@ -135,7 +135,7 @@ public struct GroupReadState : CustomStringConvertible {
                 return false
 
             default:
-                self.ranges.insert(NSMakeRange(num, 1), atIndex: i)
+                self.ranges.insert(NSMakeRange(num, 1), at: i)
                 self.optimizeAt(i)
                 return false
             }
@@ -152,7 +152,7 @@ public struct GroupReadState : CustomStringConvertible {
     ///
     /// - parameter range: The range of article number to mark as read
     /// - returns: the number of article marked as read
-    public mutating func markRangeAsRead(range: NSRange) -> Int {
+    public mutating func markRangeAsRead(_ range: NSRange) -> Int {
         var count = 0
 
         for i in range.location..<NSMaxRange(range) {
@@ -170,7 +170,7 @@ public struct GroupReadState : CustomStringConvertible {
     ///
     /// - parameter num: The article number to unmark
     /// - returns: The previous state of the article
-    public mutating func unmarkAsRead(num: Int) -> Bool {
+    public mutating func unmarkAsRead(_ num: Int) -> Bool {
         for i in 0 ..< self.ranges.count {
             let range = self.ranges[i]
 
@@ -180,7 +180,7 @@ public struct GroupReadState : CustomStringConvertible {
 
             case NSMaxRange(range) - 1:
                 if range.length == 1 {
-                    self.ranges.removeAtIndex(i)
+                    self.ranges.remove(at: i)
                     return true
                 }
                 self.ranges[i] = NSMakeRange(range.location, range.length - 1)
@@ -192,7 +192,7 @@ public struct GroupReadState : CustomStringConvertible {
 
             case _ where NSLocationInRange(num, range):
                 self.ranges[i] = NSMakeRange(range.location, num - range.location)
-                self.ranges.insert(NSMakeRange(num + 1, NSMaxRange(range) - (num + 1)), atIndex: i + 1)
+                self.ranges.insert(NSMakeRange(num + 1, NSMaxRange(range) - (num + 1)), at: i + 1)
                 return true
 
             default:
@@ -209,7 +209,7 @@ public struct GroupReadState : CustomStringConvertible {
     ///
     /// - parameter range: The range of article number to mark as unread
     /// - returns: the number of unmarked items
-    public mutating func unmarkRangeAsRead(range: NSRange) -> Int {
+    public mutating func unmarkRangeAsRead(_ range: NSRange) -> Int {
         var count = 0
 
         for i in range.location..<NSMaxRange(range) {
@@ -224,7 +224,7 @@ public struct GroupReadState : CustomStringConvertible {
     ///
     /// - parameter num: The article number to check
     /// - returns: A flag indicating if the article is marked as read.
-    public func isMarkedAsRead(num: Int) -> Bool {
+    public func isMarkedAsRead(_ num: Int) -> Bool {
         for range in self.ranges {
             if NSLocationInRange(num, range) {
                 return true

@@ -8,20 +8,20 @@
 
 import Foundation
 
-extension NSScanner {
+extension Scanner {
     public var remainder : String {
-        return (self.string as NSString).substringToIndex(self.scanLocation)
+        return (self.string as NSString).substring(to: self.scanLocation)
     }
 
-    public func skipCharactersFromSet(set: NSCharacterSet) -> Bool {
+    public func skipCharactersFromSet(_ set: CharacterSet) -> Bool {
         var padding : NSString?
 
-        return self.scanCharactersFromSet(set, intoString: &padding)
+        return self.scanCharacters(from: set, into: &padding)
     }
 
-    public func skipString(string: String) -> Bool {
+    public func skipString(_ string: String) -> Bool {
         var padding : NSString?
 
-        return self.scanString(string, intoString: &padding)
+        return self.scanString(string, into: &padding)
     }
 }

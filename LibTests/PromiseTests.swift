@@ -9,13 +9,13 @@
 import XCTest
 import Lib
 
-private enum Error : ErrorType {
-    case Fail
+private enum Error : Swift.Error {
+    case fail
 }
 
-private func preparePromise(action: (String) -> Void) -> ((Void) -> Void, (ErrorType) -> Void) {
+private func preparePromise(_ action: @escaping (String) -> Void) -> ((Void) -> Void, (Swift.Error) -> Void) {
     var onSuccess : ((Void) -> Void)?
-    var onError : ((ErrorType) -> Void)?
+    var onError : ((Swift.Error) -> Void)?
     let promise = Promise<Void>() {
         (s, e) in
 
@@ -42,7 +42,7 @@ private func preparePromise(action: (String) -> Void) -> ((Void) -> Void, (Error
     }).then({
         action("2.1")
 
-        throw Error.Fail
+        throw Error.fail
     }).otherwise({
         (_) in
 
@@ -61,7 +61,7 @@ class PromiseTests : XCTestCase {
         XCTAssertEqual(out, [ "1", "1.1", "1.1.2.1", "2.1", "2.1.2" ])
 
         out.removeAll()
-        preparePromise({ (s) in out.append(s) }).1(Error.Fail)
+        preparePromise({ (s) in out.append(s) }).1(Error.fail)
         XCTAssertEqual(out, [ "1.1.2", "1.1.2.1", "2", "2.1", "2.1.2" ])
     }
 
@@ -134,7 +134,7 @@ class PromiseTests : XCTestCase {
 
     func testOtherwiseChainFail() {
         var out : [String] = []
-        var onError : ((ErrorType) -> Void)?
+        var onError : ((Swift.Error) -> Void)?
         var onSuccess : ((Void) -> Void)?
         let promise = Promise<Void>() {
             (_, e) in
@@ -160,7 +160,7 @@ class PromiseTests : XCTestCase {
         XCTAssertEqual(out, [])
         if let cb = onError {
             onError = nil
-            cb(Error.Fail)
+            cb(Error.fail)
         }
         XCTAssertEqual(out, ["2"])
 
@@ -171,7 +171,7 @@ class PromiseTests : XCTestCase {
 
     func testOtherwiseChainFailFail() {
         var out : [String] = []
-        var onError : ((ErrorType) -> Void)?
+        var onError : ((Error) -> Void)?
         let promise = Promise<Void>() {
             (_, e) in
             onError = e
@@ -200,12 +200,12 @@ class PromiseTests : XCTestCase {
         XCTAssertEqual(out, [])
         if let cb = onError {
             onError = nil
-            cb(Error.Fail)
+            cb(Error.fail)
         }
         XCTAssertEqual(out, ["2"])
 
         XCTAssert(onError != nil)
-        onError?(Error.Fail)
+        onError?(Error.fail)
         XCTAssertEqual(out, ["2", "4"])
     }
 }

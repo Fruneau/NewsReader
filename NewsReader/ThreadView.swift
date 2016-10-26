@@ -10,7 +10,7 @@ import Cocoa
 
 class ThreadViewItem : NSCollectionViewItem {
     dynamic var threadHasReplies = false
-    private func updateThreadCountViewVisibility() {
+    fileprivate func updateThreadCountViewVisibility() {
         guard let article = self.representedObject as? Article else {
             return
         }
@@ -19,17 +19,17 @@ class ThreadViewItem : NSCollectionViewItem {
     }
 
     var threadCountChangeCtx = 0;
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch context {
-        case &self.threadCountChangeCtx:
+        case (&self.threadCountChangeCtx)?:
             self.updateThreadCountViewVisibility()
 
         default:
-            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 
-    override var representedObject : AnyObject? {
+    override var representedObject : Any? {
         willSet {
             guard let article = self.representedObject as? Article else {
                 return
@@ -52,11 +52,11 @@ class ThreadViewItem : NSCollectionViewItem {
     dynamic var backgroundColor : NSColor?
     dynamic var unreadImage = NSImage(named: "unread")
 
-    override var selected : Bool {
+    override var isSelected : Bool {
         didSet {
-            if self.selected {
-                self.textColor = NSColor.alternateSelectedControlTextColor()
-                self.backgroundColor = NSColor.alternateSelectedControlColor()
+            if self.isSelected {
+                self.textColor = NSColor.alternateSelectedControlTextColor
+                self.backgroundColor = NSColor.alternateSelectedControlColor
                 self.unreadImage = NSImage(named: "unread-selected")
             } else {
                 self.textColor = nil
@@ -68,7 +68,7 @@ class ThreadViewItem : NSCollectionViewItem {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.view.bind("backgroundColor", toObject: self, withKeyPath: "backgroundColor", options: nil)
+        self.view.bind("backgroundColor", to: self, withKeyPath: "backgroundColor", options: nil)
     }
 }
 
@@ -77,7 +77,7 @@ class ThreadViewController : NSViewController {
         self.exposeBinding("selection")
     }
 
-    private var threadView : NSCollectionView {
+    fileprivate var threadView : NSCollectionView {
         return self.view as! NSCollectionView
     }
 
@@ -87,7 +87,7 @@ class ThreadViewController : NSViewController {
 
     dynamic var selection : Article?
 
-    override dynamic var representedObject : AnyObject? {
+    override dynamic var representedObject : Any? {
         willSet {
             self.currentGroup?.delegate = nil
             self.selection = nil
@@ -100,7 +100,7 @@ class ThreadViewController : NSViewController {
         }
     }
 
-    private func updateCurrentThread() {
+    fileprivate func updateCurrentThread() {
         let selected = self.threadView.selectionIndexPaths
 
         if selected.count == 0 {
@@ -110,8 +110,8 @@ class ThreadViewController : NSViewController {
         }
     }
 
-    private func threadForIndexPath(indexPath: NSIndexPath) -> Article? {
-        guard indexPath.section == 0 else {
+    fileprivate func threadForIndexPath(_ indexPath: IndexPath) -> Article? {
+        guard (indexPath as NSIndexPath).section == 0 else {
             return nil
         }
 
@@ -119,19 +119,19 @@ class ThreadViewController : NSViewController {
             return nil
         }
 
-        return roots[indexPath.item]
+        return roots[(indexPath as NSIndexPath).item]
     }
 
-    private func indexPathForThread(article: Article) -> NSIndexPath? {
+    fileprivate func indexPathForThread(_ article: Article) -> IndexPath? {
         guard let idx = self.currentGroup?.getIndexOfThread(article) else {
             return nil
         }
 
-        return NSIndexPath(forItem: idx, inSection: 0)
+        return IndexPath(item: idx, section: 0)
     }
 
-    private func indexPathsForThreads(articles: [Article]) -> Set<NSIndexPath> {
-        var set = Set<NSIndexPath>()
+    fileprivate func indexPathsForThreads(_ articles: [Article]) -> Set<IndexPath> {
+        var set = Set<IndexPath>()
         for article in articles {
             if let indexPath = self.indexPathForThread(article) {
                 set.insert(indexPath)
@@ -142,7 +142,7 @@ class ThreadViewController : NSViewController {
 }
 
 extension ThreadViewController : NSCollectionViewDataSource {
-    func collectionView(collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let roots = self.currentGroup?.roots else {
             return 0
         }
@@ -150,14 +150,14 @@ extension ThreadViewController : NSCollectionViewDataSource {
         return roots.count
     }
 
-    func collectionView(collectionView: NSCollectionView, itemForRepresentedObjectAtIndexPath indexPath: NSIndexPath) -> NSCollectionViewItem {
-        let item = collectionView.makeItemWithIdentifier("Thread", forIndexPath: indexPath)
+    func collectionView(_ collectionView: NSCollectionView, itemForRepresentedObjectAt indexPath: IndexPath) -> NSCollectionViewItem {
+        let item = collectionView.makeItem(withIdentifier: "Thread", for: indexPath)
 
         item.representedObject = self.threadForIndexPath(indexPath)
         return item
     }
 
-    func collectionView(collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> NSSize {
+    func collectionView(_ collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, sizeForItemAtIndexPath indexPath: IndexPath) -> NSSize {
         let size = collectionView.frame.size
 
         return NSSize(width: size.width, height: 74)
@@ -165,29 +165,29 @@ extension ThreadViewController : NSCollectionViewDataSource {
 }
 
 extension ThreadViewController : NSCollectionViewDelegate {
-    func collectionView(collectionView: NSCollectionView, didSelectItemsAtIndexPaths indexPaths: Set<NSIndexPath>) {
+    func collectionView(_ collectionView: NSCollectionView, didSelectItemsAt indexPaths: Set<IndexPath>) {
         self.updateCurrentThread()
     }
 
-    func collectionView(collectionView: NSCollectionView, didDeselectItemsAtIndexPaths indexPaths: Set<NSIndexPath>) {
+    func collectionView(_ collectionView: NSCollectionView, didDeselectItemsAt indexPaths: Set<IndexPath>) {
         self.updateCurrentThread()
     }
 }
 
 extension ThreadViewController : GroupDelegate {
-    func group(group: Group, willLoseThreads articles: [Article]) {
+    func group(_ group: Group, willLoseThreads articles: [Article]) {
         let set = self.indexPathsForThreads(articles)
 
         if set.count > 0 {
-            self.threadView.deleteItemsAtIndexPaths(set)
+            self.threadView.deleteItems(at: set)
         }
     }
 
-    func group(group: Group, hasNewThreads articles: [Article]) {
+    @objc(group:hasNewThreads:) func group(_ group: Group, hasNewThreads articles: [Article]) {
         let set = self.indexPathsForThreads(articles)
 
         if set.count > 0 {
-            self.threadView.insertItemsAtIndexPaths(set)
+            self.threadView.insertItems(at: set)
         }
     }
 }

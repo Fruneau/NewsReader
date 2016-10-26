@@ -10,7 +10,7 @@ import XCTest
 import Lib
 
 class FifoQueueTests: XCTestCase {
-    private func checkPop(queue: FifoQueue<Int>, exp: Int?) {
+    fileprivate func checkPop(_ queue: FifoQueue<Int>, exp: Int?) {
         if let i = exp {
             XCTAssertFalse(queue.isEmpty)
 
