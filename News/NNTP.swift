@@ -1173,7 +1173,8 @@ private class NNTPConnection {
         guard let ins = istream, let ous = ostream else {
             return nil
         }
-        guard !ssl || ins.setProperty(kCFStreamSocketSecurityLevelNegotiatedSSL, forKey: Stream.PropertyKey.socketSecurityLevelKey) else {
+
+        guard !ssl || ins.setProperty(StreamSocketSecurityLevel.negotiatedSSL, forKey: Stream.PropertyKey.socketSecurityLevelKey) else {
             return nil
         }
         self.istream = ins
